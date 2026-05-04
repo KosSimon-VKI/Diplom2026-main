@@ -18,8 +18,7 @@ using System.Text.Json;
 using System.Net.Http;
 
 
-using GardenNookWpf.Views.Kitchen;
-using GardenNookWpf.Views.Kitchen.Shell;
+using GardenNookWpf.Views.Shell;
 
 namespace GardenNookWpf.Views
 {
@@ -131,8 +130,8 @@ namespace GardenNookWpf.Views
                             case "Повар":
                             case "Администратор":
                             case "Бариста":
-                                KitchenShellWindow kitchenShellWindow = new KitchenShellWindow(_httpClient, role);
-                                kitchenShellWindow.Show();
+                                MainShellWindow mainShellWindow = new MainShellWindow(_httpClient, role);
+                                mainShellWindow.Show();
                                 this.Close();
                                 break;
 

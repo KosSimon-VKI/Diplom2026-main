@@ -21,6 +21,9 @@ namespace GardenNookApi.Controllers
         private const int IngredientsGraphMaxDepth = 16;
         private const string InactiveCategoryName = "Неактивные";
         private const int InactiveDishCategoryId = 12;
+        private const string DishesCategoryType = "dishes";
+        private const string DrinksCategoryType = "drinks";
+        private const string ToppingsCategoryType = "toppings";
         private static readonly string InactiveCategoryNameLower = InactiveCategoryName.ToLower();
         private static readonly CultureInfo RussianCulture = CultureInfo.GetCultureInfo("ru-RU");
         private static readonly int[] MilkModifierIngredientIds = [106, 107, 108, 110, 113, 115, 118];
@@ -303,6 +306,229 @@ namespace GardenNookApi.Controllers
                 Toppings = toppings,
                 DrinkModifiers = drinkModifiers
             });
+        }
+
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var dishCategories = await database.DishCategories
+                .AsNoTracking()
+                .Select(c => new MenuCategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name ?? string.Empty,
+                    Type = DishesCategoryType,
+                    ItemsCount = c.Dishes.Count
+                })
+                .ToListAsync();
+
+            var drinkCategories = await database.DrinkCategories
+                .AsNoTracking()
+                .Select(c => new MenuCategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name ?? string.Empty,
+                    Type = DrinksCategoryType,
+                    ItemsCount = c.Drinks.Count
+                })
+                .ToListAsync();
+
+            var toppingCategories = await database.ToppingCategories
+                .AsNoTracking()
+                .Select(c => new MenuCategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name ?? string.Empty,
+                    Type = ToppingsCategoryType,
+                    ItemsCount = c.ToppingsAndSyrups.Count
+                })
+                .ToListAsync();
+
+            return Ok(dishCategories
+                .Concat(drinkCategories)
+                .Concat(toppingCategories)
+                .OrderBy(x => GetCategoryTypeOrder(x.Type))
+                .ThenBy(x => x.Name)
+                .ToList());
+        }
+
+        [HttpPost("categories/{type}")]
+        public async Task<IActionResult> CreateCategory(string type, [FromBody] MenuCategoryRequest request)
+        {
+            var normalizedType = NormalizeCategoryType(type);
+            if (normalizedType == null)
+            {
+                return BadRequest("Неизвестный тип категории.");
+            }
+
+            var name = NormalizeCategoryName(request?.Name);
+            var validationError = ValidateCategoryName(name);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
+
+            if (await CategoryNameExistsAsync(normalizedType, name, null))
+            {
+                return Conflict("Категория с таким названием уже существует.");
+            }
+
+            var category = new MenuCategoryDto
+            {
+                Name = name,
+                Type = normalizedType
+            };
+
+            switch (normalizedType)
+            {
+                case DishesCategoryType:
+                    var dishCategory = new DishCategory { Name = name };
+                    database.DishCategories.Add(dishCategory);
+                    await database.SaveChangesAsync();
+                    category.Id = dishCategory.Id;
+                    break;
+
+                case DrinksCategoryType:
+                    var drinkCategory = new DrinkCategory { Name = name };
+                    database.DrinkCategories.Add(drinkCategory);
+                    await database.SaveChangesAsync();
+                    category.Id = drinkCategory.Id;
+                    break;
+
+                case ToppingsCategoryType:
+                    var toppingCategory = new ToppingCategory { Name = name };
+                    database.ToppingCategories.Add(toppingCategory);
+                    await database.SaveChangesAsync();
+                    category.Id = toppingCategory.Id;
+                    break;
+            }
+
+            return Ok(category);
+        }
+
+        [HttpPut("categories/{type}/{id:int}")]
+        public async Task<IActionResult> UpdateCategory(string type, int id, [FromBody] MenuCategoryRequest request)
+        {
+            var normalizedType = NormalizeCategoryType(type);
+            if (normalizedType == null)
+            {
+                return BadRequest("Неизвестный тип категории.");
+            }
+
+            var name = NormalizeCategoryName(request?.Name);
+            var validationError = ValidateCategoryName(name);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
+
+            if (await CategoryNameExistsAsync(normalizedType, name, id))
+            {
+                return Conflict("Категория с таким названием уже существует.");
+            }
+
+            switch (normalizedType)
+            {
+                case DishesCategoryType:
+                    var dishCategory = await database.DishCategories.FirstOrDefaultAsync(c => c.Id == id);
+                    if (dishCategory == null)
+                    {
+                        return NotFound("Категория не найдена.");
+                    }
+
+                    dishCategory.Name = name;
+                    break;
+
+                case DrinksCategoryType:
+                    var drinkCategory = await database.DrinkCategories.FirstOrDefaultAsync(c => c.Id == id);
+                    if (drinkCategory == null)
+                    {
+                        return NotFound("Категория не найдена.");
+                    }
+
+                    drinkCategory.Name = name;
+                    break;
+
+                case ToppingsCategoryType:
+                    var toppingCategory = await database.ToppingCategories.FirstOrDefaultAsync(c => c.Id == id);
+                    if (toppingCategory == null)
+                    {
+                        return NotFound("Категория не найдена.");
+                    }
+
+                    toppingCategory.Name = name;
+                    break;
+            }
+
+            await database.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("categories/{type}/{id:int}")]
+        public async Task<IActionResult> DeleteCategory(string type, int id)
+        {
+            var normalizedType = NormalizeCategoryType(type);
+            if (normalizedType == null)
+            {
+                return BadRequest("Неизвестный тип категории.");
+            }
+
+            switch (normalizedType)
+            {
+                case DishesCategoryType:
+                    var dishCategory = await database.DishCategories
+                        .Include(c => c.Dishes)
+                        .FirstOrDefaultAsync(c => c.Id == id);
+                    if (dishCategory == null)
+                    {
+                        return NotFound("Категория не найдена.");
+                    }
+
+                    if (dishCategory.Dishes.Count > 0)
+                    {
+                        return Conflict($"Нельзя удалить категорию: к ней привязано позиций: {dishCategory.Dishes.Count}.");
+                    }
+
+                    database.DishCategories.Remove(dishCategory);
+                    break;
+
+                case DrinksCategoryType:
+                    var drinkCategory = await database.DrinkCategories
+                        .Include(c => c.Drinks)
+                        .FirstOrDefaultAsync(c => c.Id == id);
+                    if (drinkCategory == null)
+                    {
+                        return NotFound("Категория не найдена.");
+                    }
+
+                    if (drinkCategory.Drinks.Count > 0)
+                    {
+                        return Conflict($"Нельзя удалить категорию: к ней привязано позиций: {drinkCategory.Drinks.Count}.");
+                    }
+
+                    database.DrinkCategories.Remove(drinkCategory);
+                    break;
+
+                case ToppingsCategoryType:
+                    var toppingCategory = await database.ToppingCategories
+                        .Include(c => c.ToppingsAndSyrups)
+                        .FirstOrDefaultAsync(c => c.Id == id);
+                    if (toppingCategory == null)
+                    {
+                        return NotFound("Категория не найдена.");
+                    }
+
+                    if (toppingCategory.ToppingsAndSyrups.Count > 0)
+                    {
+                        return Conflict($"Нельзя удалить категорию: к ней привязано позиций: {toppingCategory.ToppingsAndSyrups.Count}.");
+                    }
+
+                    database.ToppingCategories.Remove(toppingCategory);
+                    break;
+            }
+
+            await database.SaveChangesAsync();
+            return NoContent();
         }
 
         private async Task<DrinkModifierCatalogDto> LoadDrinkModifierCatalogAsync()
@@ -617,6 +843,93 @@ namespace GardenNookApi.Controllers
                 "Литры" => "л",
                 _ => normalized
             };
+        }
+
+        private static string? NormalizeCategoryType(string? type)
+        {
+            var normalized = (type ?? string.Empty).Trim().ToLowerInvariant();
+            return normalized switch
+            {
+                DishesCategoryType => DishesCategoryType,
+                DrinksCategoryType => DrinksCategoryType,
+                ToppingsCategoryType => ToppingsCategoryType,
+                _ => null
+            };
+        }
+
+        private static int GetCategoryTypeOrder(string type)
+        {
+            return type switch
+            {
+                DishesCategoryType => 0,
+                DrinksCategoryType => 1,
+                ToppingsCategoryType => 2,
+                _ => 3
+            };
+        }
+
+        private static string NormalizeCategoryName(string? name)
+        {
+            return string.Join(" ", (name ?? string.Empty)
+                .Trim()
+                .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        }
+
+        private static string? ValidateCategoryName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return "Введите название категории.";
+            }
+
+            if (name.Length > 50)
+            {
+                return "Название категории не должно быть длиннее 50 символов.";
+            }
+
+            return null;
+        }
+
+        private async Task<bool> CategoryNameExistsAsync(string type, string name, int? exceptId)
+        {
+            IEnumerable<(int Id, string? Name)> rows;
+            switch (type)
+            {
+                case DishesCategoryType:
+                    rows = (await database.DishCategories
+                            .AsNoTracking()
+                            .Select(c => new { c.Id, c.Name })
+                            .ToListAsync())
+                        .Select(c => (c.Id, c.Name));
+                    break;
+
+                case DrinksCategoryType:
+                    rows = (await database.DrinkCategories
+                            .AsNoTracking()
+                            .Select(c => new { c.Id, c.Name })
+                            .ToListAsync())
+                        .Select(c => (c.Id, c.Name));
+                    break;
+
+                case ToppingsCategoryType:
+                    rows = (await database.ToppingCategories
+                            .AsNoTracking()
+                            .Select(c => new { c.Id, c.Name })
+                            .ToListAsync())
+                        .Select(c => (c.Id, c.Name));
+                    break;
+
+                default:
+                    return false;
+            }
+
+            var normalizedName = NormalizeCategoryName(name);
+            return rows.Any(c =>
+                (!exceptId.HasValue || c.Id != exceptId.Value) &&
+                string.Equals(
+                    NormalizeCategoryName(c.Name),
+                    normalizedName,
+                    StringComparison.OrdinalIgnoreCase));
         }
 
     }

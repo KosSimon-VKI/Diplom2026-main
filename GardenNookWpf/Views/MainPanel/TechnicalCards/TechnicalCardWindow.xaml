@@ -1,0 +1,168 @@
+﻿<Window x:Class="GardenNookWpf.Views.MainPanel.TechnicalCards.TechnicalCardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Техническая карта"
+        Width="860"
+        Height="680"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        SnapsToDevicePixels="True">
+    <Border Style="{StaticResource ModalShellBorder}" Margin="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource ModalHeader}"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Техническая карта"
+                               Style="{StaticResource ModalHeaderTitle}"/>
+
+                    <Button Grid.Column="1"
+                            Content="?"
+                            Style="{StaticResource ModalCloseButton}"
+                            Click="HeaderClose_Click"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="16,14,16,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Style="{StaticResource ModalCardBorder}"
+                        Background="{StaticResource ModalColorCardAltBrush}">
+                    <StackPanel>
+                        <TextBlock x:Name="CardNameText"
+                                   FontSize="26"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock x:Name="CardDescriptionText"
+                                   Margin="0,8,0,0"
+                                   FontSize="18"
+                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                   TextWrapping="Wrap"
+                                   Visibility="Collapsed"/>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="1" Margin="0,12,0,0">
+                    <Border Style="{StaticResource ModalCardBorder}" Padding="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0"
+                                    Background="{StaticResource ModalColorPrimaryBrush}"
+                                    CornerRadius="14,14,0,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="150"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="Компонент"
+                                               Margin="12,8"
+                                               Style="{StaticResource ModalTableHeaderText}"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="Вес"
+                                               Margin="12,8"
+                                               Style="{StaticResource ModalTableHeaderText}"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="Ед. изм."
+                                               Margin="12,8"
+                                               Style="{StaticResource ModalTableHeaderText}"/>
+                                </Grid>
+                            </Border>
+
+                            <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="ComponentsList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#FFDBDFD2"
+                                                    BorderThickness="0,0,0,1"
+                                                    Padding="12,9">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="150"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding Name}"
+                                                               Style="{StaticResource ModalBodyText}"
+                                                               TextWrapping="Wrap"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding WeightText}"
+                                                               Style="{StaticResource ModalBodyText}"/>
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding Unit}"
+                                                               Style="{StaticResource ModalBodyText}"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock x:Name="EmptyComponentsText"
+                               Text="Для этой тех. карты нет компонентов"
+                               FontSize="23"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ModalColorTextBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Visibility="Collapsed"/>
+                </Grid>
+            </Grid>
+
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="16,0,16,16">
+                <Button x:Name="EditButton"
+                        Content="Редактировать"
+                        Width="190"
+                        Margin="0,0,10,0"
+                        Style="{StaticResource ModalPrimaryButton}"
+                        Click="Edit_Click"
+                        Visibility="Collapsed"/>
+                <Button x:Name="DeleteButton"
+                        Content="Удалить"
+                        Width="150"
+                        Margin="0,0,10,0"
+                        Style="{StaticResource ModalSecondaryButton}"
+                        Click="Delete_Click"
+                        Visibility="Collapsed"/>
+                <Button Content="Закрыть"
+                        Width="140"
+                        Style="{StaticResource ModalSecondaryButton}"
+                        Click="Close_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
+

@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="GardenNookWpf.Views.Shell.Sections.Shared.PlaceholderSectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Background="White">
+        <Border BorderBrush="#FF91A56E"
+                BorderThickness="2"
+                CornerRadius="8"
+                Padding="36"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="760">
+            <StackPanel>
+                <TextBlock x:Name="TitleTextBlock"
+                           Foreground="#FF474747"
+                           FontSize="38"
+                           FontWeight="Bold"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="Р Р°Р·РґРµР» РІ СЂР°Р·СЂР°Р±РѕС‚РєРµ"
+                           Foreground="#FF606E52"
+                           FontSize="26"
+                           FontWeight="SemiBold"
+                           TextAlignment="Center"
+                           Margin="0,24,0,0"/>
+                <TextBlock x:Name="RoleTextBlock"
+                           Foreground="#FF474747"
+                           FontSize="20"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="0,16,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
