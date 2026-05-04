@@ -13,6 +13,7 @@ namespace GardenNookApi.Controllers
     [Authorize]
     public class MenuController : Controller
     {
+        private const string AdminRole = "Администратор";
         private const int UnitGramsId = 2;
         private const int UnitMillilitersId = 3;
         private const int UnitPiecesId = 4;
@@ -24,6 +25,8 @@ namespace GardenNookApi.Controllers
         private const string DishesCategoryType = "dishes";
         private const string DrinksCategoryType = "drinks";
         private const string ToppingsCategoryType = "toppings";
+        private const int DefaultMenuItemsTake = 100;
+        private const int MaxMenuItemsTake = 200;
         private static readonly string InactiveCategoryNameLower = InactiveCategoryName.ToLower();
         private static readonly CultureInfo RussianCulture = CultureInfo.GetCultureInfo("ru-RU");
         private static readonly int[] MilkModifierIngredientIds = [106, 107, 108, 110, 113, 115, 118];
@@ -529,6 +532,688 @@ namespace GardenNookApi.Controllers
 
             await database.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpGet("items")]
+        [Authorize(Roles = AdminRole)]
+        public async Task<IActionResult> GetItems(
+            [FromQuery] string? type,
+            [FromQuery] int? categoryId,
+            [FromQuery] string? availability,
+            [FromQuery] string? search,
+            [FromQuery] int skip = 0,
+            [FromQuery] int take = DefaultMenuItemsTake)
+        {
+            var normalizedType = string.IsNullOrWhiteSpace(type) || string.Equals(type, "all", StringComparison.OrdinalIgnoreCase)
+                ? null
+                : NormalizeCategoryType(type);
+            if (!string.IsNullOrWhiteSpace(type) &&
+                !string.Equals(type, "all", StringComparison.OrdinalIgnoreCase) &&
+                normalizedType == null)
+            {
+                return BadRequest("Неизвестный тип позиции меню.");
+            }
+
+            skip = Math.Max(0, skip);
+            take = Math.Clamp(take, 1, MaxMenuItemsTake);
+
+            var availableOnly = availability switch
+            {
+                "available" => true,
+                "unavailable" => false,
+                _ => (bool?)null
+            };
+
+            var normalizedSearch = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
+            var fetchLimit = skip + take;
+
+            if (normalizedType == DishesCategoryType)
+            {
+                return Ok(await QueryDishItems(categoryId, availableOnly, normalizedSearch, skip, take).ToListAsync());
+            }
+
+            if (normalizedType == DrinksCategoryType)
+            {
+                return Ok(await QueryDrinkItems(categoryId, availableOnly, normalizedSearch, skip, take).ToListAsync());
+            }
+
+            if (normalizedType == ToppingsCategoryType)
+            {
+                return Ok(await QueryToppingItems(categoryId, availableOnly, normalizedSearch, skip, take).ToListAsync());
+            }
+
+            var dishes = await QueryDishItems(categoryId, availableOnly, normalizedSearch, 0, fetchLimit).ToListAsync();
+            var drinks = await QueryDrinkItems(categoryId, availableOnly, normalizedSearch, 0, fetchLimit).ToListAsync();
+            var toppings = await QueryToppingItems(categoryId, availableOnly, normalizedSearch, 0, fetchLimit).ToListAsync();
+
+            return Ok(dishes
+                .Concat(drinks)
+                .Concat(toppings)
+                .OrderBy(x => GetCategoryTypeOrder(x.Type))
+                .ThenBy(x => x.Name)
+                .Skip(skip)
+                .Take(take)
+                .ToList());
+        }
+
+        private IQueryable<MenuItemManagementDto> QueryDishItems(int? categoryId, bool? availableOnly, string? search, int skip, int take)
+        {
+            var query = database.Dishes.AsNoTracking();
+            if (categoryId.HasValue)
+            {
+                query = query.Where(x => x.CategoryId == categoryId.Value);
+            }
+
+            if (availableOnly.HasValue)
+            {
+                query = query.Where(x => x.IsAvailable == availableOnly.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var pattern = $"%{search}%";
+                query = query.Where(x =>
+                    (x.Name != null && EF.Functions.Like(x.Name, pattern)) ||
+                    (x.Category != null && x.Category.Name != null && EF.Functions.Like(x.Category.Name, pattern)) ||
+                    (x.TechnicalCard != null && x.TechnicalCard.Name != null && EF.Functions.Like(x.TechnicalCard.Name, pattern)));
+            }
+
+            return query
+                .OrderBy(x => x.Name)
+                .Skip(skip)
+                .Take(take)
+                .Select(x => new MenuItemManagementDto
+                {
+                    Type = DishesCategoryType,
+                    Id = x.Id,
+                    Name = x.Name ?? string.Empty,
+                    CategoryId = x.CategoryId,
+                    CategoryName = x.Category != null ? x.Category.Name ?? string.Empty : string.Empty,
+                    UnitOfMeasureId = x.UnitOfMeasureId,
+                    UnitName = x.UnitOfMeasure != null ? x.UnitOfMeasure.Name ?? string.Empty : string.Empty,
+                    Quantity = null,
+                    PriceRub = x.PriceRub ?? 0m,
+                    TechnicalCardId = x.TechnicalCardId,
+                    TechnicalCardName = x.TechnicalCard != null ? x.TechnicalCard.Name ?? string.Empty : string.Empty,
+                    FatsG = x.FatsG ?? 0m,
+                    ProteinsG = x.ProteinsG ?? 0m,
+                    CarbsG = x.CarbsG ?? 0m,
+                    CaloriesKcal = x.CaloriesKcal ?? 0m,
+                    Kilojoules = x.Kilojoules ?? 0m,
+                    ImageUrl = x.ImageUrl ?? string.Empty,
+                    IsAvailable = x.IsAvailable
+                });
+        }
+
+        private IQueryable<MenuItemManagementDto> QueryDrinkItems(int? categoryId, bool? availableOnly, string? search, int skip, int take)
+        {
+            var query = database.Drinks.AsNoTracking();
+            if (categoryId.HasValue)
+            {
+                query = query.Where(x => x.CategoryId == categoryId.Value);
+            }
+
+            if (availableOnly.HasValue)
+            {
+                query = query.Where(x => x.IsAvailable == availableOnly.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var pattern = $"%{search}%";
+                query = query.Where(x =>
+                    (x.Name != null && EF.Functions.Like(x.Name, pattern)) ||
+                    (x.Category != null && x.Category.Name != null && EF.Functions.Like(x.Category.Name, pattern)) ||
+                    (x.TechnicalCard != null && x.TechnicalCard.Name != null && EF.Functions.Like(x.TechnicalCard.Name, pattern)));
+            }
+
+            return query
+                .OrderBy(x => x.Name)
+                .Skip(skip)
+                .Take(take)
+                .Select(x => new MenuItemManagementDto
+                {
+                    Type = DrinksCategoryType,
+                    Id = x.Id,
+                    Name = x.Name ?? string.Empty,
+                    CategoryId = x.CategoryId,
+                    CategoryName = x.Category != null ? x.Category.Name ?? string.Empty : string.Empty,
+                    UnitOfMeasureId = x.UnitOfMeasureId,
+                    UnitName = x.UnitOfMeasure != null ? x.UnitOfMeasure.Name ?? string.Empty : string.Empty,
+                    Quantity = x.Quantity,
+                    PriceRub = x.PriceRub ?? 0m,
+                    TechnicalCardId = x.TechnicalCardId,
+                    TechnicalCardName = x.TechnicalCard != null ? x.TechnicalCard.Name ?? string.Empty : string.Empty,
+                    FatsG = x.FatsG ?? 0m,
+                    ProteinsG = x.ProteinsG ?? 0m,
+                    CarbsG = x.CarbsG ?? 0m,
+                    CaloriesKcal = x.CaloriesKcal ?? 0m,
+                    Kilojoules = x.Kilojoules ?? 0m,
+                    ImageUrl = x.ImageUrl ?? string.Empty,
+                    IsAvailable = x.IsAvailable
+                });
+        }
+
+        private IQueryable<MenuItemManagementDto> QueryToppingItems(int? categoryId, bool? availableOnly, string? search, int skip, int take)
+        {
+            var query = database.ToppingsAndSyrups.AsNoTracking();
+            if (categoryId.HasValue)
+            {
+                query = query.Where(x => x.CategoryId == categoryId.Value);
+            }
+
+            if (availableOnly.HasValue)
+            {
+                query = query.Where(x => x.IsAvailable == availableOnly.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var pattern = $"%{search}%";
+                query = query.Where(x =>
+                    (x.Name != null && EF.Functions.Like(x.Name, pattern)) ||
+                    (x.Category != null && x.Category.Name != null && EF.Functions.Like(x.Category.Name, pattern)) ||
+                    (x.TechnicalCard != null && x.TechnicalCard.Name != null && EF.Functions.Like(x.TechnicalCard.Name, pattern)));
+            }
+
+            return query
+                .OrderBy(x => x.Name)
+                .Skip(skip)
+                .Take(take)
+                .Select(x => new MenuItemManagementDto
+                {
+                    Type = ToppingsCategoryType,
+                    Id = x.Id,
+                    Name = x.Name ?? string.Empty,
+                    CategoryId = x.CategoryId,
+                    CategoryName = x.Category != null ? x.Category.Name ?? string.Empty : string.Empty,
+                    UnitOfMeasureId = x.UnitOfMeasureId,
+                    UnitName = x.UnitOfMeasure != null ? x.UnitOfMeasure.Name ?? string.Empty : string.Empty,
+                    Quantity = x.Quantity,
+                    PriceRub = x.PriceRub ?? 0m,
+                    TechnicalCardId = x.TechnicalCardId,
+                    TechnicalCardName = x.TechnicalCard != null ? x.TechnicalCard.Name ?? string.Empty : string.Empty,
+                    FatsG = x.FatsG ?? 0m,
+                    ProteinsG = x.ProteinsG ?? 0m,
+                    CarbsG = x.CarbsG ?? 0m,
+                    CaloriesKcal = x.CaloriesKcal ?? 0m,
+                    Kilojoules = x.Kilojoules ?? 0m,
+                    ImageUrl = string.Empty,
+                    IsAvailable = x.IsAvailable
+                });
+        }
+
+        [HttpGet("items/edit-options")]
+        [Authorize(Roles = AdminRole)]
+        public async Task<IActionResult> GetItemEditOptions()
+        {
+            var dishCategories = await database.DishCategories
+                .AsNoTracking()
+                .Select(x => new MenuItemCategoryOptionDto
+                {
+                    Type = DishesCategoryType,
+                    Id = x.Id,
+                    Name = x.Name ?? string.Empty
+                })
+                .ToListAsync();
+
+            var drinkCategories = await database.DrinkCategories
+                .AsNoTracking()
+                .Select(x => new MenuItemCategoryOptionDto
+                {
+                    Type = DrinksCategoryType,
+                    Id = x.Id,
+                    Name = x.Name ?? string.Empty
+                })
+                .ToListAsync();
+
+            var toppingCategories = await database.ToppingCategories
+                .AsNoTracking()
+                .Select(x => new MenuItemCategoryOptionDto
+                {
+                    Type = ToppingsCategoryType,
+                    Id = x.Id,
+                    Name = x.Name ?? string.Empty
+                })
+                .ToListAsync();
+
+            var units = await database.UnitsOfMeasures
+                .AsNoTracking()
+                .OrderBy(x => x.Name)
+                .Select(x => new MenuItemOptionDto
+                {
+                    Id = x.Id,
+                    Name = x.Name ?? string.Empty
+                })
+                .ToListAsync();
+
+            var technicalCards = await database.TechnicalCards
+                .AsNoTracking()
+                .OrderBy(x => x.Name)
+                .Select(x => new MenuItemOptionDto
+                {
+                    Id = x.Id,
+                    Name = x.Name ?? string.Empty
+                })
+                .ToListAsync();
+
+            return Ok(new MenuItemEditOptionsResponse
+            {
+                Categories = dishCategories
+                    .Concat(drinkCategories)
+                    .Concat(toppingCategories)
+                    .OrderBy(x => GetCategoryTypeOrder(x.Type))
+                    .ThenBy(x => x.Name)
+                    .ToList(),
+                UnitsOfMeasure = units,
+                TechnicalCards = technicalCards
+            });
+        }
+
+        [HttpPost("items/{type}")]
+        [Authorize(Roles = AdminRole)]
+        public async Task<IActionResult> CreateItem(string type, [FromBody] MenuItemUpsertRequest request)
+        {
+            var normalizedType = NormalizeCategoryType(type);
+            if (normalizedType == null)
+            {
+                return BadRequest("Неизвестный тип позиции меню.");
+            }
+
+            var validationError = await ValidateMenuItemRequestAsync(normalizedType, request);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
+
+            MenuItemManagementDto created;
+            switch (normalizedType)
+            {
+                case DishesCategoryType:
+                    var dish = new Dish();
+                    ApplyDishRequest(dish, request);
+                    database.Dishes.Add(dish);
+                    await database.SaveChangesAsync();
+                    created = await LoadMenuItemAsync(normalizedType, dish.Id);
+                    break;
+
+                case DrinksCategoryType:
+                    var drink = new Drink();
+                    ApplyDrinkRequest(drink, request);
+                    database.Drinks.Add(drink);
+                    await database.SaveChangesAsync();
+                    created = await LoadMenuItemAsync(normalizedType, drink.Id);
+                    break;
+
+                default:
+                    var topping = new ToppingsAndSyrup();
+                    ApplyToppingRequest(topping, request);
+                    database.ToppingsAndSyrups.Add(topping);
+                    await database.SaveChangesAsync();
+                    created = await LoadMenuItemAsync(normalizedType, topping.Id);
+                    break;
+            }
+
+            return Ok(created);
+        }
+
+        [HttpPut("items/{type}/{id:int}")]
+        [Authorize(Roles = AdminRole)]
+        public async Task<IActionResult> UpdateItem(string type, int id, [FromBody] MenuItemUpsertRequest request)
+        {
+            var normalizedType = NormalizeCategoryType(type);
+            if (normalizedType == null)
+            {
+                return BadRequest("Неизвестный тип позиции меню.");
+            }
+
+            var validationError = await ValidateMenuItemRequestAsync(normalizedType, request);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
+
+            switch (normalizedType)
+            {
+                case DishesCategoryType:
+                    var dish = await database.Dishes.FirstOrDefaultAsync(x => x.Id == id);
+                    if (dish == null)
+                    {
+                        return NotFound("Позиция меню не найдена.");
+                    }
+
+                    ApplyDishRequest(dish, request);
+                    break;
+
+                case DrinksCategoryType:
+                    var drink = await database.Drinks.FirstOrDefaultAsync(x => x.Id == id);
+                    if (drink == null)
+                    {
+                        return NotFound("Позиция меню не найдена.");
+                    }
+
+                    ApplyDrinkRequest(drink, request);
+                    break;
+
+                default:
+                    var topping = await database.ToppingsAndSyrups.FirstOrDefaultAsync(x => x.Id == id);
+                    if (topping == null)
+                    {
+                        return NotFound("Позиция меню не найдена.");
+                    }
+
+                    ApplyToppingRequest(topping, request);
+                    break;
+            }
+
+            await database.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("items/{type}/{id:int}")]
+        [Authorize(Roles = AdminRole)]
+        public async Task<IActionResult> DeleteItem(string type, int id)
+        {
+            var normalizedType = NormalizeCategoryType(type);
+            if (normalizedType == null)
+            {
+                return BadRequest("Неизвестный тип позиции меню.");
+            }
+
+            switch (normalizedType)
+            {
+                case DishesCategoryType:
+                    var dish = await database.Dishes
+                        .FirstOrDefaultAsync(x => x.Id == id);
+                    if (dish == null)
+                    {
+                        return NotFound("Позиция меню не найдена.");
+                    }
+
+                    var dishOrderCount = await database.OrderDishItems.CountAsync(x => x.DishId == id);
+                    if (dishOrderCount > 0)
+                    {
+                        return Conflict($"Нельзя удалить блюдо: оно используется в заказах ({dishOrderCount}).");
+                    }
+
+                    var dishPortionLimits = await database.MenuItemPortionLimits
+                        .Where(x => x.ItemType == DishesCategoryType && x.ItemId == id)
+                        .ToListAsync();
+                    database.MenuItemPortionLimits.RemoveRange(dishPortionLimits);
+                    database.Dishes.Remove(dish);
+                    break;
+
+                case DrinksCategoryType:
+                    var drink = await database.Drinks
+                        .FirstOrDefaultAsync(x => x.Id == id);
+                    if (drink == null)
+                    {
+                        return NotFound("Позиция меню не найдена.");
+                    }
+
+                    var drinkOrderCount = await database.OrderDrinkItems.CountAsync(x => x.DrinkId == id);
+                    if (drinkOrderCount > 0)
+                    {
+                        return Conflict($"Нельзя удалить напиток: он используется в заказах ({drinkOrderCount}).");
+                    }
+
+                    var drinkPortionLimits = await database.MenuItemPortionLimits
+                        .Where(x => x.ItemType == DrinksCategoryType && x.ItemId == id)
+                        .ToListAsync();
+                    database.MenuItemPortionLimits.RemoveRange(drinkPortionLimits);
+                    database.Drinks.Remove(drink);
+                    break;
+
+                default:
+                    var topping = await database.ToppingsAndSyrups
+                        .FirstOrDefaultAsync(x => x.Id == id);
+                    if (topping == null)
+                    {
+                        return NotFound("Позиция меню не найдена.");
+                    }
+
+                    var orderToppingCount = await database.OrderToppingItems.CountAsync(x => x.ToppingId == id);
+                    var dishToppingCount = await database.DishToppings.CountAsync(x => x.ToppingId == id);
+                    var drinkToppingCount = await database.DrinkToppings.CountAsync(x => x.ToppingId == id);
+                    var linkCount = orderToppingCount + dishToppingCount + drinkToppingCount;
+                    if (linkCount > 0)
+                    {
+                        return Conflict($"Нельзя удалить добавку: она используется в заказах или связях ({linkCount}).");
+                    }
+
+                    var toppingPortionLimits = await database.MenuItemPortionLimits
+                        .Where(x => x.ItemType == ToppingsCategoryType && x.ItemId == id)
+                        .ToListAsync();
+                    database.MenuItemPortionLimits.RemoveRange(toppingPortionLimits);
+                    database.ToppingsAndSyrups.Remove(topping);
+                    break;
+            }
+
+            try
+            {
+                await database.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict("Нельзя удалить позицию меню: она используется в связанных данных.");
+            }
+        }
+
+        private async Task<MenuItemManagementDto> LoadMenuItemAsync(string type, int id)
+        {
+            switch (type)
+            {
+                case DishesCategoryType:
+                    var dish = await database.Dishes
+                        .AsNoTracking()
+                        .Include(x => x.Category)
+                        .Include(x => x.UnitOfMeasure)
+                        .Include(x => x.TechnicalCard)
+                        .FirstAsync(x => x.Id == id);
+                    return new MenuItemManagementDto
+                    {
+                        Type = DishesCategoryType,
+                        Id = dish.Id,
+                        Name = dish.Name ?? string.Empty,
+                        CategoryId = dish.CategoryId,
+                        CategoryName = dish.Category?.Name ?? string.Empty,
+                        UnitOfMeasureId = dish.UnitOfMeasureId,
+                        UnitName = dish.UnitOfMeasure?.Name ?? string.Empty,
+                        PriceRub = dish.PriceRub ?? 0m,
+                        TechnicalCardId = dish.TechnicalCardId,
+                        TechnicalCardName = dish.TechnicalCard?.Name ?? string.Empty,
+                        FatsG = dish.FatsG ?? 0m,
+                        ProteinsG = dish.ProteinsG ?? 0m,
+                        CarbsG = dish.CarbsG ?? 0m,
+                        CaloriesKcal = dish.CaloriesKcal ?? 0m,
+                        Kilojoules = dish.Kilojoules ?? 0m,
+                        ImageUrl = dish.ImageUrl ?? string.Empty,
+                        IsAvailable = dish.IsAvailable
+                    };
+
+                case DrinksCategoryType:
+                    var drink = await database.Drinks
+                        .AsNoTracking()
+                        .Include(x => x.Category)
+                        .Include(x => x.UnitOfMeasure)
+                        .Include(x => x.TechnicalCard)
+                        .FirstAsync(x => x.Id == id);
+                    return new MenuItemManagementDto
+                    {
+                        Type = DrinksCategoryType,
+                        Id = drink.Id,
+                        Name = drink.Name ?? string.Empty,
+                        CategoryId = drink.CategoryId,
+                        CategoryName = drink.Category?.Name ?? string.Empty,
+                        UnitOfMeasureId = drink.UnitOfMeasureId,
+                        UnitName = drink.UnitOfMeasure?.Name ?? string.Empty,
+                        Quantity = drink.Quantity,
+                        PriceRub = drink.PriceRub ?? 0m,
+                        TechnicalCardId = drink.TechnicalCardId,
+                        TechnicalCardName = drink.TechnicalCard?.Name ?? string.Empty,
+                        FatsG = drink.FatsG ?? 0m,
+                        ProteinsG = drink.ProteinsG ?? 0m,
+                        CarbsG = drink.CarbsG ?? 0m,
+                        CaloriesKcal = drink.CaloriesKcal ?? 0m,
+                        Kilojoules = drink.Kilojoules ?? 0m,
+                        ImageUrl = drink.ImageUrl ?? string.Empty,
+                        IsAvailable = drink.IsAvailable
+                    };
+
+                default:
+                    var topping = await database.ToppingsAndSyrups
+                        .AsNoTracking()
+                        .Include(x => x.Category)
+                        .Include(x => x.UnitOfMeasure)
+                        .Include(x => x.TechnicalCard)
+                        .FirstAsync(x => x.Id == id);
+                    return new MenuItemManagementDto
+                    {
+                        Type = ToppingsCategoryType,
+                        Id = topping.Id,
+                        Name = topping.Name ?? string.Empty,
+                        CategoryId = topping.CategoryId,
+                        CategoryName = topping.Category?.Name ?? string.Empty,
+                        UnitOfMeasureId = topping.UnitOfMeasureId,
+                        UnitName = topping.UnitOfMeasure?.Name ?? string.Empty,
+                        Quantity = topping.Quantity,
+                        PriceRub = topping.PriceRub ?? 0m,
+                        TechnicalCardId = topping.TechnicalCardId,
+                        TechnicalCardName = topping.TechnicalCard?.Name ?? string.Empty,
+                        FatsG = topping.FatsG ?? 0m,
+                        ProteinsG = topping.ProteinsG ?? 0m,
+                        CarbsG = topping.CarbsG ?? 0m,
+                        CaloriesKcal = topping.CaloriesKcal ?? 0m,
+                        Kilojoules = topping.Kilojoules ?? 0m,
+                        IsAvailable = topping.IsAvailable
+                    };
+            }
+        }
+
+        private async Task<string?> ValidateMenuItemRequestAsync(string type, MenuItemUpsertRequest? request)
+        {
+            if (request == null)
+            {
+                return "Передайте данные позиции меню.";
+            }
+
+            if (string.IsNullOrWhiteSpace(NormalizeMenuItemName(request.Name)))
+            {
+                return "Введите название позиции меню.";
+            }
+
+            if (NormalizeMenuItemName(request.Name).Length > 255)
+            {
+                return "Название позиции меню не должно быть длиннее 255 символов.";
+            }
+
+            if (request.PriceRub < 0)
+            {
+                return "Цена не может быть отрицательной.";
+            }
+
+            if (request.Quantity.HasValue && request.Quantity.Value < 0)
+            {
+                return "Количество не может быть отрицательным.";
+            }
+
+            if (request.FatsG < 0 || request.ProteinsG < 0 || request.CarbsG < 0 || request.CaloriesKcal < 0 || request.Kilojoules < 0)
+            {
+                return "КБЖУ не может содержать отрицательные значения.";
+            }
+
+            if (request.CategoryId.HasValue && !await CategoryIdExistsAsync(type, request.CategoryId.Value))
+            {
+                return "Выбранная категория не найдена.";
+            }
+
+            if (request.UnitOfMeasureId.HasValue &&
+                !await database.UnitsOfMeasures.AsNoTracking().AnyAsync(x => x.Id == request.UnitOfMeasureId.Value))
+            {
+                return "Выбранная единица измерения не найдена.";
+            }
+
+            if (request.TechnicalCardId.HasValue &&
+                !await database.TechnicalCards.AsNoTracking().AnyAsync(x => x.Id == request.TechnicalCardId.Value))
+            {
+                return "Выбранная техкарта не найдена.";
+            }
+
+            return null;
+        }
+
+        private async Task<bool> CategoryIdExistsAsync(string type, int id)
+        {
+            return type switch
+            {
+                DishesCategoryType => await database.DishCategories.AsNoTracking().AnyAsync(x => x.Id == id),
+                DrinksCategoryType => await database.DrinkCategories.AsNoTracking().AnyAsync(x => x.Id == id),
+                ToppingsCategoryType => await database.ToppingCategories.AsNoTracking().AnyAsync(x => x.Id == id),
+                _ => false
+            };
+        }
+
+        private static void ApplyDishRequest(Dish dish, MenuItemUpsertRequest request)
+        {
+            dish.Name = NormalizeMenuItemName(request.Name);
+            dish.CategoryId = request.CategoryId;
+            dish.UnitOfMeasureId = request.UnitOfMeasureId;
+            dish.PriceRub = request.PriceRub;
+            dish.TechnicalCardId = request.TechnicalCardId;
+            dish.FatsG = request.FatsG;
+            dish.ProteinsG = request.ProteinsG;
+            dish.CarbsG = request.CarbsG;
+            dish.CaloriesKcal = request.CaloriesKcal;
+            dish.Kilojoules = request.Kilojoules;
+            dish.ImageUrl = NormalizeNullableText(request.ImageUrl);
+            dish.IsAvailable = request.IsAvailable;
+        }
+
+        private static void ApplyDrinkRequest(Drink drink, MenuItemUpsertRequest request)
+        {
+            drink.Name = NormalizeMenuItemName(request.Name);
+            drink.CategoryId = request.CategoryId;
+            drink.UnitOfMeasureId = request.UnitOfMeasureId;
+            drink.Quantity = request.Quantity;
+            drink.PriceRub = request.PriceRub;
+            drink.TechnicalCardId = request.TechnicalCardId;
+            drink.FatsG = request.FatsG;
+            drink.ProteinsG = request.ProteinsG;
+            drink.CarbsG = request.CarbsG;
+            drink.CaloriesKcal = request.CaloriesKcal;
+            drink.Kilojoules = request.Kilojoules;
+            drink.ImageUrl = NormalizeNullableText(request.ImageUrl);
+            drink.IsAvailable = request.IsAvailable;
+        }
+
+        private static void ApplyToppingRequest(ToppingsAndSyrup topping, MenuItemUpsertRequest request)
+        {
+            topping.Name = NormalizeMenuItemName(request.Name);
+            topping.CategoryId = request.CategoryId;
+            topping.UnitOfMeasureId = request.UnitOfMeasureId;
+            topping.Quantity = request.Quantity;
+            topping.PriceRub = request.PriceRub;
+            topping.TechnicalCardId = request.TechnicalCardId;
+            topping.FatsG = request.FatsG;
+            topping.ProteinsG = request.ProteinsG;
+            topping.CarbsG = request.CarbsG;
+            topping.CaloriesKcal = request.CaloriesKcal;
+            topping.Kilojoules = request.Kilojoules;
+            topping.IsAvailable = request.IsAvailable;
+        }
+
+        private static string NormalizeMenuItemName(string? name)
+        {
+            return string.Join(" ", (name ?? string.Empty)
+                .Trim()
+                .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        }
+
+        private static string? NormalizeNullableText(string? value)
+        {
+            var normalized = (value ?? string.Empty).Trim();
+            return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
         }
 
         private async Task<DrinkModifierCatalogDto> LoadDrinkModifierCatalogAsync()

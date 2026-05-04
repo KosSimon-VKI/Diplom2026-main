@@ -36,7 +36,7 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Text="РљР°С‚РµРіРѕСЂРёРё РјРµРЅСЋ"
+                            <TextBlock Text="Категории меню"
                                        FontSize="34"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource ModalColorTextBrush}"
@@ -60,17 +60,17 @@
 
                                 <StackPanel Orientation="Horizontal">
                                     <Button x:Name="DishesTypeButton"
-                                            Content="Р‘Р»СЋРґР°"
+                                            Content="Блюда"
                                             Tag="dishes"
                                             Style="{StaticResource CategoryTypeButtonStyle}"
                                             Click="TypeButton_Click"/>
                                     <Button x:Name="DrinksTypeButton"
-                                            Content="РќР°РїРёС‚РєРё"
+                                            Content="Напитки"
                                             Tag="drinks"
                                             Style="{StaticResource CategoryTypeButtonStyle}"
                                             Click="TypeButton_Click"/>
                                     <Button x:Name="ToppingsTypeButton"
-                                            Content="Р”РѕР±Р°РІРєРё"
+                                            Content="Добавки"
                                             Tag="toppings"
                                             Style="{StaticResource CategoryTypeButtonStyle}"
                                             Click="TypeButton_Click"/>
@@ -78,7 +78,7 @@
 
                                 <Button x:Name="AddButton"
                                         Grid.Column="1"
-                                        Content="Р”РѕР±Р°РІРёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ"
+                                        Content="Добавить категорию"
                                         Width="230"
                                         Style="{StaticResource ModalPrimaryButton}"
                                         Click="AddButton_Click"/>
@@ -143,7 +143,7 @@
                                                                     Padding="12,8"
                                                                     HorizontalAlignment="Left">
                                                                 <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="РџРѕР·РёС†РёР№:"
+                                                                    <TextBlock Text="Позиций:"
                                                                                FontSize="18"
                                                                                FontWeight="SemiBold"
                                                                                Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -158,11 +158,11 @@
                                                             <StackPanel Grid.Row="3"
                                                                         Orientation="Horizontal"
                                                                         HorizontalAlignment="Right">
-                                                                <Button Content="РР·РјРµРЅРёС‚СЊ"
+                                                                <Button Content="Изменить"
                                                                         Style="{StaticResource CategoryCardActionButtonStyle}"
                                                                         Tag="{Binding}"
                                                                         Click="EditCategoryButton_Click"/>
-                                                                <Button Content="РЈРґР°Р»РёС‚СЊ"
+                                                                <Button Content="Удалить"
                                                                         Width="120"
                                                                         Style="{StaticResource CategoryCardActionButtonStyle}"
                                                                         Background="#FF742C27"
@@ -178,7 +178,7 @@
                                     </ScrollViewer>
 
                                     <TextBlock x:Name="EmptyText"
-                                               Text="РљР°С‚РµРіРѕСЂРёРё РЅРµ РЅР°Р№РґРµРЅС‹"
+                                               Text="Категории не найдены"
                                                FontSize="24"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ModalColorTextBrush}"

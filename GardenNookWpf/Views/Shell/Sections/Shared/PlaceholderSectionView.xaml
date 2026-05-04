@@ -19,7 +19,7 @@
                            FontWeight="Bold"
                            TextAlignment="Center"
                            TextWrapping="Wrap"/>
-                <TextBlock Text="Р Р°Р·РґРµР» РІ СЂР°Р·СЂР°Р±РѕС‚РєРµ"
+                <TextBlock Text="Раздел в разработке"
                            Foreground="#FF606E52"
                            FontSize="26"
                            FontWeight="SemiBold"

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+п»їusing System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -26,7 +26,7 @@ namespace GardenNookWpf.Views.MainPanel.TechnicalCards
 
         private void BindCard(KitchenTechnicalCardResponse card)
         {
-            CardNameText.Text = string.IsNullOrWhiteSpace(card.CardName) ? "Техническая карта" : card.CardName;
+            CardNameText.Text = string.IsNullOrWhiteSpace(card.CardName) ? "РўРµС…РЅРёС‡РµСЃРєР°СЏ РєР°СЂС‚Р°" : card.CardName;
 
             if (!string.IsNullOrWhiteSpace(card.Description))
             {

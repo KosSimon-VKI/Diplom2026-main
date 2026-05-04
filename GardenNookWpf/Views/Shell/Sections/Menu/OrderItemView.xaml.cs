@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -351,7 +351,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
         <TextBlock Text=""Недоступно"" FontSize=""15"" FontWeight=""Bold"" Foreground=""#FF742C27"" Visibility=""{Binding UnavailableVisibility}""/>
       </StackPanel>
       <StackPanel Grid.Column=""1"" Orientation=""Horizontal"" VerticalAlignment=""Center"">
-        <Button Content=""−"" Width=""36"" Height=""36"" FontSize=""20"" FontWeight=""Bold"" Padding=""0"" Command=""{Binding DecreaseCommand}"" IsEnabled=""{Binding IsAvailable}""/>
+        <Button Content=""в€’"" Width=""36"" Height=""36"" FontSize=""20"" FontWeight=""Bold"" Padding=""0"" Command=""{Binding DecreaseCommand}"" IsEnabled=""{Binding IsAvailable}""/>
         <TextBlock Text=""{Binding Quantity}"" FontSize=""20"" FontWeight=""Bold"" Width=""38"" TextAlignment=""Center"" VerticalAlignment=""Center""/>
         <Button Content=""+"" Width=""36"" Height=""36"" FontSize=""20"" FontWeight=""Bold"" Padding=""0"" Command=""{Binding IncreaseCommand}"" IsEnabled=""{Binding IsAvailable}""/>
       </StackPanel>

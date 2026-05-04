@@ -1,7 +1,7 @@
 ﻿<Window x:Class="GardenNookWpf.Views.MainPanel.Orders.ConfirmCancelOrderWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РѕС‚РјРµРЅС‹"
+        Title="Подтверждение отмены"
         Width="680"
         Height="360"
         WindowStartupLocation="CenterOwner"
@@ -27,11 +27,11 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="РћС‚РјРµРЅР° Р·Р°РєР°Р·Р°"
+                    <TextBlock Text="Отмена заказа"
                                Style="{StaticResource ModalHeaderTitle}"/>
 
                     <Button Grid.Column="1"
-                            Content="Г—"
+                            Content="×"
                             Style="{StaticResource ModalCloseButton}"
                             Click="HeaderClose_Click"/>
                 </Grid>
@@ -51,12 +51,12 @@
                         Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         Margin="16,0,16,16">
-                <Button Content="РћС‚РјРµРЅРёС‚СЊ Р·Р°РєР°Р·"
+                <Button Content="Отменить заказ"
                         Width="220"
                         Margin="0,0,10,0"
                         Style="{StaticResource ModalPrimaryButton}"
                         Click="Confirm_Click"/>
-                <Button Content="РќР°Р·Р°Рґ"
+                <Button Content="Назад"
                         Width="140"
                         Style="{StaticResource ModalSecondaryButton}"
                         Click="Cancel_Click"/>

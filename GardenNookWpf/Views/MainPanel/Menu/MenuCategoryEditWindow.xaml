@@ -1,7 +1,7 @@
 ﻿<Window x:Class="GardenNookWpf.Views.MainPanel.Menu.MenuCategoryEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="РљР°С‚РµРіРѕСЂРёСЏ РјРµРЅСЋ"
+        Title="Категория меню"
         Width="680"
         Height="360"
         WindowStartupLocation="CenterOwner"
@@ -31,7 +31,7 @@
                                Style="{StaticResource ModalHeaderTitle}"/>
 
                     <Button Grid.Column="1"
-                            Content="вњ•"
+                            Content="✕"
                             Style="{StaticResource ModalCloseButton}"
                             Click="HeaderClose_Click"/>
                 </Grid>
@@ -47,7 +47,7 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="РќР°Р·РІР°РЅРёРµ РєР°С‚РµРіРѕСЂРёРё"
+                        <TextBlock Text="Название категории"
                                    FontSize="21"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -60,7 +60,7 @@
                                  MaxLength="50"
                                  VerticalContentAlignment="Center"/>
 
-                        <TextBlock Text="Р”Рѕ 50 СЃРёРјРІРѕР»РѕРІ. РќР°Р·РІР°РЅРёРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ СѓРЅРёРєР°Р»СЊРЅС‹Рј РІРЅСѓС‚СЂРё РІС‹Р±СЂР°РЅРЅРѕРіРѕ С‚РёРїР°."
+                        <TextBlock Text="До 50 символов. Название должно быть уникальным внутри выбранного типа."
                                    Grid.Row="2"
                                    FontSize="16"
                                    Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
@@ -84,12 +84,12 @@
                         HorizontalAlignment="Right"
                         Margin="16,0,16,16">
                 <Button x:Name="SaveButton"
-                        Content="РЎРѕС…СЂР°РЅРёС‚СЊ"
+                        Content="Сохранить"
                         Width="170"
                         Margin="0,0,10,0"
                         Style="{StaticResource ModalPrimaryButton}"
                         Click="Save_Click"/>
-                <Button Content="РћС‚РјРµРЅР°"
+                <Button Content="Отмена"
                         Width="140"
                         Style="{StaticResource ModalSecondaryButton}"
                         Click="Cancel_Click"/>

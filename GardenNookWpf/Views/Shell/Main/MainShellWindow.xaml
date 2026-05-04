@@ -58,7 +58,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Button x:Name="MenuToggleButton"
-                        Content="в°"
+                        Content="☰"
                         Style="{StaticResource RoundedButton}"
                         Width="64"
                         Height="56"
@@ -68,7 +68,7 @@
 
                 <TextBlock x:Name="MenuTitleText"
                            Grid.Column="1"
-                           Text="Р Р°Р·РґРµР»С‹"
+                           Text="Разделы"
                            Foreground="White"
                            FontSize="30"
                            FontWeight="Bold"
@@ -80,7 +80,7 @@
                        Grid.Row="1"
                        Margin="8,0,8,16">
                 <Button x:Name="OrdersButton"
-                        Content="Р—Р°РєР°Р·С‹"
+                        Content="Заказы"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -90,7 +90,7 @@
                         Click="OrdersButton_Click"/>
 
                 <Button x:Name="TechCardsButton"
-                        Content="РўРµС…. РєР°СЂС‚С‹"
+                        Content="Тех. карты"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -100,7 +100,7 @@
                         Click="TechCardsButton_Click"/>
 
                 <Button x:Name="PreparationsButton"
-                        Content="Р—Р°РіРѕС‚РѕРІРєРё"
+                        Content="Заготовки"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -110,7 +110,7 @@
                         Click="PreparationsButton_Click"/>
 
                 <Button x:Name="StopListButton"
-                        Content="РЎС‚РѕРї-Р»РёСЃС‚"
+                        Content="Стоп-лист"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -120,7 +120,7 @@
                         Click="StopListButton_Click"/>
 
                 <Button x:Name="WriteOffButton"
-                        Content="РђРєС‚С‹ СЃРїРёСЃР°РЅРёСЏ"
+                        Content="Акты списания"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -130,7 +130,7 @@
                         Click="WriteOffButton_Click"/>
 
                 <Button x:Name="MenuItemsButton"
-                        Content="РЎРѕР·РґР°РЅРёРµ Р·Р°РєР°Р·Р°"
+                        Content="Создание заказа"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -139,8 +139,18 @@
                         FontWeight="Bold"
                         Click="MenuItemsButton_Click"/>
 
+                <Button x:Name="MenuManagementButton"
+                        Content="Меню"
+                        Style="{StaticResource RoundedButton}"
+                        Width="206"
+                        Height="64"
+                        Margin="8,7"
+                        FontSize="22"
+                        FontWeight="Bold"
+                        Click="MenuManagementButton_Click"/>
+
                 <Button x:Name="ProductCategoriesButton"
-                        Content="РљР°С‚РµРіРѕСЂРёРё РјРµРЅСЋ"
+                        Content="Категории меню"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -150,7 +160,7 @@
                         Click="ProductCategoriesButton_Click"/>
 
                 <Button x:Name="InventoryButton"
-                        Content="РЎС‹СЂСЊРµ"
+                        Content="Сырье"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -160,7 +170,7 @@
                         Click="InventoryButton_Click"/>
 
                 <Button x:Name="IngredientCategoriesButton"
-                        Content="РљР°С‚РµРіРѕСЂРёРё СЃС‹СЂСЊСЏ"
+                        Content="Категории сырья"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -170,7 +180,7 @@
                         Click="IngredientCategoriesButton_Click"/>
 
                 <Button x:Name="OrderHistoryButton"
-                        Content="РСЃС‚РѕСЂРёСЏ Р·Р°РєР°Р·РѕРІ"
+                        Content="История заказов"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -180,7 +190,7 @@
                         Click="OrderHistoryButton_Click"/>
 
                 <Button x:Name="ClientsButton"
-                        Content="РљР»РёРµРЅС‚С‹"
+                        Content="Клиенты"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -190,7 +200,7 @@
                         Click="ClientsButton_Click"/>
 
                 <Button x:Name="LoyaltyButton"
-                        Content="Р›РѕСЏР»СЊРЅРѕСЃС‚СЊ"
+                        Content="Лояльность"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -200,7 +210,7 @@
                         Click="LoyaltyButton_Click"/>
 
                 <Button x:Name="ReportsButton"
-                        Content="РћС‚С‡РµС‚С‹"
+                        Content="Отчеты"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -210,7 +220,7 @@
                         Click="ReportsButton_Click"/>
 
                 <Button x:Name="StaffButton"
-                        Content="РџРµСЂСЃРѕРЅР°Р»"
+                        Content="Персонал"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"
@@ -220,7 +230,7 @@
                         Click="StaffButton_Click"/>
 
                 <Button x:Name="BackButton"
-                        Content="Р’С‹Р№С‚Рё"
+                        Content="Выйти"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"

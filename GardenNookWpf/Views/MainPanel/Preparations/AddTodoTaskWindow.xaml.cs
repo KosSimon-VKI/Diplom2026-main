@@ -1,4 +1,4 @@
-using System.Windows;
+п»їusing System.Windows;
 using System.Windows.Input;
 
 namespace GardenNookWpf.Views.MainPanel.Preparations
@@ -20,7 +20,7 @@ namespace GardenNookWpf.Views.MainPanel.Preparations
             var taskText = (TaskTextBox.Text ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(taskText))
             {
-                ShowValidation("Введите текст задачи.");
+                ShowValidation("Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚ Р·Р°РґР°С‡Рё.");
                 return;
             }
 

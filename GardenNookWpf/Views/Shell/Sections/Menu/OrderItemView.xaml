@@ -153,7 +153,7 @@
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0" Margin="0,0,0,10">
-                                <TextBlock Text="РњР•РќР®"
+                                <TextBlock Text="МЕНЮ"
                                            FontSize="34"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource ModalColorTextBrush}"
@@ -171,7 +171,7 @@
                                         x:Name="MenuTabs"
                                         FontSize="18"
                                         ItemContainerStyle="{StaticResource MenuTabItemStyle}">
-                                <TabItem Header="РњР•РќР®">
+                                <TabItem Header="МЕНЮ">
                                     <Grid Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -271,7 +271,7 @@
                                                                             </Grid.ColumnDefinitions>
                                                                             <StackPanel Orientation="Horizontal"
                                                                                         VerticalAlignment="Center">
-                                                                                <TextBlock Text="РљРѕР»РёС‡РµСЃС‚РІРѕ:"
+                                                                                <TextBlock Text="Количество:"
                                                                                            FontSize="20"
                                                                                            FontWeight="Bold"
                                                                                            Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
@@ -282,7 +282,7 @@
                                                                                            Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
                                                                                            Margin="8,0,0,0"
                                                                                            Visibility="{Binding QuantityVisibility}"/>
-                                                                                <TextBlock Text="РќРµРґРѕСЃС‚СѓРїРЅРѕ"
+                                                                                <TextBlock Text="Недоступно"
                                                                                            FontSize="17"
                                                                                            FontWeight="Bold"
                                                                                            Foreground="#FF742C27"
@@ -291,7 +291,7 @@
                                                                             </StackPanel>
 
                                                                             <Button Grid.Column="1"
-                                                                                    Content="Р”РѕР±Р°РІРёС‚СЊ"
+                                                                                    Content="Добавить"
                                                                                     Style="{StaticResource MenuAddButtonStyle}"
                                                                                     Tag="{Binding}"
                                                                                     IsEnabled="{Binding IsAvailable}"
@@ -306,7 +306,7 @@
                                             </ScrollViewer>
 
                                             <TextBlock x:Name="MenuEmptyText"
-                                                       Text="РњРµРЅСЋ РїСѓСЃС‚Рѕ"
+                                                       Text="Меню пусто"
                                                        FontSize="24"
                                                        FontWeight="SemiBold"
                                                        Foreground="{StaticResource ModalColorTextBrush}"
@@ -325,7 +325,7 @@
                                                           HorizontalScrollBarVisibility="Disabled"
                                                           Padding="0,0,12,0">
                                                 <StackPanel Margin="0,0,4,0">
-                                                    <TextBlock Text="РџРѕРёСЃРє:"
+                                                    <TextBlock Text="Поиск:"
                                                                FontSize="19"
                                                                FontWeight="SemiBold"
                                                                Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -336,12 +336,12 @@
                                                              VerticalContentAlignment="Center"
                                                              TextChanged="SearchTextBox_TextChanged"/>
 
-                                                    <TextBlock Text="Р¤РёР»СЊС‚СЂС‹"
+                                                    <TextBlock Text="Фильтры"
                                                                FontSize="24"
                                                                FontWeight="Bold"
                                                                Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
                                                                Margin="0,0,0,10"/>
-                                                    <TextBlock Text="Р¦РµРЅР°:"
+                                                    <TextBlock Text="Цена:"
                                                                FontSize="18"
                                                                Foreground="{StaticResource ModalColorTextBrush}"/>
                                                     <Slider x:Name="PriceSlider"
@@ -352,41 +352,41 @@
                                                             Margin="0,8,0,0"
                                                             ValueChanged="PriceSlider_ValueChanged"/>
                                                     <TextBlock x:Name="PriceValueText"
-                                                               Text="0 - 1000 в‚Ѕ"
+                                                               Text="0 - 1000 ₽"
                                                                FontSize="18"
                                                                FontWeight="Bold"
                                                                Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
                                                                HorizontalAlignment="Center"
                                                                Margin="0,4,0,18"/>
 
-                                                    <TextBlock Text="РљР°С‚РµРіРѕСЂРёРё"
+                                                    <TextBlock Text="Категории"
                                                                FontSize="24"
                                                                FontWeight="Bold"
                                                                Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
                                                                Margin="0,0,0,10"/>
                                                     <Button x:Name="AllCategoryButton"
-                                                            Content="Р’СЃРµ"
+                                                            Content="Все"
                                                             Style="{StaticResource MenuFilterButtonStyle}"
                                                             Tag="all"
                                                             Click="MainCategoryButton_Click"/>
                                                     <Button x:Name="DishesCategoryButton"
-                                                            Content="Р‘Р»СЋРґР°"
+                                                            Content="Блюда"
                                                             Style="{StaticResource MenuFilterButtonStyle}"
                                                             Tag="dishes"
                                                             Click="MainCategoryButton_Click"/>
                                                     <Button x:Name="DrinksCategoryButton"
-                                                            Content="РќР°РїРёС‚РєРё"
+                                                            Content="Напитки"
                                                             Style="{StaticResource MenuFilterButtonStyle}"
                                                             Tag="drinks"
                                                             Click="MainCategoryButton_Click"/>
                                                     <Button x:Name="ToppingsCategoryButton"
-                                                            Content="Р”РѕР±Р°РІРєРё"
+                                                            Content="Добавки"
                                                             Style="{StaticResource MenuFilterButtonStyle}"
                                                             Tag="toppings"
                                                             Click="MainCategoryButton_Click"/>
 
                                                     <TextBlock x:Name="SubcategoriesTitle"
-                                                               Text="РџРѕРґРєР°С‚РµРіРѕСЂРёРё:"
+                                                               Text="Подкатегории:"
                                                                FontSize="20"
                                                                FontWeight="Bold"
                                                                Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
@@ -411,7 +411,7 @@
                                     </Grid>
                                 </TabItem>
 
-                                <TabItem Header="РљРћР Р—РРќРђ">
+                                <TabItem Header="КОРЗИНА">
                                     <Grid Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="1.15*"/>
@@ -429,7 +429,7 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
 
-                                                <TextBlock Text="РўРѕРІР°СЂС‹"
+                                                <TextBlock Text="Товары"
                                                            FontSize="28"
                                                            FontWeight="Bold"
                                                            Foreground="{StaticResource ModalColorTextBrush}"
@@ -502,7 +502,7 @@
                                                                                     Style="{StaticResource MenuRoundIconButtonStyle}"
                                                                                     Tag="{Binding}"
                                                                                     Click="IncreaseCartItemButton_Click"/>
-                                                                            <Button Content="Г—"
+                                                                            <Button Content="×"
                                                                                     Width="42"
                                                                                     Height="36"
                                                                                     FontSize="18"
@@ -542,34 +542,34 @@
                                                 Style="{StaticResource ModalCardBorder}"
                                                 Background="{StaticResource ModalColorWhiteBrush}">
                                             <StackPanel>
-                                                <TextBlock Text="РћС„РѕСЂРјР»РµРЅРёРµ"
+                                                <TextBlock Text="Оформление"
                                                            FontSize="28"
                                                            FontWeight="Bold"
                                                            Foreground="{StaticResource ModalColorTextBrush}"
                                                            HorizontalAlignment="Center"
                                                            Margin="0,0,0,14"/>
 
-                                                <TextBlock Text="РўРёРї Р·Р°РєР°Р·Р°:"
+                                                <TextBlock Text="Тип заказа:"
                                                            FontSize="20"
                                                            FontWeight="Bold"
                                                            Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,14">
                                                     <RadioButton x:Name="RestaurantOrderTypeRadio"
-                                                                 Content="Р’ СЂРµСЃС‚РѕСЂР°РЅРµ"
+                                                                 Content="В ресторане"
                                                                  GroupName="OrderType"
                                                                  IsChecked="True"
                                                                  FontSize="20"
                                                                  Margin="0,0,18,0"
                                                                  Checked="OrderTypeRadio_Checked"/>
                                                     <RadioButton x:Name="TakeawayOrderTypeRadio"
-                                                                 Content="РЎ СЃРѕР±РѕР№"
+                                                                 Content="С собой"
                                                                  GroupName="OrderType"
                                                                  FontSize="20"
                                                                  Checked="OrderTypeRadio_Checked"/>
                                                 </StackPanel>
 
                                                 <StackPanel x:Name="PickupSlotPanel" Visibility="Collapsed" Margin="0,0,0,14">
-                                                    <TextBlock Text="Р’СЂРµРјСЏ СЃР°РјРѕРІС‹РІРѕР·Р°:"
+                                                    <TextBlock Text="Время самовывоза:"
                                                                FontSize="20"
                                                                FontWeight="Bold"
                                                                Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
@@ -587,7 +587,7 @@
                                                                Visibility="Collapsed"/>
                                                 </StackPanel>
 
-                                                <TextBlock Text="РЎРєРёРґРєР°:"
+                                                <TextBlock Text="Скидка:"
                                                            FontSize="20"
                                                            FontWeight="Bold"
                                                            Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
@@ -598,7 +598,7 @@
                                                           DisplayMemberPath="DisplayName"
                                                           SelectionChanged="DiscountComboBox_SelectionChanged"/>
 
-                                                <TextBlock Text="РљРѕРјРјРµРЅС‚Р°СЂРёР№:"
+                                                <TextBlock Text="Комментарий:"
                                                            FontSize="20"
                                                            FontWeight="Bold"
                                                            Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
@@ -611,7 +611,7 @@
                                                          Margin="0,8,0,14"/>
 
                                                 <Button x:Name="SubmitOrderButton"
-                                                        Content="РћС„РѕСЂРјРёС‚СЊ"
+                                                        Content="Оформить"
                                                         Height="50"
                                                         FontSize="22"
                                                         Style="{StaticResource ModalPrimaryButton}"

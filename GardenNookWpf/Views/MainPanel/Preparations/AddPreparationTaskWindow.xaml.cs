@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -34,7 +34,7 @@ namespace GardenNookWpf.Views.MainPanel.Preparations
 
             if (SemiFinishedListBox.SelectedItem is not KitchenSemiFinishedOptionDto option)
             {
-                ShowValidation("Выберите полуфабрикат.");
+                ShowValidation("Р’С‹Р±РµСЂРёС‚Рµ РїРѕР»СѓС„Р°Р±СЂРёРєР°С‚.");
                 return;
             }
 
@@ -106,7 +106,7 @@ namespace GardenNookWpf.Views.MainPanel.Preparations
 
             if (_filteredOptions.Count == 0 && !string.IsNullOrWhiteSpace(filter))
             {
-                ShowValidation("По вашему запросу ничего не найдено.");
+                ShowValidation("РџРѕ РІР°С€РµРјСѓ Р·Р°РїСЂРѕСЃСѓ РЅРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ.");
             }
             else
             {

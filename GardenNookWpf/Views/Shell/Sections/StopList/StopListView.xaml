@@ -30,7 +30,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Text="РЎС‚РѕРї-Р»РёСЃС‚"
+                                <TextBlock Text="Стоп-лист"
                                            FontSize="34"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource ModalColorTextBrush}"
@@ -38,7 +38,7 @@
 
                                 <Button x:Name="AddPositionButton"
                                         Grid.Column="1"
-                                        Content="Р”РѕР±Р°РІРёС‚СЊ РїРѕР·РёС†РёСЋ"
+                                        Content="Добавить позицию"
                                         Width="280"
                                         Height="50"
                                         Style="{StaticResource ModalPrimaryButton}"
@@ -59,7 +59,7 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Text="РџРѕРёСЃРє:"
+                                <TextBlock Text="Поиск:"
                                            FontSize="18"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -130,7 +130,7 @@
                                                         <Button Grid.Column="1"
                                                                 Width="280"
                                                                 Height="46"
-                                                                Content="РЈР±СЂР°С‚СЊ РёР· СЃС‚РѕРї-Р»РёСЃС‚Р°"
+                                                                Content="Убрать из стоп-листа"
                                                                 Style="{StaticResource ModalSecondaryButton}"
                                                                 Tag="{Binding}"
                                                                 Click="RemovePositionButton_Click"/>
@@ -142,7 +142,7 @@
                                 </ScrollViewer>
 
                                 <TextBlock x:Name="EmptyText"
-                                           Text="РќРµС‚ РѕРіСЂР°РЅРёС‡РµРЅРёР№ Рё РїРѕР·РёС†РёР№ РІ СЃС‚РѕРї-Р»РёСЃС‚Рµ."
+                                           Text="Нет ограничений и позиций в стоп-листе."
                                            FontSize="24"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ModalColorTextBrush}"

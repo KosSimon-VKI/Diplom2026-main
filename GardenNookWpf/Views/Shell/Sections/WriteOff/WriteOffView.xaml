@@ -29,7 +29,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Text="РђРєС‚С‹ СЃРїРёСЃР°РЅРёСЏ"
+                                <TextBlock Text="Акты списания"
                                            FontSize="34"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource ModalColorTextBrush}"
@@ -37,7 +37,7 @@
 
                                 <Button x:Name="AddActButton"
                                         Grid.Column="1"
-                                        Content="РЎРѕР·РґР°С‚СЊ Р°РєС‚"
+                                        Content="Создать акт"
                                         Width="250"
                                         Height="50"
                                         Style="{StaticResource ModalPrimaryButton}"
@@ -58,7 +58,7 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Text="РџРѕРёСЃРє:"
+                                <TextBlock Text="Поиск:"
                                            FontSize="18"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -107,7 +107,7 @@
                                                                        VerticalAlignment="Center"/>
 
                                                             <Button Grid.Column="1"
-                                                                    Content="РЈРґР°Р»РёС‚СЊ"
+                                                                    Content="Удалить"
                                                                     Width="150"
                                                                     Height="42"
                                                                     Margin="14,0,0,0"
@@ -137,7 +137,7 @@
                                                                 Opacity="0.55"/>
 
                                                         <StackPanel Grid.Row="3">
-                                                            <TextBlock Text="РЎРѕСЃС‚Р°РІ Р°РєС‚Р°:"
+                                                            <TextBlock Text="Состав акта:"
                                                                        FontSize="18"
                                                                        FontWeight="Bold"
                                                                        Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
@@ -169,7 +169,7 @@
                                 </ScrollViewer>
 
                                 <TextBlock x:Name="EmptyText"
-                                           Text="РСЃС‚РѕСЂРёСЏ СЃРїРёСЃР°РЅРёР№ РїРѕРєР° РїСѓСЃС‚Р°."
+                                           Text="История списаний пока пуста."
                                            FontSize="24"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ModalColorTextBrush}"

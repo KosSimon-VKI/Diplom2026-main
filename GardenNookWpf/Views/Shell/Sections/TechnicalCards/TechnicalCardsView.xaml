@@ -36,11 +36,11 @@
                                          BorderBrush="{StaticResource ModalColorBorderBrush}"
                                          BorderThickness="2"
                                          VerticalContentAlignment="Center"
-                                         ToolTip="РџРѕРёСЃРє РїРѕ РЅР°Р·РІР°РЅРёСЋ"
+                                         ToolTip="Поиск по названию"
                                          TextChanged="SearchTextBox_TextChanged"/>
                                 <Button x:Name="AddTechnicalCardButton"
                                         Grid.Column="2"
-                                        Content="Р”РѕР±Р°РІРёС‚СЊ С‚РµС…РєР°СЂС‚Сѓ"
+                                        Content="Добавить техкарту"
                                         Style="{StaticResource ModalPrimaryButton}"
                                         FontSize="16"
                                         Visibility="Collapsed"
@@ -108,7 +108,7 @@
                                 </ScrollViewer>
 
                                 <TextBlock x:Name="EmptyText"
-                                           Text="РўРµС…РЅРёС‡РµСЃРєРёРµ РєР°СЂС‚С‹ РЅРµ РЅР°Р№РґРµРЅС‹"
+                                           Text="Технические карты не найдены"
                                            FontSize="24"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ModalColorTextBrush}"

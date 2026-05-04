@@ -1,4 +1,4 @@
-namespace GardenNookWpf.Views.Shell
+﻿namespace GardenNookWpf.Views.Shell
 {
     public enum MainSection
     {
@@ -8,6 +8,7 @@ namespace GardenNookWpf.Views.Shell
         StopList,
         WriteOff,
         MenuItems,
+        MenuManagement,
         ProductCategories,
         Inventory,
         IngredientCategories,

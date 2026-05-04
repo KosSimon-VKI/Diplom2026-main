@@ -1,7 +1,7 @@
 ﻿<Window x:Class="GardenNookWpf.Views.MainPanel.TechnicalCards.TechnicalCardEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="РўРµС…РєР°СЂС‚Р°"
+        Title="Техкарта"
         Width="1280"
         Height="820"
         MinWidth="1120"
@@ -34,7 +34,7 @@
                                Style="{StaticResource ModalHeaderTitle}"/>
 
                     <Button Grid.Column="1"
-                            Content="Г—"
+                            Content="×"
                             Style="{StaticResource ModalCloseButton}"
                             Click="HeaderClose_Click"/>
                 </Grid>
@@ -50,7 +50,7 @@
                             FontSize="19"
                             Background="Transparent"
                             BorderThickness="0">
-                    <TabItem Header="РћСЃРЅРѕРІРЅРѕРµ">
+                    <TabItem Header="Основное">
                         <Border Margin="0,12,0,0"
                                 Padding="18"
                                 Style="{StaticResource ModalCardBorder}"
@@ -63,7 +63,7 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0">
-                                    <TextBlock Text="РќР°Р·РІР°РЅРёРµ"
+                                    <TextBlock Text="Название"
                                                FontSize="20"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -76,7 +76,7 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="2">
-                                    <TextBlock Text="РћРїРёСЃР°РЅРёРµ"
+                                    <TextBlock Text="Описание"
                                                FontSize="20"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -93,7 +93,7 @@
                         </Border>
                     </TabItem>
 
-                    <TabItem Header="РЎРѕСЃС‚Р°РІ">
+                    <TabItem Header="Состав">
                         <Border Margin="0,12,0,0"
                                 Padding="18"
                                 Style="{StaticResource ModalCardBorder}"
@@ -133,7 +133,7 @@
                                                   SelectedValuePath="Id"/>
 
                                         <Button Grid.Column="4"
-                                                Content="Р”РѕР±Р°РІРёС‚СЊ СЃС‚СЂРѕРєСѓ"
+                                                Content="Добавить строку"
                                                 Style="{StaticResource ModalPrimaryButton}"
                                                 FontSize="16"
                                                 Click="AddCompositionLine_Click"/>
@@ -151,15 +151,15 @@
                                           FontSize="15"
                                           ItemsSource="{Binding CompositionLines}">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="РўРёРї"
+                                        <DataGridTextColumn Header="Тип"
                                                             Binding="{Binding KindDisplay}"
                                                             IsReadOnly="True"
                                                             Width="95"/>
-                                        <DataGridTextColumn Header="РџРѕР·РёС†РёСЏ"
+                                        <DataGridTextColumn Header="Позиция"
                                                             Binding="{Binding ItemName}"
                                                             IsReadOnly="True"
                                                             Width="*"/>
-                                        <DataGridTemplateColumn Header="Р•Рґ. РёР·Рј." Width="130">
+                                        <DataGridTemplateColumn Header="Ед. изм." Width="130">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UnitOptions}"
@@ -170,25 +170,25 @@
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="Р‘СЂСѓС‚С‚Рѕ"
+                                        <DataGridTextColumn Header="Брутто"
                                                             Binding="{Binding GrossWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=0.##}"
                                                             Width="85"/>
-                                        <DataGridTextColumn Header="РҐРѕР». %"
+                                        <DataGridTextColumn Header="Хол. %"
                                                             Binding="{Binding ColdLossPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=0.##}"
                                                             Width="75"/>
-                                        <DataGridTextColumn Header="РќРµС‚С‚Рѕ"
+                                        <DataGridTextColumn Header="Нетто"
                                                             Binding="{Binding NetWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=0.##}"
                                                             Width="85"/>
-                                        <DataGridTextColumn Header="Р“РѕСЂ. %"
+                                        <DataGridTextColumn Header="Гор. %"
                                                             Binding="{Binding HotLossPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=0.##}"
                                                             Width="75"/>
-                                        <DataGridTextColumn Header="Р’С‹С…РѕРґ"
+                                        <DataGridTextColumn Header="Выход"
                                                             Binding="{Binding OutputWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=0.##}"
                                                             Width="85"/>
                                         <DataGridTemplateColumn Width="110">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button Content="РЈРґР°Р»РёС‚СЊ"
+                                                    <Button Content="Удалить"
                                                             Style="{StaticResource ModalSecondaryButton}"
                                                             FontSize="14"
                                                             Height="32"
@@ -225,7 +225,7 @@
                         Margin="0,0,10,0"
                         Style="{StaticResource ModalPrimaryButton}"
                         Click="Save_Click"/>
-                <Button Content="РћС‚РјРµРЅР°"
+                <Button Content="Отмена"
                         Width="140"
                         Style="{StaticResource ModalSecondaryButton}"
                         Click="Cancel_Click"/>

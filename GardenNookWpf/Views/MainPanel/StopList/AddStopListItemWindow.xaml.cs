@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -31,10 +31,10 @@ namespace GardenNookWpf.Views.MainPanel.StopList
                     var manualLimit = x.ManualRemainingPortions.GetValueOrDefault();
 
                     var stateText = !x.IsAvailable
-                        ? "Уже в стоп-листе"
+                        ? "РЈР¶Рµ РІ СЃС‚РѕРї-Р»РёСЃС‚Рµ"
                         : hasManualLimit
-                            ? $"Лимит: {FormatPortions(manualLimit)}"
-                            : "Доступно";
+                            ? $"Р›РёРјРёС‚: {FormatPortions(manualLimit)}"
+                            : "Р”РѕСЃС‚СѓРїРЅРѕ";
 
                     var stateBrush = !x.IsAvailable
                         ? InStopListStateBrush
@@ -57,7 +57,7 @@ namespace GardenNookWpf.Views.MainPanel.StopList
                         StateText = stateText,
                         StateBrush = stateBrush,
                         ExistingLimitDisplay = hasManualLimit
-                            ? $"Текущий ручной лимит: {FormatPortions(manualLimit)}"
+                            ? $"РўРµРєСѓС‰РёР№ СЂСѓС‡РЅРѕР№ Р»РёРјРёС‚: {FormatPortions(manualLimit)}"
                             : string.Empty,
                         ExistingLimitVisibility = hasManualLimit ? Visibility.Visible : Visibility.Collapsed
                     };
@@ -77,13 +77,13 @@ namespace GardenNookWpf.Views.MainPanel.StopList
 
             if (PositionsListBox.SelectedItem is not AddablePositionDisplayModel item)
             {
-                ShowValidation("Выберите позицию.");
+                ShowValidation("Р’С‹Р±РµСЂРёС‚Рµ РїРѕР·РёС†РёСЋ.");
                 return;
             }
 
             if (!item.IsAvailable)
             {
-                ShowValidation("Позиция уже находится в стоп-листе.");
+                ShowValidation("РџРѕР·РёС†РёСЏ СѓР¶Рµ РЅР°С…РѕРґРёС‚СЃСЏ РІ СЃС‚РѕРї-Р»РёСЃС‚Рµ.");
                 return;
             }
 
@@ -146,7 +146,7 @@ namespace GardenNookWpf.Views.MainPanel.StopList
                 return;
             }
 
-            ShowValidation("Выбранная позиция уже в стоп-листе.");
+            ShowValidation("Р’С‹Р±СЂР°РЅРЅР°СЏ РїРѕР·РёС†РёСЏ СѓР¶Рµ РІ СЃС‚РѕРї-Р»РёСЃС‚Рµ.");
         }
 
         private void ApplyFilter(string? searchText)
@@ -171,7 +171,7 @@ namespace GardenNookWpf.Views.MainPanel.StopList
             if (items.Count == 0)
             {
                 AddButton.IsEnabled = false;
-                ShowValidation("По вашему запросу ничего не найдено.");
+                ShowValidation("РџРѕ РІР°С€РµРјСѓ Р·Р°РїСЂРѕСЃСѓ РЅРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ.");
                 return;
             }
 
@@ -180,7 +180,7 @@ namespace GardenNookWpf.Views.MainPanel.StopList
 
             if (selected != null && !selected.IsAvailable)
             {
-                ShowValidation("Выбранная позиция уже в стоп-листе.");
+                ShowValidation("Р’С‹Р±СЂР°РЅРЅР°СЏ РїРѕР·РёС†РёСЏ СѓР¶Рµ РІ СЃС‚РѕРї-Р»РёСЃС‚Рµ.");
             }
             else
             {
@@ -195,20 +195,20 @@ namespace GardenNookWpf.Views.MainPanel.StopList
 
             if (string.IsNullOrWhiteSpace(text))
             {
-                ShowValidation("Укажите остаток порций.");
+                ShowValidation("РЈРєР°Р¶РёС‚Рµ РѕСЃС‚Р°С‚РѕРє РїРѕСЂС†РёР№.");
                 return false;
             }
 
             if (!decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var parsedValue) &&
                 !decimal.TryParse(text.Replace(',', '.'), NumberStyles.Number, CultureInfo.InvariantCulture, out parsedValue))
             {
-                ShowValidation("Остаток порций должен быть числом.");
+                ShowValidation("РћСЃС‚Р°С‚РѕРє РїРѕСЂС†РёР№ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ С‡РёСЃР»РѕРј.");
                 return false;
             }
 
             if (parsedValue < 0m)
             {
-                ShowValidation("Остаток порций не может быть отрицательным.");
+                ShowValidation("РћСЃС‚Р°С‚РѕРє РїРѕСЂС†РёР№ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј.");
                 return false;
             }
 
@@ -230,7 +230,7 @@ namespace GardenNookWpf.Views.MainPanel.StopList
 
         private static string FormatPortions(decimal value)
         {
-            return value.ToString("0.##", CultureInfo.InvariantCulture) + " порц.";
+            return value.ToString("0.##", CultureInfo.InvariantCulture) + " РїРѕСЂС†.";
         }
 
         private static Brush CreateFrozenBrush(Color color)

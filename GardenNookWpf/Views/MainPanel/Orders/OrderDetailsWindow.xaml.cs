@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -22,7 +22,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
     public partial class OrderDetailsWindow : Window
     {
         private const string KitchenApiBaseAddress = "https://localhost:7235/api/kitchen";
-        private const string AdminRole = "Администратор";
+        private const string AdminRole = "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ";
 
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
@@ -61,10 +61,10 @@ namespace GardenNookWpf.Views.MainPanel.Orders
         {
             var createdAtText = _orderCard.CreatedAt.HasValue
                 ? _orderCard.CreatedAt.Value.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture)
-                : "не указано";
+                : "РЅРµ СѓРєР°Р·Р°РЅРѕ";
 
-            OrderHeaderText.Text = $"Заказ №{_orderCard.OrderNumberText}";
-            OrderMetaText.Text = $"{_orderCard.OrderTypeText} | Создан: {createdAtText}";
+            OrderHeaderText.Text = $"Р—Р°РєР°Р· в„–{_orderCard.OrderNumberText}";
+            OrderMetaText.Text = $"{_orderCard.OrderTypeText} | РЎРѕР·РґР°РЅ: {createdAtText}";
 
             if (!string.IsNullOrWhiteSpace(_orderCard.PickupAtText))
             {
@@ -167,7 +167,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
                 {
-                    MessageBox.Show("Нет доступа к тех. картам.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("РќРµС‚ РґРѕСЃС‚СѓРїР° Рє С‚РµС…. РєР°СЂС‚Р°Рј.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -175,7 +175,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 {
                     var message = await ReadErrorMessageAsync(response);
                     MessageBox.Show(
-                        string.IsNullOrWhiteSpace(message) ? "Не удалось загрузить тех. карту." : message,
+                        string.IsNullOrWhiteSpace(message) ? "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ С‚РµС…. РєР°СЂС‚Сѓ." : message,
                         "Garden Nook",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -186,7 +186,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 var technicalCard = JsonSerializer.Deserialize<KitchenTechnicalCardResponse>(json, JsonOptions);
                 if (technicalCard == null)
                 {
-                    MessageBox.Show("Не удалось распознать данные тех. карты.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃРїРѕР·РЅР°С‚СЊ РґР°РЅРЅС‹Рµ С‚РµС…. РєР°СЂС‚С‹.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -198,7 +198,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки тех. карты: {ex.Message}", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё С‚РµС…. РєР°СЂС‚С‹: {ex.Message}", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -217,7 +217,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
                 {
-                    MessageBox.Show("Нет доступа к обновлению заказа.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РѕР±РЅРѕРІР»РµРЅРёСЋ Р·Р°РєР°Р·Р°.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -225,7 +225,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 {
                     var message = await ReadErrorMessageAsync(response);
                     MessageBox.Show(
-                        string.IsNullOrWhiteSpace(message) ? "Не удалось пометить позицию готовой." : message,
+                        string.IsNullOrWhiteSpace(message) ? "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРјРµС‚РёС‚СЊ РїРѕР·РёС†РёСЋ РіРѕС‚РѕРІРѕР№." : message,
                         "Garden Nook",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -246,7 +246,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка обновления позиции: {ex.Message}", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ РїРѕР·РёС†РёРё: {ex.Message}", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -270,7 +270,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
                 {
-                    MessageBox.Show("Нет доступа к обновлению заказа.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РѕР±РЅРѕРІР»РµРЅРёСЋ Р·Р°РєР°Р·Р°.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -278,7 +278,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 {
                     var message = await ReadErrorMessageAsync(response);
                     MessageBox.Show(
-                        string.IsNullOrWhiteSpace(message) ? "Не удалось завершить заказ." : message,
+                        string.IsNullOrWhiteSpace(message) ? "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РІРµСЂС€РёС‚СЊ Р·Р°РєР°Р·." : message,
                         "Garden Nook",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -292,7 +292,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка завершения заказа: {ex.Message}", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"РћС€РёР±РєР° Р·Р°РІРµСЂС€РµРЅРёСЏ Р·Р°РєР°Р·Р°: {ex.Message}", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -309,7 +309,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
                 {
-                    MessageBox.Show("Нет доступа к обновлению заказа.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РѕР±РЅРѕРІР»РµРЅРёСЋ Р·Р°РєР°Р·Р°.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -317,7 +317,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 {
                     var message = await ReadErrorMessageAsync(response);
                     MessageBox.Show(
-                        string.IsNullOrWhiteSpace(message) ? "Не удалось пометить позиции готовыми." : message,
+                        string.IsNullOrWhiteSpace(message) ? "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРјРµС‚РёС‚СЊ РїРѕР·РёС†РёРё РіРѕС‚РѕРІС‹РјРё." : message,
                         "Garden Nook",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -342,7 +342,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
                 {
-                    MessageBox.Show("Нет доступа к отмене заказа.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РѕС‚РјРµРЅРµ Р·Р°РєР°Р·Р°.", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -350,7 +350,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 {
                     var message = await ReadErrorMessageAsync(response);
                     MessageBox.Show(
-                        string.IsNullOrWhiteSpace(message) ? "Не удалось отменить заказ." : message,
+                        string.IsNullOrWhiteSpace(message) ? "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РјРµРЅРёС‚СЊ Р·Р°РєР°Р·." : message,
                         "Garden Nook",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -364,7 +364,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка отмены заказа: {ex.Message}", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"РћС€РёР±РєР° РѕС‚РјРµРЅС‹ Р·Р°РєР°Р·Р°: {ex.Message}", "Garden Nook", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -408,7 +408,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
         private void BindRoleActions()
         {
             CancelOrderButton.Visibility = _isAdmin ? Visibility.Visible : Visibility.Collapsed;
-            CompleteOrderButton.Content = _isAdmin ? "Завершить заказ" : "Завершить позиции";
+            CompleteOrderButton.Content = _isAdmin ? "Р—Р°РІРµСЂС€РёС‚СЊ Р·Р°РєР°Р·" : "Р—Р°РІРµСЂС€РёС‚СЊ РїРѕР·РёС†РёРё";
         }
 
         private void SetBusy(bool isBusy)

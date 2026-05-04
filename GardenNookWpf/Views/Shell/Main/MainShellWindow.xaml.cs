@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -49,6 +49,7 @@ namespace GardenNookWpf.Views.Shell
                 [MainSection.StopList] = StopListButton,
                 [MainSection.WriteOff] = WriteOffButton,
                 [MainSection.MenuItems] = MenuItemsButton,
+                [MainSection.MenuManagement] = MenuManagementButton,
                 [MainSection.ProductCategories] = ProductCategoriesButton,
                 [MainSection.Inventory] = InventoryButton,
                 [MainSection.IngredientCategories] = IngredientCategoriesButton,
@@ -119,6 +120,11 @@ namespace GardenNookWpf.Views.Shell
         private async void MenuItemsButton_Click(object sender, RoutedEventArgs e)
         {
             await NavigateToSectionAsync(MainSection.MenuItems);
+        }
+
+        private async void MenuManagementButton_Click(object sender, RoutedEventArgs e)
+        {
+            await NavigateToSectionAsync(MainSection.MenuManagement);
         }
 
         private async void ProductCategoriesButton_Click(object sender, RoutedEventArgs e)
@@ -236,6 +242,7 @@ namespace GardenNookWpf.Views.Shell
                 MainSection.StopList => new StopListView(_httpClient, _userRole),
                 MainSection.WriteOff => new WriteOffView(_httpClient, _userRole),
                 MainSection.MenuItems => new OrderItemView(_httpClient, _userRole),
+                MainSection.MenuManagement => new MenuManagementView(_httpClient, _userRole),
                 MainSection.ProductCategories => new MenuCategoriesView(_httpClient, _userRole),
                 _ => new PlaceholderSectionView(GetSectionTitle(section), _userRole)
             };
@@ -295,6 +302,7 @@ namespace GardenNookWpf.Views.Shell
                     MainSection.StopList,
                     MainSection.WriteOff,
                     MainSection.MenuItems,
+                    MainSection.MenuManagement,
                     MainSection.ProductCategories,
                     MainSection.Inventory,
                     MainSection.IngredientCategories,

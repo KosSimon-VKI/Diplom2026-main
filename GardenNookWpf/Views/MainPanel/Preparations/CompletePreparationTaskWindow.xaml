@@ -1,7 +1,7 @@
 ﻿<Window x:Class="GardenNookWpf.Views.MainPanel.Preparations.CompletePreparationTaskWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Р’С‹РїРѕР»РЅРёС‚СЊ Р·Р°РіРѕС‚РѕРІРєСѓ"
+        Title="Выполнить заготовку"
         Width="760"
         Height="520"
         WindowStartupLocation="CenterOwner"
@@ -27,11 +27,11 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="РћС‚РјРµС‚РёС‚СЊ РєР°Рє РІС‹РїРѕР»РЅРµРЅРЅРѕРµ"
+                    <TextBlock Text="Отметить как выполненное"
                                Style="{StaticResource ModalHeaderTitle}"/>
 
                     <Button Grid.Column="1"
-                            Content="Г—"
+                            Content="×"
                             Style="{StaticResource ModalCloseButton}"
                             Click="HeaderClose_Click"/>
                 </Grid>
@@ -48,7 +48,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="РџРѕР»СѓС„Р°Р±СЂРёРєР°С‚"
+                <TextBlock Text="Полуфабрикат"
                            FontSize="20"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -62,7 +62,7 @@
                            TextWrapping="Wrap"/>
 
                 <TextBlock Grid.Row="2"
-                           Text="РњР°СЃСЃР° (Рі)"
+                           Text="Масса (г)"
                            FontSize="20"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -75,7 +75,7 @@
                          VerticalContentAlignment="Center"/>
 
                 <TextBlock Grid.Row="4"
-                           Text="Р”Р°С‚Р° РёР·РіРѕС‚РѕРІР»РµРЅРёСЏ"
+                           Text="Дата изготовления"
                            FontSize="20"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource ModalColorTextBrush}"/>
@@ -99,12 +99,12 @@
                         Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         Margin="16,0,16,16">
-                <Button Content="РџРѕРґС‚РІРµСЂРґРёС‚СЊ"
+                <Button Content="Подтвердить"
                         Width="190"
                         Margin="0,0,10,0"
                         Style="{StaticResource ModalPrimaryButton}"
                         Click="Confirm_Click"/>
-                <Button Content="РћС‚РјРµРЅР°"
+                <Button Content="Отмена"
                         Width="140"
                         Style="{StaticResource ModalSecondaryButton}"
                         Click="Cancel_Click"/>
