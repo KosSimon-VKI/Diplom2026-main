@@ -229,6 +229,7 @@ namespace GardenNookWpf.Views.Kitchen.Shell
                 KitchenSection.Preparations => new PreparationsView(_httpClient, _userRole),
                 KitchenSection.StopList => new StopListView(_httpClient, _userRole),
                 KitchenSection.WriteOff => new WriteOffView(_httpClient, _userRole),
+                KitchenSection.MenuItems => new MenuItemsView(_httpClient, _userRole),
                 _ => new PlaceholderSectionView(GetSectionTitle(section), _userRole)
             };
 

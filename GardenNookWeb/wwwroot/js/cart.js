@@ -37,6 +37,11 @@ let pickupTakeawayOrderTypeId = DEFAULT_TAKEAWAY_ORDER_TYPE_ID;
 let pickupSlots = [];
 let pickupSlotsLoaded = false;
 let pickupSlotsLoadError = null;
+let currentClientDiscount = {
+    discountId: null,
+    name: '',
+    percent: 0
+};
 
 // ===== бейдж над кнопкой корзины =====
 function updateCartBadge() {
@@ -374,11 +379,88 @@ function updateCartTotal() {
         });
     });
 
+    const discountPercent = parseDiscountPercent(currentClientDiscount.percent);
+    const totalAfterDiscount = roundMoney(total * (1 - discountPercent / 100));
+
+    const beforeDiscountRow = document.getElementById('cart-total-before-discount-row');
+    const beforeDiscountEl = document.getElementById('cart-total-before-discount');
+    const discountRow = document.getElementById('cart-discount-row');
+    const discountNameEl = document.getElementById('cart-discount-name');
+    const discountPercentEl = document.getElementById('cart-discount-percent');
+
+    if (discountPercent > 0) {
+        beforeDiscountRow?.classList.remove('hidden');
+        discountRow?.classList.remove('hidden');
+        if (beforeDiscountEl) beforeDiscountEl.textContent = formatMoney(total);
+        if (discountNameEl) discountNameEl.textContent = currentClientDiscount.name || 'Скидка клиента';
+        if (discountPercentEl) discountPercentEl.textContent = formatMoney(discountPercent);
+    } else {
+        beforeDiscountRow?.classList.add('hidden');
+        discountRow?.classList.add('hidden');
+        if (beforeDiscountEl) beforeDiscountEl.textContent = '0';
+        if (discountNameEl) discountNameEl.textContent = '-';
+        if (discountPercentEl) discountPercentEl.textContent = '0';
+    }
+
     const totalEl = document.getElementById('cart-total-price');
-    if (totalEl) totalEl.textContent = String(total);
+    if (totalEl) totalEl.textContent = formatMoney(totalAfterDiscount);
 
     const totalCaloriesEl = document.getElementById('cart-total-calories');
     if (totalCaloriesEl) totalCaloriesEl.textContent = String(totalCalories);
+}
+
+function parseDiscountPercent(value) {
+    const parsed = Number.parseFloat(value ?? 0);
+    if (!Number.isFinite(parsed) || parsed <= 0) return 0;
+    return Math.min(100, parsed);
+}
+
+function roundMoney(value) {
+    const parsed = Number.parseFloat(value ?? 0);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.round(parsed * 100) / 100;
+}
+
+function formatMoney(value) {
+    return roundMoney(value).toLocaleString('ru-RU', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+}
+
+async function loadCurrentClientDiscount() {
+    if (!hasCheckoutControls()) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${window.API_BASE}/api/profile`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            currentClientDiscount = { discountId: null, name: '', percent: 0 };
+            updateCartTotal();
+            return;
+        }
+
+        const payload = await response.json();
+        const client = payload?.client ?? {};
+        currentClientDiscount = {
+            discountId: client.discountId ?? null,
+            name: client.discountName ?? '',
+            percent: parseDiscountPercent(client.discountPercent)
+        };
+    } catch {
+        currentClientDiscount = { discountId: null, name: '', percent: 0 };
+    }
+
+    updateCartTotal();
+}
+
+function hasCheckoutControls() {
+    return !!document.getElementById('btn-submit-order');
 }
 
 // ===== Checkout helpers =====
@@ -694,7 +776,15 @@ async function submitOrder() {
         renderPickupSlotOptions({ keepSelection: false });
         updatePickupSlotVisibility();
 
-        showOrderSuccess(`Заказ №${data.orderId} оформлен. Статус: ${data.status}`);
+        const discountPercent = parseDiscountPercent(data?.discountPercent);
+        const discountText = discountPercent > 0
+            ? ` Скидка: ${formatMoney(discountPercent)}%.`
+            : '';
+        const totalText = data?.totalPrice !== undefined
+            ? ` Итого: ${formatMoney(data.totalPrice)} ₽.`
+            : '';
+
+        showOrderSuccess(`Заказ №${data.orderId} оформлен. Статус: ${data.status}.${discountText}${totalText}`);
 
     } catch (e) {
         showOrderError('Ошибка сети. Попробуй ещё раз.');
@@ -721,7 +811,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loadPickupSlots();
     }
 
+    loadCurrentClientDiscount();
+
     const btn = document.getElementById('btn-submit-order');
     if (btn) btn.addEventListener('click', submitOrder);
 });
-

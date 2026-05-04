@@ -19,6 +19,7 @@ namespace GardenNookWpf.Views.Kitchen
         private readonly List<SelectableItemModel> _semiFinishedItems;
         private readonly List<SelectableItemModel> _ingredientItems;
         private readonly List<SelectedWriteOffLineModel> _selectedLines = new List<SelectedWriteOffLineModel>();
+        private readonly DateTime _actDate = DateTime.Today;
 
         public KitchenCreateWriteOffActRequest Request { get; private set; } = new KitchenCreateWriteOffActRequest();
 
@@ -61,7 +62,7 @@ namespace GardenNookWpf.Views.Kitchen
 
             InitializeComponent();
 
-            DatePicker.SelectedDate = DateTime.Today;
+            ActDateText.Text = _actDate.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture);
             WriteOffTypeComboBox.ItemsSource = _writeOffTypes;
             WriteOffTypeComboBox.SelectedIndex = _writeOffTypes.Count > 0 ? 0 : -1;
 
@@ -139,11 +140,9 @@ namespace GardenNookWpf.Views.Kitchen
                 return;
             }
 
-            var selectedDate = DatePicker.SelectedDate ?? DateTime.Today;
-
             Request = new KitchenCreateWriteOffActRequest
             {
-                Date = selectedDate.Date,
+                Date = _actDate.Date,
                 Comment = (CommentTextBox.Text ?? string.Empty).Trim(),
                 IngredientLines = _selectedLines
                     .Where(x => x.Kind == IngredientKind)

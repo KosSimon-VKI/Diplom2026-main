@@ -21,6 +21,12 @@ namespace GardenNookApi.Controllers
         private const string CompositionTypeDrink = "Напиток";
         private const string CompositionTypeTopping = "Добавка";
         private const int ProfileOrdersHistoryLimit = 5;
+        private const int ClientCategoryNewId = 1;
+        private const int ClientCategoryRegularId = 2;
+        private const int ClientCategorySpecialId = 3;
+        private const int DiscountNewId = 1;
+        private const int DiscountRegularId = 2;
+        private const int DiscountSpecialId = 3;
 
         private readonly AppDbContext _db;
 
@@ -36,20 +42,31 @@ namespace GardenNookApi.Controllers
             if (clientId == null)
                 return Unauthorized("Некорректный идентификатор клиента в cookie авторизации");
 
-            var client = await _db.Clients
+            var clientData = await _db.Clients
                 .AsNoTracking()
                 .Where(c => c.Id == clientId.Value)
-                .Select(c => new ProfileClientDto
+                .Select(c => new
                 {
                     FullName = c.FullName ?? string.Empty,
+                    c.ClientCategoryId,
                     Category = c.ClientCategory != null
                         ? (c.ClientCategory.Name ?? "Без категории")
                         : "Без категории"
                 })
                 .FirstOrDefaultAsync();
 
-            if (client == null)
+            if (clientData == null)
                 return Unauthorized("Клиент не найден");
+
+            var (discountId, discountName, discountPercent) = await ResolveDiscountByCategoryAsync(clientData.ClientCategoryId);
+            var client = new ProfileClientDto
+            {
+                FullName = clientData.FullName,
+                Category = clientData.Category,
+                DiscountId = discountId,
+                DiscountName = discountName,
+                DiscountPercent = discountPercent
+            };
 
             var ordersData = await _db.Orders
                 .AsNoTracking()
@@ -146,6 +163,39 @@ namespace GardenNookApi.Controllers
         {
             var rawClientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return int.TryParse(rawClientId, out var clientId) ? clientId : null;
+        }
+
+        private async Task<(int? DiscountId, string DiscountName, decimal DiscountPercent)> ResolveDiscountByCategoryAsync(int? clientCategoryId)
+        {
+            int? discountId = clientCategoryId switch
+            {
+                ClientCategoryNewId => DiscountNewId,
+                ClientCategoryRegularId => DiscountRegularId,
+                ClientCategorySpecialId => DiscountSpecialId,
+                _ => null
+            };
+
+            if (!discountId.HasValue)
+            {
+                return (null, string.Empty, 0m);
+            }
+
+            var discount = await _db.Discounts
+                .AsNoTracking()
+                .Where(x => x.Id == discountId.Value)
+                .Select(x => new
+                {
+                    x.Name,
+                    Percent = x.DiscountPercent ?? 0m
+                })
+                .FirstOrDefaultAsync();
+
+            if (discount == null)
+            {
+                return (null, string.Empty, 0m);
+            }
+
+            return (discountId, discount.Name ?? string.Empty, discount.Percent);
         }
 
         private static bool IsCancelledStatusName(string? statusName)

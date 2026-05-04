@@ -13,6 +13,9 @@ namespace TransferModels.Profile
     {
         public string FullName { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
+        public int? DiscountId { get; set; }
+        public string DiscountName { get; set; } = string.Empty;
+        public decimal DiscountPercent { get; set; }
     }
 
     public class ProfileOrderDto

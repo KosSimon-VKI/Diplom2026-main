@@ -28,6 +28,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel>
@@ -39,7 +40,22 @@
                                    Foreground="{StaticResource ModalColorTextBrush}"/>
                     </StackPanel>
 
-                    <Button Grid.Column="1"
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="0,0,16,0">
+                        <TextBlock Text="Дата акта:"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ModalColorTextBrush}"/>
+                        <TextBlock x:Name="ActDateText"
+                                   Margin="8,0,0,0"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="2"
                             Content="×"
                             Style="{StaticResource ModalCloseButton}"
                             Click="HeaderClose_Click"/>
@@ -56,47 +72,6 @@
                             FontSize="18"
                             Background="Transparent"
                             BorderThickness="0">
-                    <TabItem Header="Акт">
-                        <Border Margin="0,12,0,0"
-                                Padding="18"
-                                Style="{StaticResource ModalCardBorder}"
-                                Background="{StaticResource ModalColorCardAltBrush}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="260"/>
-                                    <ColumnDefinition Width="18"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Дата"
-                                               FontSize="20"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ModalColorTextBrush}"/>
-                                    <DatePicker x:Name="DatePicker"
-                                                Margin="0,8,0,0"
-                                                Height="46"
-                                                FontSize="18"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Комментарий"
-                                               FontSize="20"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource ModalColorTextBrush}"/>
-                                    <TextBox x:Name="CommentTextBox"
-                                             Margin="0,8,0,0"
-                                             MinHeight="220"
-                                             MaxLength="500"
-                                             FontSize="18"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </TabItem>
-
                     <TabItem Header="Добавление позиции">
                         <Border Margin="0,12,0,0"
                                 Padding="18"
@@ -261,12 +236,34 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0"
-                                           Text="Добавленные позиции"
-                                           Margin="0,0,0,12"
-                                           FontSize="24"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               Text="Добавленные позиции"
+                                               FontSize="24"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+
+                                    <StackPanel Grid.Row="1" Margin="0,12,0,0">
+                                        <TextBlock Text="Комментарий"
+                                                   FontSize="18"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ModalColorTextBrush}"/>
+                                        <TextBox x:Name="CommentTextBox"
+                                                 Margin="0,8,0,0"
+                                                 MinHeight="82"
+                                                 MaxHeight="110"
+                                                 MaxLength="500"
+                                                 FontSize="16"
+                                                 TextWrapping="Wrap"
+                                                 AcceptsReturn="True"
+                                                 VerticalScrollBarVisibility="Auto"/>
+                                    </StackPanel>
+                                </Grid>
 
                                 <ListBox x:Name="SelectedLinesListBox"
                                          Grid.Row="1"

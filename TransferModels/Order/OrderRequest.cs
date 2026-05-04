@@ -6,6 +6,7 @@ namespace TransferModels.Orders
     public class OrderRequest
     {
         public int OrderTypeId { get; set; }
+        public int? DiscountId { get; set; }
         public string Comment { get; set; }
         public DateTime? PickupAt { get; set; }
 
@@ -44,4 +45,3 @@ namespace TransferModels.Orders
         public int Quantity { get; set; }
     }
 }
-

@@ -44,6 +44,9 @@ namespace GardenNookApi.Controllers
         private const int CoffeeCategoryId = 2;
         private const string PreferredMilkModifierName = "КОРОВЬЕ МОЛОКО";
         private const string PreferredCoffeeModifierName = "Кофе в зернах ТАВ Galaxy";
+        private const string WpfGuestClientFullName = "Гость WPF";
+        private const string WpfGuestClientPhone = "79990000000";
+        private const string WpfGuestClientPassword = "wpf-guest";
         private const decimal DecimalEpsilon = 0.000001m;
         private static readonly int[] MilkModifierIngredientIds = [106, 107, 108, 110, 113, 115, 118];
         private static readonly int[] CoffeeModifierIngredientIds = [6, 8];
@@ -64,6 +67,23 @@ namespace GardenNookApi.Controllers
         public ActionResult<PickupSlotsResponse> GetPickupSlots()
         {
             return Ok(_pickupSchedulingService.BuildSlotsResponse());
+        }
+
+        [HttpGet("discounts")]
+        public async Task<ActionResult<List<DiscountDto>>> GetDiscounts()
+        {
+            var discounts = await _db.Discounts
+                .AsNoTracking()
+                .OrderBy(x => x.Id)
+                .Select(x => new DiscountDto
+                {
+                    Id = x.Id,
+                    Name = x.Name ?? $"Скидка #{x.Id}",
+                    DiscountPercent = x.DiscountPercent ?? 0m
+                })
+                .ToListAsync();
+
+            return Ok(discounts);
         }
 
         [HttpPost]
@@ -93,15 +113,32 @@ namespace GardenNookApi.Controllers
             if (request.Toppings.Any(x => x.Quantity <= 0))
                 return BadRequest("Quantity у добавки должен быть > 0");
 
-            // ---- ClientId из cookie/claims ----
-            var clientIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(clientIdStr, out var clientId))
-                return Unauthorized("Некорректный ClientId в cookie");
+            var isClientOrder = User.IsInRole("Client");
+            var isWpfGuestOrder = !isClientOrder;
+            Client client;
 
-            // ---- проверяем клиента ----
-            var client = await _db.Clients.FirstOrDefaultAsync(x => x.Id == clientId);
-            if (client == null)
-                return Unauthorized("Клиент не найден");
+            if (isClientOrder)
+            {
+                // ---- ClientId из cookie/claims ----
+                var clientIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(clientIdStr, out var clientId))
+                    return Unauthorized("Некорректный ClientId в cookie");
+
+                // ---- проверяем клиента ----
+                var loadedClient = await _db.Clients.FirstOrDefaultAsync(x => x.Id == clientId);
+                if (loadedClient == null)
+                    return Unauthorized("Клиент не найден");
+
+                client = loadedClient;
+            }
+            else
+            {
+                client = await ResolveWpfGuestClientAsync();
+            }
+
+            var discountResolution = await ResolveDiscountForOrderAsync(client, request.DiscountId);
+            if (!discountResolution.Success)
+                return BadRequest(discountResolution.Message);
 
             // ---- проверяем тип заказа ----
             var orderTypeExists = await _db.OrderTypes.AnyAsync(x => x.Id == request.OrderTypeId);
@@ -229,7 +266,8 @@ namespace GardenNookApi.Controllers
             {
                 // 1) категория/скидка ДО расчёта итоговой цены
                 // (считаем скидку по текущей категории; после заказа мы обновим OrderCount/категорию)
-                var (discountId, discountPercent) = await ResolveDiscountByClientAsync(client);
+                var discountId = discountResolution.DiscountId;
+                var discountPercent = discountResolution.DiscountPercent;
                 var createdStatus = await ResolveCreatedStatusAsync();
                 if (createdStatus == null)
                     return StatusCode(500, "Не найден статус заказа для создания");
@@ -238,7 +276,7 @@ namespace GardenNookApi.Controllers
                 var order = new Order
                 {
                     CreatedAt = DateTime.Now,
-                    ClientId = clientId,
+                    ClientId = client.Id,
                     StatusId = createdStatus.Value.Id,
                     OrderTypeId = request.OrderTypeId,
                     Comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment,
@@ -455,8 +493,12 @@ namespace GardenNookApi.Controllers
 
                 await _db.SaveChangesAsync();
 
-                // 7) обновляем OrderCount/категорию клиента (после успешного заказа)
-                await UpdateClientCategoryAfterOrderAsync(client);
+                // 7) обновляем OrderCount/категорию реального клиента (служебного гостя WPF не трогаем)
+                if (!isWpfGuestOrder)
+                {
+                    await UpdateClientCategoryAfterOrderAsync(client);
+                }
+
                 await _stockService.RefreshMenuAvailabilityAsync();
 
                 await tx.CommitAsync();
@@ -476,6 +518,56 @@ namespace GardenNookApi.Controllers
                 await tx.RollbackAsync();
                 throw;
             }
+        }
+
+        private async Task<Client> ResolveWpfGuestClientAsync()
+        {
+            var existing = await _db.Clients
+                .FirstOrDefaultAsync(x => x.PhoneNumber == WpfGuestClientPhone);
+
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var guest = new Client
+            {
+                FullName = WpfGuestClientFullName,
+                PhoneNumber = WpfGuestClientPhone,
+                Password = WpfGuestClientPassword,
+                ClientCategoryId = ClientCategoryNoneId,
+                OrderCount = 0
+            };
+
+            _db.Clients.Add(guest);
+            await _db.SaveChangesAsync();
+            return guest;
+        }
+
+        private async Task<DiscountResolution> ResolveDiscountForOrderAsync(Client client, int? requestedDiscountId)
+        {
+            if (requestedDiscountId.HasValue)
+            {
+                var requested = await _db.Discounts
+                    .AsNoTracking()
+                    .Where(x => x.Id == requestedDiscountId.Value)
+                    .Select(x => new
+                    {
+                        x.Id,
+                        Percent = x.DiscountPercent ?? 0m
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (requested == null)
+                {
+                    return DiscountResolution.Fail("Выбранная скидка не найдена.");
+                }
+
+                return DiscountResolution.Ok(requested.Id, requested.Percent);
+            }
+
+            var (discountId, discountPercent) = await ResolveDiscountByClientAsync(client);
+            return DiscountResolution.Ok(discountId, discountPercent);
         }
 
         private async Task<(int? DiscountId, decimal DiscountPercent)> ResolveDiscountByClientAsync(Client client)
@@ -1025,6 +1117,33 @@ namespace GardenNookApi.Controllers
                 {
                     IsSuccess = false,
                     Items = items ?? new List<StockConflictItem>()
+                };
+            }
+        }
+
+        private sealed class DiscountResolution
+        {
+            public bool Success { get; private set; }
+            public string Message { get; private set; } = string.Empty;
+            public int? DiscountId { get; private set; }
+            public decimal DiscountPercent { get; private set; }
+
+            public static DiscountResolution Ok(int? discountId, decimal discountPercent)
+            {
+                return new DiscountResolution
+                {
+                    Success = true,
+                    DiscountId = discountId,
+                    DiscountPercent = discountPercent
+                };
+            }
+
+            public static DiscountResolution Fail(string message)
+            {
+                return new DiscountResolution
+                {
+                    Success = false,
+                    Message = message
                 };
             }
         }

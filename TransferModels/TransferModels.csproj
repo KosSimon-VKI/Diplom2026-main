@@ -54,6 +54,7 @@
     <Compile Include="Menu\DrinkDto.cs" />
     <Compile Include="Menu\MenuResponse.cs" />
     <Compile Include="Menu\ToppingDto.cs" />
+    <Compile Include="Order\DiscountDto.cs" />
     <Compile Include="Order\OrderDishItemDto.cs" />
     <Compile Include="Order\OrderDrinkItemDto.cs" />
     <Compile Include="Order\OrderDto.cs" />
