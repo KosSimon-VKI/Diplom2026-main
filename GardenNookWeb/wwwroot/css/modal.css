@@ -1,0 +1,156 @@
+﻿/* ===== MODAL ===== */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+}
+
+    .modal.hidden {
+        display: none;
+    }
+
+.modal-btn {
+    padding: 15px 30px;
+    border: 2px solid #1E5928;
+    background: white;
+    color: #474747;
+    border-radius: 38px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 24px;
+}
+
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    position: relative;
+    width: 870px;
+    max-width: calc(100vw - 36px);
+    max-height: 90vh;
+    margin: 60px auto;
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 24px;
+}
+
+.modal-header,
+.modal-footer {
+    padding: 18px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 36px;
+}
+
+.modal-footer {
+    border-top: 1px solid #eee;
+    border-bottom: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 33px;
+    cursor: pointer;
+}
+
+.topping-list {
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.topping-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 105px 240px;
+    align-items: start;
+    gap: 42px;
+    padding: 21px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.topping-item.topping-item-unavailable {
+    opacity: 0.65;
+}
+
+.topping-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.topping-price {
+    text-align: right;
+    font-weight: 500;
+}
+
+.topping-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.topping-qty-controls {
+    display: grid;
+    grid-template-columns: 48px 66px 48px;
+    column-gap: 15px;
+    align-items: center;
+    text-align: center;
+}
+
+.topping-qty {
+    min-width: 66px;
+}
+
+.topping-qty-controls button {
+    width: 42px;
+    height: 42px;
+    font-size: 27px;
+        font-weight: bold;
+        border-radius: 50%;
+        border: 2px solid #1E5928;
+    background: #91A56E;
+    color: #fff;
+    cursor: pointer;
+}
+
+.topping-qty-controls button:disabled {
+    cursor: not-allowed;
+    background: #d3d3d3;
+    border-color: #b7b7b7;
+    color: #707070;
+}
+
+.topping-unavailable {
+    color: #742C27;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: right;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: calc(100vw - 24px);
+        max-width: calc(100vw - 24px);
+        margin: 24px auto;
+    }
+
+    .topping-item {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+}

@@ -1,0 +1,145 @@
+﻿<Window x:Class="GardenNookWpf.Views.Kitchen.AddPreparationTaskWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Добавить задачу"
+        Width="860"
+        Height="720"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        SnapsToDevicePixels="True">
+    <Border Style="{StaticResource ModalShellBorder}" Margin="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource ModalHeader}"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Добавить задачу"
+                               Style="{StaticResource ModalHeaderTitle}"/>
+
+                    <Button Grid.Column="1"
+                            Content="✕"
+                            Style="{StaticResource ModalCloseButton}"
+                            Click="HeaderClose_Click"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="16,14,16,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Text="Полуфабрикат"
+                           Margin="0,10,0,0"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Foreground="{StaticResource ModalColorTextBrush}"/>
+
+                <TextBlock Grid.Row="1"
+                           Text="Поиск:"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ModalColorTextBrush}"/>
+
+                <TextBox x:Name="SearchTextBox"
+                         Grid.Row="2"
+                         Margin="0,8,0,12"
+                         Height="46"
+                         FontSize="18"
+                         VerticalContentAlignment="Center"
+                         TextChanged="SearchTextBox_TextChanged"/>
+
+                <ListBox x:Name="SemiFinishedListBox"
+                         Grid.Row="3"
+                         Margin="0,8,0,16"
+                         BorderBrush="{StaticResource ModalColorBorderBrush}"
+                         BorderThickness="2"
+                         HorizontalContentAlignment="Stretch"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="8,6,14,6"
+                                    Padding="10"
+                                    Style="{StaticResource ModalCardBorder}"
+                                    Background="{StaticResource ModalColorCardAltBrush}"
+                                    HorizontalAlignment="Stretch">
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="22"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
+                                           TextWrapping="Wrap"/>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <TextBlock Grid.Row="4"
+                           Text="Комментарий"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ModalColorTextBrush}"/>
+
+                <TextBox x:Name="CommentTextBox"
+                         Grid.Row="5"
+                         Margin="0,8,0,0"
+                         FontSize="18"
+                         MinHeight="110"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto"
+                         MaxLength="500"/>
+
+                <TextBlock x:Name="ValidationText"
+                           Grid.Row="6"
+                           Margin="0,10,0,0"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#FFB33131"
+                           Visibility="Collapsed"/>
+            </Grid>
+
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="16,0,16,16">
+                <Button Content="Добавить"
+                        Width="170"
+                        Margin="0,0,10,0"
+                        Style="{StaticResource ModalPrimaryButton}"
+                        Click="Add_Click"/>
+                <Button Content="Отмена"
+                        Width="140"
+                        Style="{StaticResource ModalSecondaryButton}"
+                        Click="Cancel_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
