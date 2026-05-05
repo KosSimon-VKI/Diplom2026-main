@@ -1,16 +1,94 @@
-﻿<Window x:Class="GardenNookWpf.Views.MainPanel.Menu.MenuItemEditWindow"
+<Window x:Class="GardenNookWpf.Views.MainPanel.Menu.MenuItemEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Позиция меню"
-        Width="760"
-        Height="760"
         WindowStartupLocation="CenterOwner"
+        WindowState="Maximized"
         ResizeMode="NoResize"
         WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
+        Background="White"
         SnapsToDevicePixels="True">
-    <Border Style="{StaticResource ModalShellBorder}" Margin="10">
+    <Window.Resources>
+        <Style x:Key="EditBlockTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource ModalColorPrimaryDarkBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+        </Style>
+
+        <Style x:Key="EditLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource ModalColorTextBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,7"/>
+        </Style>
+
+        <Style x:Key="EditTextBox" TargetType="TextBox">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+
+        <Style x:Key="EditComboBox" TargetType="ComboBox">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+
+        <Style x:Key="BigEditCheckBox" TargetType="CheckBox">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource ModalColorTextBrush}"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="38"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="Box"
+                                    Width="30"
+                                    Height="30"
+                                    Background="White"
+                                    BorderBrush="{StaticResource ModalColorBorderBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="4"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center">
+                                <Path x:Name="CheckMark"
+                                      Data="M 7 15 L 13 21 L 24 8"
+                                      Stroke="{StaticResource ModalColorPrimaryDarkBrush}"
+                                      StrokeThickness="4"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      Visibility="Collapsed"/>
+                            </Border>
+                            <ContentPresenter Grid.Column="1"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="Box" Property="Background" Value="#FFEDF1E5"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource ModalColorPrimaryBrush}"/>
+                                <Setter TargetName="Box" Property="Background" Value="#FFF7F9F3"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Style="{StaticResource ModalShellBorder}" Margin="20">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -39,178 +117,180 @@
 
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <Border Style="{StaticResource ModalCardBorder}" Margin="18,16,18,12">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="18"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="22">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.05*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="0.95*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Row="0" Grid.Column="0">
-                            <TextBlock Text="Тип" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <ComboBox x:Name="TypeComboBox"
-                                      Height="42"
-                                      Margin="0,8,0,12"
-                                      FontSize="18"
-                                      DisplayMemberPath="Name"
-                                      SelectedValuePath="Type"
-                                      SelectionChanged="TypeComboBox_SelectionChanged"/>
-                        </StackPanel>
+                    <Border Grid.Row="0"
+                            Grid.Column="0"
+                            Style="{StaticResource ModalCardBorder}"
+                            Background="{StaticResource ModalColorWhiteBrush}">
+                        <StackPanel>
+                            <TextBlock Text="Основное" Style="{StaticResource EditBlockTitle}"/>
 
-                        <StackPanel Grid.Row="0" Grid.Column="2">
-                            <TextBlock Text="Название" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
+                            <TextBlock Text="Тип позиции" Style="{StaticResource EditLabel}"/>
+                            <TextBlock x:Name="TypeDisplayText"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
+                                       Margin="0,0,0,18"/>
+
+                            <TextBlock Text="Название" Style="{StaticResource EditLabel}"/>
                             <TextBox x:Name="NameTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     MaxLength="255"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
+                                     Style="{StaticResource EditTextBox}"
+                                     MaxLength="255"/>
 
-                        <StackPanel Grid.Row="1" Grid.Column="0">
-                            <TextBlock Text="Категория" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
+                            <TextBlock Text="Категория" Style="{StaticResource EditLabel}"/>
                             <ComboBox x:Name="CategoryComboBox"
-                                      Height="42"
-                                      Margin="0,8,0,12"
-                                      FontSize="18"
+                                      Style="{StaticResource EditComboBox}"
                                       DisplayMemberPath="Name"
                                       SelectedValuePath="Id"/>
-                        </StackPanel>
 
-                        <StackPanel Grid.Row="1" Grid.Column="2">
-                            <TextBlock Text="Цена" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <TextBox x:Name="PriceTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel x:Name="QuantityPanel" Grid.Row="2" Grid.Column="0">
-                            <TextBlock Text="Количество" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <TextBox x:Name="QuantityTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="2" Grid.Column="2">
-                            <TextBlock Text="Единица измерения" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
+                            <TextBlock Text="Единица измерения" Style="{StaticResource EditLabel}"/>
                             <ComboBox x:Name="UnitComboBox"
-                                      Height="42"
-                                      Margin="0,8,0,12"
-                                      FontSize="18"
+                                      Style="{StaticResource EditComboBox}"
                                       DisplayMemberPath="Name"
                                       SelectedValuePath="Id"/>
                         </StackPanel>
+                    </Border>
 
-                        <StackPanel Grid.Row="3" Grid.Column="0">
-                            <TextBlock Text="Ккал" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <TextBox x:Name="CaloriesTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
+                    <Border Grid.Row="0"
+                            Grid.Column="2"
+                            Style="{StaticResource ModalCardBorder}"
+                            Background="{StaticResource ModalColorCardBrush}">
+                        <StackPanel>
+                            <TextBlock Text="Цена и размер" Style="{StaticResource EditBlockTitle}"/>
 
-                        <StackPanel Grid.Row="3" Grid.Column="2">
-                            <TextBlock Text="Килоджоули" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <TextBox x:Name="KilojoulesTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Text="Цена, ₽" Style="{StaticResource EditLabel}"/>
+                            <TextBox x:Name="PriceTextBox"
+                                     Style="{StaticResource EditTextBox}"/>
 
-                        <StackPanel Grid.Row="4" Grid.Column="0">
-                            <TextBlock Text="Белки" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <TextBox x:Name="ProteinsTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
+                            <StackPanel x:Name="QuantityPanel">
+                                <TextBlock Text="Количество" Style="{StaticResource EditLabel}"/>
+                                <TextBox x:Name="QuantityTextBox"
+                                         Style="{StaticResource EditTextBox}"/>
+                            </StackPanel>
 
-                        <StackPanel Grid.Row="4" Grid.Column="2">
-                            <TextBlock Text="Жиры" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <TextBox x:Name="FatsTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="5" Grid.Column="0">
-                            <TextBlock Text="Углеводы" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <TextBox x:Name="CarbsTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     VerticalContentAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="5" Grid.Column="2">
-                            <TextBlock Text="Техкарта" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <ComboBox x:Name="TechnicalCardComboBox"
-                                      Height="42"
-                                      Margin="0,8,0,12"
-                                      FontSize="18"
-                                      DisplayMemberPath="Name"
-                                      SelectedValuePath="Id"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="6" Grid.ColumnSpan="3">
-                            <TextBlock Text="ImageUrl" Style="{StaticResource ModalBodyText}" FontWeight="Bold"/>
-                            <TextBox x:Name="ImageUrlTextBox"
-                                     Height="42"
-                                     Margin="0,8,0,12"
-                                     FontSize="18"
-                                     VerticalContentAlignment="Center"/>
-
+                            <TextBlock Text="Доступность" Style="{StaticResource EditLabel}"/>
                             <CheckBox x:Name="IsAvailableCheckBox"
-                                      Content="Позиция доступна"
-                                      FontSize="19"
-                                      FontWeight="SemiBold"
-                                      Foreground="{StaticResource ModalColorTextBrush}"
-                                      Margin="0,0,0,12"/>
+                                      Content="Позиция доступна в меню"
+                                      Style="{StaticResource BigEditCheckBox}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="2"
+                            Grid.Column="0"
+                            Style="{StaticResource ModalCardBorder}"
+                            Background="{StaticResource ModalColorCardBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.ColumnSpan="3"
+                                       Text="КБЖУ"
+                                       Style="{StaticResource EditBlockTitle}"/>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0">
+                                <TextBlock Text="Ккал" Style="{StaticResource EditLabel}"/>
+                                <TextBox x:Name="CaloriesTextBox" Style="{StaticResource EditTextBox}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="2">
+                                <TextBlock Text="Килоджоули" Style="{StaticResource EditLabel}"/>
+                                <TextBox x:Name="KilojoulesTextBox" Style="{StaticResource EditTextBox}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock Text="Белки" Style="{StaticResource EditLabel}"/>
+                                <TextBox x:Name="ProteinsTextBox" Style="{StaticResource EditTextBox}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock Text="Жиры" Style="{StaticResource EditLabel}"/>
+                                <TextBox x:Name="FatsTextBox" Style="{StaticResource EditTextBox}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="3" Grid.Column="0">
+                                <TextBlock Text="Углеводы" Style="{StaticResource EditLabel}"/>
+                                <TextBox x:Name="CarbsTextBox" Style="{StaticResource EditTextBox}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="2"
+                            Grid.Column="2"
+                            Style="{StaticResource ModalCardBorder}"
+                            Background="{StaticResource ModalColorWhiteBrush}">
+                        <StackPanel>
+                            <TextBlock Text="Связи и изображение" Style="{StaticResource EditBlockTitle}"/>
+
+                            <TextBlock Text="Техкарта" Style="{StaticResource EditLabel}"/>
+                            <TextBlock Text="Поиск техкарты"
+                                       FontSize="16"
+                                       Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
+                                       Margin="0,0,0,6"/>
+                            <TextBox x:Name="TechnicalCardSearchTextBox"
+                                     Style="{StaticResource EditTextBox}"
+                                     Margin="0,0,0,10"
+                                     TextChanged="TechnicalCardSearchTextBox_TextChanged"/>
+                            <ComboBox x:Name="TechnicalCardComboBox"
+                                      Style="{StaticResource EditComboBox}"
+                                      DisplayMemberPath="Name"
+                                      SelectedValuePath="Id"/>
+
+                            <TextBlock Text="ImageUrl" Style="{StaticResource EditLabel}"/>
+                            <TextBox x:Name="ImageUrlTextBox"
+                                     Style="{StaticResource EditTextBox}"/>
+
 
                             <TextBlock x:Name="ValidationText"
-                                       FontSize="16"
+                                       FontSize="17"
                                        FontWeight="SemiBold"
                                        Foreground="#FFB33131"
                                        TextWrapping="Wrap"
                                        Visibility="Collapsed"/>
                         </StackPanel>
-                    </Grid>
-                </Border>
+                    </Border>
+                </Grid>
             </ScrollViewer>
 
-            <StackPanel Grid.Row="2"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        Margin="16,0,16,16">
-                <Button Content="Сохранить"
-                        Width="170"
-                        Margin="0,0,10,0"
-                        Style="{StaticResource ModalPrimaryButton}"
-                        Click="Save_Click"/>
-                <Button Content="Отмена"
-                        Width="140"
-                        Style="{StaticResource ModalSecondaryButton}"
-                        Click="Cancel_Click"/>
-            </StackPanel>
+            <Border Grid.Row="2"
+                    BorderBrush="{StaticResource ModalColorBorderBrush}"
+                    BorderThickness="0,2,0,0"
+                    Padding="18"
+                    Background="{StaticResource ModalColorWhiteBrush}">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Content="Сохранить"
+                            Width="180"
+                            Margin="0,0,10,0"
+                            Style="{StaticResource ModalPrimaryButton}"
+                            Click="Save_Click"/>
+                    <Button Content="Отмена"
+                            Width="150"
+                            Style="{StaticResource ModalSecondaryButton}"
+                            Click="Cancel_Click"/>
+                </StackPanel>
+            </Border>
         </Grid>
     </Border>
 </Window>

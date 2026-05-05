@@ -45,7 +45,6 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
         private bool _isLoadedOnce;
         private bool _isBusy;
         private bool _editOptionsLoaded;
-        private bool _isRefreshingCategoryFilter;
 
         public MenuManagementView(HttpClient httpClient, string userRole)
         {
@@ -85,11 +84,16 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 SetBusy(true);
                 SetStatus("Загрузка меню...", false);
 
+                if (!_editOptionsLoaded)
+                {
+                    await LoadEditOptionsAsync();
+                }
+
                 await LoadItemsAsync();
 
                 _isLoadedOnce = true;
                 SetStatus(string.Empty, false);
-                RefreshCategoryFilter();
+                RenderSubcategories();
                 RenderItems();
             }
             catch (Exception ex)
@@ -152,7 +156,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 SetBusy(true);
                 SetStatus("Загрузка справочников...", false);
                 await LoadEditOptionsAsync();
-                RefreshCategoryFilter();
+                RenderSubcategories();
                 SetStatus(string.Empty, false);
                 return true;
             }
@@ -188,11 +192,6 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
             await SendUpsertAsync(HttpMethod.Post, $"{ItemsAddress}/{window.ItemType}", window.Request);
         }
 
-        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ReloadAsync();
-        }
-
         private async void EditItemButton_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as Button)?.Tag is not MenuItemViewModel item)
@@ -225,12 +224,12 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 return;
             }
 
-            var result = MessageBox.Show(
-                $"Удалить позицию меню \"{item.Name}\"?",
-                "Garden Nook",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes)
+            var window = new ConfirmDeleteMenuItemWindow(item.Name, item.TypeDisplay)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (window.ShowDialog() != true)
             {
                 return;
             }
@@ -303,7 +302,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
             {
                 _activeType = type;
                 _activeCategoryId = null;
-                RefreshCategoryFilter();
+                RenderSubcategories();
                 await ReloadAsync();
             }
         }
@@ -311,20 +310,6 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             ScheduleFilterReload();
-        }
-
-        private async void CategoryFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_isRefreshingCategoryFilter)
-            {
-                return;
-            }
-
-            if (CategoryFilterComboBox.SelectedItem is CategoryFilterOption option)
-            {
-                _activeCategoryId = option.Id;
-                await ReloadAsync();
-            }
         }
 
         private async void AvailabilityFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -385,18 +370,21 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
             await ReloadAsync();
         }
 
-        private void RefreshCategoryFilter()
+        private void RenderSubcategories()
         {
-            if (CategoryFilterComboBox == null)
+            if (SubcategoriesList == null)
             {
                 return;
             }
 
-            _isRefreshingCategoryFilter = true;
-            var options = new List<CategoryFilterOption>
+            SubcategoriesList.ItemsSource = null;
+            SubcategoriesTitle.Visibility = Visibility.Collapsed;
+
+            if (_activeType == AllType)
             {
-                new CategoryFilterOption(null, "Все категории")
-            };
+                _activeCategoryId = null;
+                return;
+            }
 
             var categories = _categories.Count > 0
                 ? _categories
@@ -411,20 +399,41 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                     })
                     .ToList();
 
-            options.AddRange(categories
-                .Where(x => _activeType == AllType || x.Type == _activeType)
+            var options = categories
+                .Where(x => x.Type == _activeType)
                 .OrderBy(x => x.Name)
-                .Select(x => new CategoryFilterOption(x.Id, x.Name)));
+                .Select(x => new CategoryFilterOption(
+                    x.Id,
+                    x.Name,
+                    x.Id == _activeCategoryId))
+                .ToList();
 
-            CategoryFilterComboBox.ItemsSource = options;
-            var selectedIndex = options.FindIndex(x => x.Id == _activeCategoryId);
-            if (selectedIndex < 0)
+            if (_activeCategoryId.HasValue && options.All(x => x.Id != _activeCategoryId.Value))
             {
                 _activeCategoryId = null;
             }
 
-            CategoryFilterComboBox.SelectedIndex = selectedIndex >= 0 ? selectedIndex : 0;
-            _isRefreshingCategoryFilter = false;
+            if (options.Count == 0)
+            {
+                return;
+            }
+
+            SubcategoriesTitle.Visibility = Visibility.Visible;
+            SubcategoriesList.ItemsSource = options;
+        }
+
+        private async void SubcategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as Button)?.DataContext is not CategoryFilterOption option)
+            {
+                return;
+            }
+
+            _activeCategoryId = _activeCategoryId == option.Id
+                ? null
+                : option.Id;
+            RenderSubcategories();
+            await ReloadAsync();
         }
 
         private void RenderItems()
@@ -444,6 +453,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
 
             EmptyText.Visibility = _visibleItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             ItemsScrollViewer.Visibility = _visibleItems.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+            RenderSubcategories();
             HighlightTypeButtons();
         }
 
@@ -526,14 +536,25 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
 
         private sealed class CategoryFilterOption
         {
-            public CategoryFilterOption(int? id, string name)
+            public CategoryFilterOption(int id, string name, bool isActive)
             {
                 Id = id;
                 Name = name;
+                IsActive = isActive;
             }
 
-            public int? Id { get; }
+            public int Id { get; }
             public string Name { get; }
+            public bool IsActive { get; }
+            public Brush Background => IsActive
+                ? (Brush)Application.Current.Resources["ModalColorPrimaryBrush"]
+                : Brushes.White;
+            public Brush Foreground => IsActive
+                ? Brushes.White
+                : (Brush)Application.Current.Resources["ModalColorTextBrush"];
+            public Brush BorderBrush => IsActive
+                ? (Brush)Application.Current.Resources["ModalColorPrimaryDarkBrush"]
+                : new SolidColorBrush(Color.FromRgb(183, 183, 183));
         }
 
         private sealed class MenuItemViewModel

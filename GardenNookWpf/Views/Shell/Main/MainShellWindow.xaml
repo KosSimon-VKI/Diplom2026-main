@@ -160,7 +160,7 @@
                         Click="ProductCategoriesButton_Click"/>
 
                 <Button x:Name="InventoryButton"
-                        Content="Сырье"
+                        Content="Склад"
                         Style="{StaticResource RoundedButton}"
                         Width="206"
                         Height="64"

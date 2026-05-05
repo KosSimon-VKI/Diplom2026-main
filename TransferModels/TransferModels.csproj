@@ -50,6 +50,8 @@
     <Compile Include="Kitchen\KitchenTechnicalCardEditDtos.cs" />
     <Compile Include="Kitchen\KitchenStopListDtos.cs" />
     <Compile Include="Kitchen\KitchenWriteOffDtos.cs" />
+    <Compile Include="Inventory\IngredientCategoryDtos.cs" />
+    <Compile Include="Inventory\InventoryDtos.cs" />
     <Compile Include="Menu\DishDto.cs" />
     <Compile Include="Menu\DrinkDto.cs" />
     <Compile Include="Menu\MenuCategoryDtos.cs" />

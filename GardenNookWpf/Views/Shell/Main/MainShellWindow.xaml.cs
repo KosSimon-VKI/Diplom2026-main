@@ -7,6 +7,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using GardenNookWpf.Views.Shell.Sections.Menu;
+using GardenNookWpf.Views.Shell.Sections.Inventory;
+using GardenNookWpf.Views.Shell.Sections.IngredientCategories;
 using GardenNookWpf.Views.Shell.Sections.Orders;
 using GardenNookWpf.Views.Shell.Sections.Preparations;
 using GardenNookWpf.Views.Shell.Sections.Shared;
@@ -244,6 +246,8 @@ namespace GardenNookWpf.Views.Shell
                 MainSection.MenuItems => new OrderItemView(_httpClient, _userRole),
                 MainSection.MenuManagement => new MenuManagementView(_httpClient, _userRole),
                 MainSection.ProductCategories => new MenuCategoriesView(_httpClient, _userRole),
+                MainSection.Inventory => new InventoryView(_httpClient, _userRole),
+                MainSection.IngredientCategories => new IngredientCategoriesView(_httpClient, _userRole),
                 _ => new PlaceholderSectionView(GetSectionTitle(section), _userRole)
             };
 

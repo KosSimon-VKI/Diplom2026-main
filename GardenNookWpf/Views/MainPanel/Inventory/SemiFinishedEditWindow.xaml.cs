@@ -1,42 +1,29 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using TransferModels.Menu;
+using TransferModels.Inventory;
 
-namespace GardenNookWpf.Views.MainPanel.Menu
+namespace GardenNookWpf.Views.MainPanel.Inventory
 {
-    public partial class MenuItemEditWindow : Window
+    public partial class SemiFinishedEditWindow : Window
     {
-        private const string DishType = "dishes";
-        private const string DrinkType = "drinks";
-        private const string ToppingType = "toppings";
-
-        private readonly MenuItemEditOptionsResponse _options;
-        private readonly MenuItemManagementDto? _item;
         private List<NullableOption> _technicalCardOptions = new List<NullableOption>();
 
-        public MenuItemEditWindow(MenuItemEditOptionsResponse options, MenuItemManagementDto? item, string defaultType)
+        public SemiFinishedEditWindow(InventoryEditOptionsResponse options, InventorySemiFinishedDto? semiFinished)
         {
-            _options = options ?? new MenuItemEditOptionsResponse();
-            _item = item;
-
             InitializeComponent();
 
-            ItemType = string.IsNullOrWhiteSpace(item?.Type)
-                ? NormalizeType(defaultType) ?? DishType
-                : NormalizeType(item.Type) ?? DishType;
+            TitleText.Text = semiFinished == null ? "Добавить полуфабрикат" : "Редактировать полуфабрикат";
+            SaveButton.Content = semiFinished == null ? "Добавить" : "Сохранить";
 
-            BindSharedOptions();
-            TitleText.Text = item == null ? "Добавить позицию меню" : "Изменить позицию меню";
-            TypeDisplayText.Text = GetTypeDisplayName(ItemType);
-
-            FillFields(item);
-            RefreshCategoryOptions();
-            UpdateQuantityVisibility();
+            UnitComboBox.ItemsSource = BuildOptions(options?.UnitsOfMeasure);
+            CategoryComboBox.ItemsSource = BuildOptions(options?.SemiFinishedCategories);
+            _technicalCardOptions = BuildOptions(options?.TechnicalCards);
+            ApplyTechnicalCardFilter(null);
+            FillFields(semiFinished);
 
             Loaded += (_, _) =>
             {
@@ -45,34 +32,23 @@ namespace GardenNookWpf.Views.MainPanel.Menu
             };
         }
 
-        public string ItemType { get; private set; }
+        public InventorySemiFinishedRequest Request { get; private set; } = new InventorySemiFinishedRequest();
 
-        public MenuItemUpsertRequest Request { get; private set; } = new MenuItemUpsertRequest();
-
-        private void BindSharedOptions()
-        {
-            UnitComboBox.ItemsSource = BuildNullableOptions(_options.UnitsOfMeasure);
-            _technicalCardOptions = BuildNullableOptions(_options.TechnicalCards);
-            ApplyTechnicalCardFilter(null);
-        }
-
-        private void FillFields(MenuItemManagementDto? item)
+        private void FillFields(InventorySemiFinishedDto? item)
         {
             NameTextBox.Text = item?.Name ?? string.Empty;
-            PriceTextBox.Text = FormatDecimal(item?.PriceRub ?? 0m);
-            QuantityTextBox.Text = item?.Quantity.HasValue == true ? FormatDecimal(item.Quantity.Value) : string.Empty;
+            CostTextBox.Text = FormatDecimal(item?.CostRub ?? 0m);
+            UnitComboBox.SelectedValue = item?.UnitOfMeasureId;
+            CategoryComboBox.SelectedValue = item?.CategoryId;
+            TechnicalCardComboBox.SelectedValue = item?.TechnicalCardId;
             CaloriesTextBox.Text = FormatDecimal(item?.CaloriesKcal ?? 0m);
-            KilojoulesTextBox.Text = FormatDecimal(item?.Kilojoules ?? 0m);
             ProteinsTextBox.Text = FormatDecimal(item?.ProteinsG ?? 0m);
             FatsTextBox.Text = FormatDecimal(item?.FatsG ?? 0m);
             CarbsTextBox.Text = FormatDecimal(item?.CarbsG ?? 0m);
-            ImageUrlTextBox.Text = item?.ImageUrl ?? string.Empty;
-            IsAvailableCheckBox.IsChecked = item?.IsAvailable ?? true;
-            UnitComboBox.SelectedValue = item?.UnitOfMeasureId;
-            TechnicalCardComboBox.SelectedValue = item?.TechnicalCardId;
+            KilojoulesTextBox.Text = FormatDecimal(item?.Kilojoules ?? 0m);
         }
 
-        private void TechnicalCardSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void TechnicalCardSearchTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             var selectedValue = TechnicalCardComboBox.SelectedValue as int?;
             ApplyTechnicalCardFilter(selectedValue);
@@ -99,29 +75,6 @@ namespace GardenNookWpf.Views.MainPanel.Menu
             }
         }
 
-        private void RefreshCategoryOptions()
-        {
-            if (CategoryComboBox == null)
-            {
-                return;
-            }
-
-            CategoryComboBox.ItemsSource = BuildNullableOptions(
-                (_options.Categories ?? new List<MenuItemCategoryOptionDto>())
-                    .Where(x => x.Type == ItemType)
-                    .Select(x => new MenuItemOptionDto { Id = x.Id, Name = x.Name })
-                    .ToList());
-
-            CategoryComboBox.SelectedValue = _item != null && _item.Type == ItemType
-                ? _item.CategoryId
-                : null;
-        }
-
-        private void UpdateQuantityVisibility()
-        {
-            QuantityPanel.Visibility = ItemType == DishType ? Visibility.Collapsed : Visibility.Visible;
-        }
-
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             HideValidation();
@@ -129,50 +82,32 @@ namespace GardenNookWpf.Views.MainPanel.Menu
             var name = NormalizeName(NameTextBox.Text);
             if (string.IsNullOrWhiteSpace(name))
             {
-                ShowValidation("Введите название позиции меню.");
+                ShowValidation("Введите название полуфабриката.");
                 return;
             }
 
-            if (!TryReadDecimal(PriceTextBox.Text, "цену", out var price))
-            {
-                return;
-            }
-
-            decimal? quantity = null;
-            if (ItemType != DishType && !string.IsNullOrWhiteSpace(QuantityTextBox.Text))
-            {
-                if (!TryReadDecimal(QuantityTextBox.Text, "количество", out var parsedQuantity))
-                {
-                    return;
-                }
-
-                quantity = parsedQuantity;
-            }
-
-            if (!TryReadDecimal(CaloriesTextBox.Text, "калории", out var calories) ||
-                !TryReadDecimal(KilojoulesTextBox.Text, "килоджоули", out var kilojoules) ||
+            if (!TryReadDecimal(CostTextBox.Text, "себестоимость", out var cost) ||
+                !TryReadDecimal(CaloriesTextBox.Text, "калории", out var calories) ||
                 !TryReadDecimal(ProteinsTextBox.Text, "белки", out var proteins) ||
                 !TryReadDecimal(FatsTextBox.Text, "жиры", out var fats) ||
-                !TryReadDecimal(CarbsTextBox.Text, "углеводы", out var carbs))
+                !TryReadDecimal(CarbsTextBox.Text, "углеводы", out var carbs) ||
+                !TryReadDecimal(KilojoulesTextBox.Text, "килоджоули", out var kilojoules))
             {
                 return;
             }
 
-            Request = new MenuItemUpsertRequest
+            Request = new InventorySemiFinishedRequest
             {
                 Name = name,
-                CategoryId = CategoryComboBox.SelectedValue as int?,
+                CostRub = cost,
                 UnitOfMeasureId = UnitComboBox.SelectedValue as int?,
-                Quantity = quantity,
-                PriceRub = price,
+                CategoryId = CategoryComboBox.SelectedValue as int?,
                 TechnicalCardId = TechnicalCardComboBox.SelectedValue as int?,
                 CaloriesKcal = calories,
-                Kilojoules = kilojoules,
                 ProteinsG = proteins,
                 FatsG = fats,
                 CarbsG = carbs,
-                ImageUrl = ImageUrlTextBox.Text?.Trim() ?? string.Empty,
-                IsAvailable = IsAvailableCheckBox.IsChecked == true
+                Kilojoules = kilojoules
             };
 
             DialogResult = true;
@@ -235,29 +170,18 @@ namespace GardenNookWpf.Views.MainPanel.Menu
             ValidationText.Visibility = Visibility.Collapsed;
         }
 
-        private static List<NullableOption> BuildNullableOptions(IReadOnlyCollection<MenuItemOptionDto>? source)
+        private static List<NullableOption> BuildOptions(IReadOnlyCollection<InventoryOptionDto>? source)
         {
             var result = new List<NullableOption>
             {
                 new NullableOption(null, "Не выбрано")
             };
 
-            result.AddRange((source ?? Array.Empty<MenuItemOptionDto>())
+            result.AddRange((source ?? Array.Empty<InventoryOptionDto>())
                 .OrderBy(x => x.Name)
                 .Select(x => new NullableOption(x.Id, x.Name)));
 
             return result;
-        }
-
-        private static string? NormalizeType(string? type)
-        {
-            return (type ?? string.Empty).Trim().ToLowerInvariant() switch
-            {
-                DishType => DishType,
-                DrinkType => DrinkType,
-                ToppingType => ToppingType,
-                _ => null
-            };
         }
 
         private static string NormalizeName(string? value)
@@ -270,17 +194,6 @@ namespace GardenNookWpf.Views.MainPanel.Menu
         private static string FormatDecimal(decimal value)
         {
             return value.ToString("0.##", CultureInfo.InvariantCulture);
-        }
-
-        private static string GetTypeDisplayName(string type)
-        {
-            return type switch
-            {
-                DishType => "Блюдо",
-                DrinkType => "Напиток",
-                ToppingType => "Добавка",
-                _ => type
-            };
         }
 
         private sealed class NullableOption
