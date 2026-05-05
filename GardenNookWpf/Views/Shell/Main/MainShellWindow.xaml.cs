@@ -12,6 +12,7 @@ using GardenNookWpf.Views.Shell.Sections.IngredientCategories;
 using GardenNookWpf.Views.Shell.Sections.Orders;
 using GardenNookWpf.Views.Shell.Sections.Preparations;
 using GardenNookWpf.Views.Shell.Sections.Shared;
+using GardenNookWpf.Views.Shell.Sections.Staff;
 using GardenNookWpf.Views.Shell.Sections.StopList;
 using GardenNookWpf.Views.Shell.Sections.TechnicalCards;
 using GardenNookWpf.Views.Shell.Sections.WriteOff;
@@ -248,6 +249,7 @@ namespace GardenNookWpf.Views.Shell
                 MainSection.ProductCategories => new MenuCategoriesView(_httpClient, _userRole),
                 MainSection.Inventory => new InventoryView(_httpClient, _userRole),
                 MainSection.IngredientCategories => new IngredientCategoriesView(_httpClient, _userRole),
+                MainSection.Staff => new StaffView(_httpClient, _userRole),
                 _ => new PlaceholderSectionView(GetSectionTitle(section), _userRole)
             };
 

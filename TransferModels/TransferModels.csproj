@@ -71,6 +71,7 @@
     <Compile Include="Profile\ProfileResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Staff\StaffDto.cs" />
+    <Compile Include="Staff\StaffManagementDtos.cs" />
     <Compile Include="Staff\StaffRequest.cs" />
     <Compile Include="Staff\StaffResponse.cs" />
   </ItemGroup>
