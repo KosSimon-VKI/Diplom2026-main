@@ -1,0 +1,297 @@
+<UserControl x:Class="GardenNookWpf.Views.Shell.Sections.Loyalty.LoyaltyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style x:Key="LoyaltyCardActionButtonStyle" TargetType="Button" BasedOn="{StaticResource ModalSecondaryButton}">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="RootGrid" Background="White">
+        <Viewbox Stretch="Fill" StretchDirection="Both">
+            <Grid Width="1200" Height="900">
+                <Grid Margin="18,20">
+                    <Border Style="{StaticResource ModalCardBorder}"
+                            Background="{StaticResource ModalColorWhiteBrush}"
+                            Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Лояльность"
+                                       FontSize="34"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource ModalColorTextBrush}"
+                                       Margin="0,0,0,10"/>
+
+                            <TextBlock x:Name="StatusText"
+                                       Grid.Row="1"
+                                       Margin="0,0,0,10"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       Visibility="Collapsed"/>
+
+                            <TabControl Grid.Row="2"
+                                        FontSize="18">
+                                <TabItem Header="Скидки">
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Text="Справочник скидок для заказов"
+                                                       FontSize="20"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
+                                                       VerticalAlignment="Center"
+                                                       TextWrapping="Wrap"/>
+
+                                            <Button x:Name="AddDiscountButton"
+                                                    Grid.Column="1"
+                                                    Content="Добавить скидку"
+                                                    Width="210"
+                                                    Style="{StaticResource ModalPrimaryButton}"
+                                                    Click="AddDiscountButton_Click"/>
+                                        </Grid>
+
+                                        <Border Grid.Row="1"
+                                                BorderBrush="#FF6F6864"
+                                                BorderThickness="2"
+                                                CornerRadius="10"
+                                                Padding="14"
+                                                Background="#FFF9F9F9">
+                                            <Grid>
+                                                <ScrollViewer x:Name="DiscountsScrollViewer"
+                                                              VerticalScrollBarVisibility="Auto"
+                                                              HorizontalScrollBarVisibility="Disabled"
+                                                              Padding="0,0,12,0">
+                                                    <ItemsControl x:Name="DiscountsList">
+                                                        <ItemsControl.ItemContainerStyle>
+                                                            <Style TargetType="ContentPresenter">
+                                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                                            </Style>
+                                                        </ItemsControl.ItemContainerStyle>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border MinHeight="145"
+                                                                        Margin="0,0,0,12"
+                                                                        HorizontalAlignment="Stretch"
+                                                                        Style="{StaticResource ModalCardBorder}"
+                                                                        Background="{StaticResource ModalColorWhiteBrush}">
+                                                                    <Grid>
+                                                                        <Grid.RowDefinitions>
+                                                                            <RowDefinition Height="Auto"/>
+                                                                            <RowDefinition Height="Auto"/>
+                                                                            <RowDefinition Height="Auto"/>
+                                                                        </Grid.RowDefinitions>
+
+                                                                        <TextBlock Text="{Binding Name}"
+                                                                                   FontSize="26"
+                                                                                   FontWeight="Bold"
+                                                                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                                                                   TextWrapping="Wrap"/>
+
+                                                                        <StackPanel Grid.Row="1"
+                                                                                    Orientation="Horizontal"
+                                                                                    Margin="0,12,0,0">
+                                                                            <Border Background="#FFEDF1E5"
+                                                                                    BorderBrush="{StaticResource ModalColorPrimaryBrush}"
+                                                                                    BorderThickness="1"
+                                                                                    CornerRadius="8"
+                                                                                    Padding="12,7"
+                                                                                    Margin="0,0,10,0">
+                                                                                <TextBlock Text="{Binding PercentDisplay}"
+                                                                                           FontSize="18"
+                                                                                           FontWeight="Bold"
+                                                                                           Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                                            </Border>
+                                                                            <Border Background="#FFFFFFFF"
+                                                                                    BorderBrush="#FF6F6864"
+                                                                                    BorderThickness="1"
+                                                                                    CornerRadius="8"
+                                                                                    Padding="12,7">
+                                                                                <TextBlock Text="{Binding OrdersDisplay}"
+                                                                                           FontSize="18"
+                                                                                           FontWeight="SemiBold"
+                                                                                           Foreground="{StaticResource ModalColorTextBrush}"/>
+                                                                            </Border>
+                                                                        </StackPanel>
+
+                                                                        <StackPanel Grid.Row="2"
+                                                                                    Margin="0,12,0,0"
+                                                                                    Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Right">
+                                                                            <Button Content="Изменить"
+                                                                                    Width="128"
+                                                                                    Margin="0,0,8,0"
+                                                                                    Style="{StaticResource LoyaltyCardActionButtonStyle}"
+                                                                                    Tag="{Binding}"
+                                                                                    Click="EditDiscountButton_Click"/>
+                                                                            <Button Content="Удалить"
+                                                                                    Width="118"
+                                                                                    Style="{StaticResource LoyaltyCardActionButtonStyle}"
+                                                                                    Background="#FF742C27"
+                                                                                    Foreground="White"
+                                                                                    Tag="{Binding}"
+                                                                                    Click="DeleteDiscountButton_Click"/>
+                                                                        </StackPanel>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+
+                                                <TextBlock x:Name="EmptyDiscountsText"
+                                                           Text="Скидки не найдены."
+                                                           FontSize="22"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ModalColorTextBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Visibility="Collapsed"/>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <TabItem Header="Категории клиентов">
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Text="Справочник категорий клиентов"
+                                                       FontSize="20"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
+                                                       VerticalAlignment="Center"
+                                                       TextWrapping="Wrap"/>
+
+                                            <Button x:Name="AddCategoryButton"
+                                                    Grid.Column="1"
+                                                    Content="Добавить категорию"
+                                                    Width="235"
+                                                    Style="{StaticResource ModalPrimaryButton}"
+                                                    Click="AddCategoryButton_Click"/>
+                                        </Grid>
+
+                                        <Border Grid.Row="1"
+                                                BorderBrush="#FF6F6864"
+                                                BorderThickness="2"
+                                                CornerRadius="10"
+                                                Padding="14"
+                                                Background="#FFF9F9F9">
+                                            <Grid>
+                                                <ScrollViewer x:Name="CategoriesScrollViewer"
+                                                              VerticalScrollBarVisibility="Auto"
+                                                              HorizontalScrollBarVisibility="Disabled"
+                                                              Padding="0,0,12,0">
+                                                    <ItemsControl x:Name="CategoriesList">
+                                                        <ItemsControl.ItemContainerStyle>
+                                                            <Style TargetType="ContentPresenter">
+                                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                                            </Style>
+                                                        </ItemsControl.ItemContainerStyle>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border MinHeight="135"
+                                                                        Margin="0,0,0,12"
+                                                                        HorizontalAlignment="Stretch"
+                                                                        Style="{StaticResource ModalCardBorder}"
+                                                                        Background="{StaticResource ModalColorWhiteBrush}">
+                                                                    <Grid>
+                                                                        <Grid.RowDefinitions>
+                                                                            <RowDefinition Height="Auto"/>
+                                                                            <RowDefinition Height="Auto"/>
+                                                                            <RowDefinition Height="Auto"/>
+                                                                        </Grid.RowDefinitions>
+
+                                                                        <TextBlock Text="{Binding Name}"
+                                                                                   FontSize="26"
+                                                                                   FontWeight="Bold"
+                                                                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                                                                   TextWrapping="Wrap"/>
+
+                                                                        <Border Grid.Row="1"
+                                                                                Margin="0,12,0,0"
+                                                                                Background="#FFEDF1E5"
+                                                                                BorderBrush="{StaticResource ModalColorPrimaryBrush}"
+                                                                                BorderThickness="1"
+                                                                                CornerRadius="8"
+                                                                                Padding="12,7"
+                                                                                HorizontalAlignment="Left">
+                                                                            <TextBlock Text="{Binding ClientsDisplay}"
+                                                                                       FontSize="18"
+                                                                                       FontWeight="Bold"
+                                                                                       Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                                        </Border>
+
+                                                                        <StackPanel Grid.Row="2"
+                                                                                    Margin="0,12,0,0"
+                                                                                    Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Right">
+                                                                            <Button Content="Изменить"
+                                                                                    Width="128"
+                                                                                    Margin="0,0,8,0"
+                                                                                    Style="{StaticResource LoyaltyCardActionButtonStyle}"
+                                                                                    Tag="{Binding}"
+                                                                                    Click="EditCategoryButton_Click"/>
+                                                                            <Button Content="Удалить"
+                                                                                    Width="118"
+                                                                                    Style="{StaticResource LoyaltyCardActionButtonStyle}"
+                                                                                    Background="#FF742C27"
+                                                                                    Foreground="White"
+                                                                                    Tag="{Binding}"
+                                                                                    Click="DeleteCategoryButton_Click"/>
+                                                                        </StackPanel>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+
+                                                <TextBlock x:Name="EmptyCategoriesText"
+                                                           Text="Категории клиентов не найдены."
+                                                           FontSize="22"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ModalColorTextBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Visibility="Collapsed"/>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Viewbox>
+    </Grid>
+</UserControl>
