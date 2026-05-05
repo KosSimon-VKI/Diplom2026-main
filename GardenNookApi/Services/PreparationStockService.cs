@@ -14,6 +14,7 @@ namespace GardenNookApi.Services
         Task RefreshMenuAvailabilityAsync(CancellationToken cancellationToken = default);
         Task<StockConsumptionResult> TryConsumeForOrderAsync(OrderRequest request, CancellationToken cancellationToken = default);
         Task<StockConsumptionResult> TryConsumeForOrderAsync(int orderId, CancellationToken cancellationToken = default);
+        Task RestoreConsumedForOrderAsync(int orderId, CancellationToken cancellationToken = default);
     }
 
     public sealed class PreparationStockService : IPreparationStockService
@@ -130,6 +131,55 @@ namespace GardenNookApi.Services
                 requirements.RequiredBySemiFinished,
                 requirements.RequiredByIngredients,
                 cancellationToken);
+        }
+
+        public async Task RestoreConsumedForOrderAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var requirements = await BuildRequiredForSavedOrderAsync(orderId, cancellationToken);
+
+            if (requirements.RequiredBySemiFinished.Count > 0)
+            {
+                var semiFinishedIds = requirements.RequiredBySemiFinished.Keys.ToList();
+                var semiNames = await _db.SemiFinisheds
+                    .AsNoTracking()
+                    .Where(x => semiFinishedIds.Contains(x.Id))
+                    .ToDictionaryAsync(x => x.Id, x => x.Name ?? $"SemiFinished #{x.Id}", cancellationToken);
+
+                foreach (var pair in requirements.RequiredBySemiFinished)
+                {
+                    if (pair.Value <= DecimalEpsilon)
+                    {
+                        continue;
+                    }
+
+                    _db.Preparations.Add(new Preparation
+                    {
+                        Name = semiNames.TryGetValue(pair.Key, out var name) ? name : $"SemiFinished #{pair.Key}",
+                        SemiFinishedId = pair.Key,
+                        StockGrams = RoundTo2(pair.Value),
+                        ProductionDate = DateOnly.FromDateTime(DateTime.Today)
+                    });
+                }
+            }
+
+            if (requirements.RequiredByIngredients.Count > 0)
+            {
+                var ingredientIds = requirements.RequiredByIngredients.Keys.ToList();
+                var ingredientsById = await _db.Ingredients
+                    .Where(x => ingredientIds.Contains(x.Id))
+                    .ToDictionaryAsync(x => x.Id, x => x, cancellationToken);
+
+                foreach (var pair in requirements.RequiredByIngredients)
+                {
+                    if (pair.Value <= DecimalEpsilon || !ingredientsById.TryGetValue(pair.Key, out var ingredient))
+                    {
+                        continue;
+                    }
+
+                    var currentBase = ConvertToBaseUnits(ToNonNegative(ingredient.Stock), ingredient.UnitOfMeasureId);
+                    ingredient.Stock = RoundTo2(ConvertFromBaseUnits(currentBase + pair.Value, ingredient.UnitOfMeasureId));
+                }
+            }
         }
 
         private async Task<StockConsumptionResult> TryConsumeRequirementsAsync(

@@ -11,6 +11,7 @@ using GardenNookWpf.Views.Shell.Sections.Inventory;
 using GardenNookWpf.Views.Shell.Sections.IngredientCategories;
 using GardenNookWpf.Views.Shell.Sections.Loyalty;
 using GardenNookWpf.Views.Shell.Sections.Orders;
+using GardenNookWpf.Views.Shell.Sections.OrderHistory;
 using GardenNookWpf.Views.Shell.Sections.Preparations;
 using GardenNookWpf.Views.Shell.Sections.Shared;
 using GardenNookWpf.Views.Shell.Sections.Staff;
@@ -250,6 +251,7 @@ namespace GardenNookWpf.Views.Shell
                 MainSection.ProductCategories => new MenuCategoriesView(_httpClient, _userRole),
                 MainSection.Inventory => new InventoryView(_httpClient, _userRole),
                 MainSection.IngredientCategories => new IngredientCategoriesView(_httpClient, _userRole),
+                MainSection.OrderHistory => new OrderHistoryView(_httpClient, _userRole),
                 MainSection.Loyalty => new LoyaltyView(_httpClient, _userRole),
                 MainSection.Staff => new StaffView(_httpClient, _userRole),
                 _ => new PlaceholderSectionView(GetSectionTitle(section), _userRole)

@@ -63,6 +63,7 @@
     <Compile Include="Order\OrderDishItemDto.cs" />
     <Compile Include="Order\OrderDrinkItemDto.cs" />
     <Compile Include="Order\OrderDto.cs" />
+    <Compile Include="Order\OrderHistoryDtos.cs" />
     <Compile Include="Order\OrderRequest.cs" />
     <Compile Include="Order\OrderResponse.cs" />
     <Compile Include="Order\PickupSlotsResponse.cs" />

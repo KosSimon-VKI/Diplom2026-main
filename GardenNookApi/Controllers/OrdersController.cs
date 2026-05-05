@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -84,6 +85,199 @@ namespace GardenNookApi.Controllers
                 .ToListAsync();
 
             return Ok(discounts);
+        }
+
+        [HttpGet("history")]
+        [Authorize(Roles = "Администратор")]
+        public async Task<ActionResult<OrderHistoryResponse>> GetHistory()
+        {
+            var orders = await _db.Orders
+                .AsNoTracking()
+                .OrderByDescending(o => o.CreatedAt)
+                .ThenByDescending(o => o.Id)
+                .Select(o => new OrderHistoryListItemDto
+                {
+                    OrderId = o.Id,
+                    CreatedAt = o.CreatedAt,
+                    PickupAt = o.PickupAt,
+                    ClientId = o.ClientId,
+                    ClientName = o.Client != null ? (o.Client.FullName ?? string.Empty) : string.Empty,
+                    ClientPhone = o.Client != null ? (o.Client.PhoneNumber ?? string.Empty) : string.Empty,
+                    OrderTypeId = o.OrderTypeId,
+                    OrderType = o.OrderType != null ? (o.OrderType.Name ?? string.Empty) : string.Empty,
+                    StatusId = o.StatusId,
+                    Status = o.Status != null ? (o.Status.Name ?? string.Empty) : string.Empty,
+                    DiscountId = o.DiscountId,
+                    DiscountName = o.Discount != null ? (o.Discount.Name ?? string.Empty) : string.Empty,
+                    DiscountPercent = o.Discount != null ? (o.Discount.DiscountPercent ?? 0m) : 0m,
+                    TotalPrice = o.TotalPrice ?? 0m,
+                    TotalCalories = o.TotalCalories ?? 0m,
+                    Comment = o.Comment ?? string.Empty
+                })
+                .ToListAsync();
+
+            var summaries = await BuildCompositionSummariesAsync(orders.Select(x => x.OrderId).ToList());
+            foreach (var order in orders)
+            {
+                order.CompositionSummary = summaries.TryGetValue(order.OrderId, out var summary)
+                    ? summary
+                    : "Состав не указан";
+            }
+
+            return Ok(new OrderHistoryResponse
+            {
+                Orders = orders
+            });
+        }
+
+        [HttpGet("history/{orderId:int}")]
+        [Authorize(Roles = "Администратор")]
+        public async Task<ActionResult<OrderHistoryDetailsDto>> GetHistoryDetails(int orderId)
+        {
+            var details = await BuildOrderHistoryDetailsAsync(orderId, includeOptions: true);
+            if (details == null)
+            {
+                return NotFound("Заказ не найден");
+            }
+
+            return Ok(details);
+        }
+
+        [HttpPut("history/{orderId:int}")]
+        [Authorize(Roles = "Администратор")]
+        public async Task<ActionResult<OrderHistoryDetailsDto>> UpdateHistoryOrder(
+            int orderId,
+            [FromBody] OrderHistoryUpdateRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Пустое тело запроса");
+            }
+
+            request.Dishes ??= [];
+            request.Drinks ??= [];
+            request.Toppings ??= [];
+
+            var validationError = await ValidateHistoryUpdateRequestAsync(request);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
+
+            var order = await _db.Orders.FirstOrDefaultAsync(x => x.Id == orderId);
+            if (order == null)
+            {
+                return NotFound("Заказ не найден");
+            }
+
+            var newOrderRequest = new OrderRequest
+            {
+                OrderTypeId = request.OrderTypeId,
+                DiscountId = request.DiscountId,
+                Comment = request.Comment,
+                PickupAt = request.PickupAt,
+                Dishes = request.Dishes,
+                Drinks = request.Drinks,
+                Toppings = request.Toppings
+            };
+
+            if (newOrderRequest.OrderTypeId != _pickupSchedulingService.TakeawayOrderTypeId)
+            {
+                newOrderRequest.PickupAt = null;
+            }
+            else if (newOrderRequest.PickupAt.HasValue)
+            {
+                var pickupAt = NormalizePickupAt(newOrderRequest.PickupAt.Value);
+                if (!_pickupSchedulingService.IsPickupAtAllowed(pickupAt))
+                {
+                    return BadRequest("Выбранное время самовывоза недоступно. Выберите слот из списка.");
+                }
+
+                newOrderRequest.PickupAt = pickupAt;
+            }
+
+            await ApplyDefaultDrinkModifiersAsync(newOrderRequest.Drinks);
+            var modifierValidationError = await ValidateDrinkModifiersAsync(newOrderRequest.Drinks);
+            if (modifierValidationError != null)
+            {
+                return BadRequest(modifierValidationError);
+            }
+
+            var savedOrderRequest = await BuildOrderRequestFromSavedOrderAsync(orderId);
+
+            await using var tx = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            try
+            {
+                await RestorePortionLimitsAsync(savedOrderRequest);
+                await _stockService.RestoreConsumedForOrderAsync(orderId);
+                await ClearOrderCompositionAsync(orderId);
+
+                var rebuildResult = await RebuildOrderCompositionAsync(order, newOrderRequest, request.StatusId);
+                if (rebuildResult is ActionResult<OrderHistoryDetailsDto> actionResult)
+                {
+                    await tx.RollbackAsync();
+                    return actionResult;
+                }
+
+                StockConsumptionResult consumeResult;
+                try
+                {
+                    consumeResult = await _stockService.TryConsumeForOrderAsync(order.Id);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    await tx.RollbackAsync();
+                    return StatusCode(500, ex.Message);
+                }
+
+                if (!consumeResult.IsSuccess)
+                {
+                    await tx.RollbackAsync();
+                    return Conflict(new OrderStockConflictResponse
+                    {
+                        ErrorCode = "STOCK_SHORTAGE",
+                        Message = "Недостаточно заготовок или сырья для сохранения заказа.",
+                        Items = consumeResult.Items
+                            .Select(x => new StockConflictItem
+                            {
+                                SemiFinishedId = x.SemiFinishedId,
+                                SemiFinishedName = x.SemiFinishedName,
+                                Required = x.Required,
+                                Available = x.Available
+                            })
+                            .ToList()
+                    });
+                }
+
+                var portionLimitsResult = await TryConsumePortionLimitsAsync(
+                    BuildPortionLimitRequirements(newOrderRequest),
+                    await LoadDishNamesAsync(newOrderRequest),
+                    await LoadDrinkNamesAsync(newOrderRequest),
+                    await LoadToppingNamesAsync(newOrderRequest));
+
+                if (!portionLimitsResult.IsSuccess)
+                {
+                    await tx.RollbackAsync();
+                    return Conflict(new OrderStockConflictResponse
+                    {
+                        ErrorCode = "PORTION_LIMIT_SHORTAGE",
+                        Message = "Недостаточно лимита порций для некоторых позиций.",
+                        Items = portionLimitsResult.Items
+                    });
+                }
+
+                await _stockService.RefreshMenuAvailabilityAsync();
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+
+            var details = await BuildOrderHistoryDetailsAsync(orderId, includeOptions: true);
+            return Ok(details);
         }
 
         [HttpPost]
@@ -542,6 +736,641 @@ namespace GardenNookApi.Controllers
             _db.Clients.Add(guest);
             await _db.SaveChangesAsync();
             return guest;
+        }
+
+        private async Task<string?> ValidateHistoryUpdateRequestAsync(OrderHistoryUpdateRequest request)
+        {
+            if (request.OrderTypeId <= 0)
+                return "Тип заказа обязателен.";
+
+            var hasAny = request.Dishes.Count > 0 || request.Drinks.Count > 0 || request.Toppings.Count > 0;
+            if (!hasAny)
+                return "Состав заказа не может быть пустым.";
+
+            if (request.Dishes.Any(x => x.DishId <= 0 || x.Quantity <= 0m))
+                return "У каждого блюда должен быть выбран товар и количество больше нуля.";
+
+            if (request.Drinks.Any(x => x.DrinkId <= 0 || x.Quantity <= 0m))
+                return "У каждого напитка должен быть выбран товар и количество больше нуля.";
+
+            if (request.Toppings.Any(x => x.ToppingId <= 0 || x.Quantity <= 0))
+                return "У каждой добавки должен быть выбран товар и количество больше нуля.";
+
+            if (request.Dishes.SelectMany(x => x.Toppings ?? []).Any(x => x.ToppingId <= 0 || x.Quantity <= 0m) ||
+                request.Drinks.SelectMany(x => x.Toppings ?? []).Any(x => x.ToppingId <= 0 || x.Quantity <= 0m))
+                return "У добавок к позициям количество должно быть больше нуля.";
+
+            var orderTypeExists = await _db.OrderTypes.AnyAsync(x => x.Id == request.OrderTypeId);
+            if (!orderTypeExists)
+                return "Некорректный тип заказа.";
+
+            if (request.StatusId.HasValue)
+            {
+                var statusExists = await _db.OrderStatuses.AnyAsync(x => x.Id == request.StatusId.Value);
+                if (!statusExists)
+                    return "Некорректный статус заказа.";
+            }
+
+            if (request.DiscountId.HasValue)
+            {
+                var discountExists = await _db.Discounts.AnyAsync(x => x.Id == request.DiscountId.Value);
+                if (!discountExists)
+                    return "Некорректная скидка.";
+            }
+
+            return null;
+        }
+
+        private async Task<ActionResult<OrderHistoryDetailsDto>?> RebuildOrderCompositionAsync(
+            Order order,
+            OrderRequest request,
+            int? statusId)
+        {
+            var dishIds = request.Dishes.Select(x => x.DishId).Distinct().ToList();
+            var drinkIds = request.Drinks.Select(x => x.DrinkId).Distinct().ToList();
+            var toppingIds = request.Dishes
+                .SelectMany(x => x.Toppings ?? [])
+                .Select(x => x.ToppingId)
+                .Concat(request.Drinks.SelectMany(x => x.Toppings ?? []).Select(x => x.ToppingId))
+                .Concat(request.Toppings.Select(x => x.ToppingId))
+                .Distinct()
+                .ToList();
+
+            var dishes = await _db.Dishes
+                .Where(x => dishIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.PriceRub, x.CaloriesKcal, CategoryName = x.Category != null ? x.Category.Name : null })
+                .ToDictionaryAsync(x => x.Id, x => x);
+
+            var drinks = await _db.Drinks
+                .Where(x => drinkIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.PriceRub, x.CaloriesKcal, CategoryName = x.Category != null ? x.Category.Name : null })
+                .ToDictionaryAsync(x => x.Id, x => x);
+
+            var toppings = await _db.ToppingsAndSyrups
+                .Where(x => toppingIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.PriceRub, x.CaloriesKcal, CategoryName = x.Category != null ? x.Category.Name : null })
+                .ToDictionaryAsync(x => x.Id, x => x);
+
+            if (dishIds.Count != dishes.Count)
+                return BadRequest("В заказе есть несуществующие блюда.");
+
+            if (drinkIds.Count != drinks.Count)
+                return BadRequest("В заказе есть несуществующие напитки.");
+
+            if (toppingIds.Count != toppings.Count)
+                return BadRequest("В заказе есть несуществующие добавки.");
+
+            var hasInactiveCategoryItem =
+                dishes.Values.Any(x => IsInactiveCategory(x.CategoryName)) ||
+                drinks.Values.Any(x => IsInactiveCategory(x.CategoryName)) ||
+                toppings.Values.Any(x => IsInactiveCategory(x.CategoryName));
+            if (hasInactiveCategoryItem)
+            {
+                return Conflict(new OrderStockConflictResponse
+                {
+                    ErrorCode = "INACTIVE_CATEGORY",
+                    Message = "В заказе есть позиции из категории \"Неактивные\". Обновите меню.",
+                    Items = []
+                });
+            }
+
+            var discount = request.DiscountId.HasValue
+                ? await _db.Discounts.AsNoTracking().FirstOrDefaultAsync(x => x.Id == request.DiscountId.Value)
+                : null;
+            var discountPercent = discount?.DiscountPercent ?? 0m;
+            decimal totalPriceBeforeDiscount = 0m;
+            decimal totalCalories = 0m;
+
+            order.OrderTypeId = request.OrderTypeId;
+            order.StatusId = statusId ?? order.StatusId;
+            order.Comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim();
+            order.PickupAt = request.PickupAt;
+            order.DiscountId = request.DiscountId;
+
+            foreach (var dishReq in request.Dishes)
+            {
+                var dish = dishes[dishReq.DishId];
+                var item = new OrderDishItem
+                {
+                    OrderId = order.Id,
+                    DishId = dishReq.DishId,
+                    Quantity = dishReq.Quantity,
+                    FinalPrice = 0m,
+                    IsCompleted = false
+                };
+
+                _db.OrderDishItems.Add(item);
+                await _db.SaveChangesAsync();
+
+                var basePrice = (dish.PriceRub ?? 0m) * dishReq.Quantity;
+                var baseCalories = (dish.CaloriesKcal ?? 0m) * dishReq.Quantity;
+                decimal toppingsPrice = 0m;
+                decimal toppingsCalories = 0m;
+
+                foreach (var topReq in dishReq.Toppings ?? [])
+                {
+                    var topping = toppings[topReq.ToppingId];
+                    var totalQty = topReq.Quantity * dishReq.Quantity;
+                    var linePrice = (topping.PriceRub ?? 0m) * totalQty;
+                    var lineCalories = (topping.CaloriesKcal ?? 0m) * totalQty;
+                    toppingsPrice += linePrice;
+                    toppingsCalories += lineCalories;
+
+                    _db.DishToppings.Add(new DishTopping
+                    {
+                        ToppingId = topReq.ToppingId,
+                        OrderDishItemId = item.Id,
+                        Quantity = totalQty,
+                        FinalPrice = linePrice
+                    });
+                }
+
+                item.FinalPrice = basePrice + toppingsPrice;
+                totalPriceBeforeDiscount += item.FinalPrice ?? 0m;
+                totalCalories += baseCalories + toppingsCalories;
+            }
+
+            foreach (var drinkReq in request.Drinks)
+            {
+                var drink = drinks[drinkReq.DrinkId];
+                var item = new OrderDrinkItem
+                {
+                    OrderId = order.Id,
+                    DrinkId = drinkReq.DrinkId,
+                    Quantity = drinkReq.Quantity,
+                    FinalPrice = 0m,
+                    IsCompleted = false
+                };
+
+                _db.OrderDrinkItems.Add(item);
+                await _db.SaveChangesAsync();
+
+                _db.OrderDrinkItemModifiers.Add(new OrderDrinkItemModifier
+                {
+                    OrderDrinkItemId = item.Id,
+                    MilkIngredientId = drinkReq.MilkIngredientId,
+                    CoffeeIngredientId = drinkReq.CoffeeIngredientId
+                });
+
+                var basePrice = (drink.PriceRub ?? 0m) * drinkReq.Quantity;
+                var baseCalories = (drink.CaloriesKcal ?? 0m) * drinkReq.Quantity;
+                decimal toppingsPrice = 0m;
+                decimal toppingsCalories = 0m;
+
+                foreach (var topReq in drinkReq.Toppings ?? [])
+                {
+                    var topping = toppings[topReq.ToppingId];
+                    var totalQty = topReq.Quantity * drinkReq.Quantity;
+                    var linePrice = (topping.PriceRub ?? 0m) * totalQty;
+                    var lineCalories = (topping.CaloriesKcal ?? 0m) * totalQty;
+                    toppingsPrice += linePrice;
+                    toppingsCalories += lineCalories;
+
+                    _db.DrinkToppings.Add(new DrinkTopping
+                    {
+                        ToppingId = topReq.ToppingId,
+                        OrderDrinkItemId = item.Id,
+                        Quantity = totalQty,
+                        FinalPrice = linePrice
+                    });
+                }
+
+                item.FinalPrice = basePrice + toppingsPrice;
+                totalPriceBeforeDiscount += item.FinalPrice ?? 0m;
+                totalCalories += baseCalories + toppingsCalories;
+            }
+
+            foreach (var topReq in request.Toppings)
+            {
+                var topping = toppings[topReq.ToppingId];
+                var linePrice = (topping.PriceRub ?? 0m) * topReq.Quantity;
+                var lineCalories = (topping.CaloriesKcal ?? 0m) * topReq.Quantity;
+
+                _db.OrderToppingItems.Add(new OrderToppingItem
+                {
+                    OrderId = order.Id,
+                    ToppingId = topReq.ToppingId,
+                    Quantity = topReq.Quantity,
+                    TotalPrice = linePrice,
+                    IsCompleted = false
+                });
+
+                totalPriceBeforeDiscount += linePrice;
+                totalCalories += lineCalories;
+            }
+
+            order.TotalPrice = Round2(ApplyDiscount(totalPriceBeforeDiscount, discountPercent));
+            order.TotalCalories = Round2(totalCalories);
+            _db.Orders.Update(order);
+            await _db.SaveChangesAsync();
+
+            return null;
+        }
+
+        private async Task ClearOrderCompositionAsync(int orderId)
+        {
+            var dishItems = await _db.OrderDishItems
+                .Where(x => x.OrderId == orderId)
+                .Include(x => x.DishToppings)
+                .ToListAsync();
+            var drinkItems = await _db.OrderDrinkItems
+                .Where(x => x.OrderId == orderId)
+                .Include(x => x.DrinkToppings)
+                .Include(x => x.OrderDrinkItemModifier)
+                .ToListAsync();
+            var toppingItems = await _db.OrderToppingItems
+                .Where(x => x.OrderId == orderId)
+                .ToListAsync();
+
+            _db.DishToppings.RemoveRange(dishItems.SelectMany(x => x.DishToppings));
+            _db.DrinkToppings.RemoveRange(drinkItems.SelectMany(x => x.DrinkToppings));
+            _db.OrderDrinkItemModifiers.RemoveRange(drinkItems
+                .Select(x => x.OrderDrinkItemModifier)
+                .Where(x => x != null)!);
+            _db.OrderDishItems.RemoveRange(dishItems);
+            _db.OrderDrinkItems.RemoveRange(drinkItems);
+            _db.OrderToppingItems.RemoveRange(toppingItems);
+            await _db.SaveChangesAsync();
+        }
+
+        private async Task<OrderRequest> BuildOrderRequestFromSavedOrderAsync(int orderId)
+        {
+            var request = new OrderRequest
+            {
+                Dishes = new List<OrderDishItemRequest>(),
+                Drinks = new List<OrderDrinkItemRequest>(),
+                Toppings = new List<OrderToppingItemRequest>()
+            };
+
+            var dishItems = await _db.OrderDishItems
+                .AsNoTracking()
+                .Where(x => x.OrderId == orderId && x.DishId.HasValue && x.Quantity.HasValue)
+                .Select(x => new { x.Id, DishId = x.DishId!.Value, Quantity = x.Quantity!.Value })
+                .ToListAsync();
+            var dishItemIds = dishItems.Select(x => x.Id).ToList();
+            var dishToppings = dishItemIds.Count == 0
+                ? []
+                : await _db.DishToppings
+                    .AsNoTracking()
+                    .Where(x => x.OrderDishItemId.HasValue && dishItemIds.Contains(x.OrderDishItemId.Value) && x.ToppingId.HasValue && x.Quantity.HasValue)
+                    .Select(x => new { ParentId = x.OrderDishItemId!.Value, ToppingId = x.ToppingId!.Value, Quantity = x.Quantity!.Value })
+                    .ToListAsync();
+
+            foreach (var item in dishItems)
+            {
+                request.Dishes.Add(new OrderDishItemRequest
+                {
+                    DishId = item.DishId,
+                    Quantity = item.Quantity,
+                    Toppings = dishToppings
+                        .Where(x => x.ParentId == item.Id)
+                        .Select(x => new OrderItemToppingRequest
+                        {
+                            ToppingId = x.ToppingId,
+                            Quantity = item.Quantity > DecimalEpsilon ? x.Quantity / item.Quantity : x.Quantity
+                        })
+                        .ToList()
+                });
+            }
+
+            var drinkItems = await _db.OrderDrinkItems
+                .AsNoTracking()
+                .Where(x => x.OrderId == orderId && x.DrinkId.HasValue && x.Quantity.HasValue)
+                .Select(x => new { x.Id, DrinkId = x.DrinkId!.Value, Quantity = x.Quantity!.Value })
+                .ToListAsync();
+            var drinkItemIds = drinkItems.Select(x => x.Id).ToList();
+            var drinkToppings = drinkItemIds.Count == 0
+                ? []
+                : await _db.DrinkToppings
+                    .AsNoTracking()
+                    .Where(x => x.OrderDrinkItemId.HasValue && drinkItemIds.Contains(x.OrderDrinkItemId.Value) && x.ToppingId.HasValue && x.Quantity.HasValue)
+                    .Select(x => new { ParentId = x.OrderDrinkItemId!.Value, ToppingId = x.ToppingId!.Value, Quantity = x.Quantity!.Value })
+                    .ToListAsync();
+            var modifiers = drinkItemIds.Count == 0
+                ? new Dictionary<int, OrderDrinkItemModifier>()
+                : await _db.OrderDrinkItemModifiers
+                    .AsNoTracking()
+                    .Where(x => drinkItemIds.Contains(x.OrderDrinkItemId))
+                    .ToDictionaryAsync(x => x.OrderDrinkItemId, x => x);
+
+            foreach (var item in drinkItems)
+            {
+                modifiers.TryGetValue(item.Id, out var modifier);
+                request.Drinks.Add(new OrderDrinkItemRequest
+                {
+                    DrinkId = item.DrinkId,
+                    Quantity = item.Quantity,
+                    MilkIngredientId = modifier?.MilkIngredientId,
+                    CoffeeIngredientId = modifier?.CoffeeIngredientId,
+                    Toppings = drinkToppings
+                        .Where(x => x.ParentId == item.Id)
+                        .Select(x => new OrderItemToppingRequest
+                        {
+                            ToppingId = x.ToppingId,
+                            Quantity = item.Quantity > DecimalEpsilon ? x.Quantity / item.Quantity : x.Quantity
+                        })
+                        .ToList()
+                });
+            }
+
+            request.Toppings = await _db.OrderToppingItems
+                .AsNoTracking()
+                .Where(x => x.OrderId == orderId)
+                .Select(x => new OrderToppingItemRequest
+                {
+                    ToppingId = x.ToppingId,
+                    Quantity = x.Quantity
+                })
+                .ToListAsync();
+
+            return request;
+        }
+
+        private async Task RestorePortionLimitsAsync(OrderRequest savedOrder)
+        {
+            var requirements = BuildPortionLimitRequirements(savedOrder);
+            if (requirements.Count == 0)
+            {
+                return;
+            }
+
+            var keys = requirements.Keys.ToList();
+            var itemTypes = keys.Select(x => x.ItemType).Distinct().ToList();
+            var itemIds = keys.Select(x => x.ItemId).Distinct().ToList();
+            var rows = await _db.MenuItemPortionLimits
+                .Where(x => itemTypes.Contains(x.ItemType) && itemIds.Contains(x.ItemId))
+                .ToListAsync();
+            var rowsByKey = rows.ToDictionary(x => new MenuItemLimitKey(x.ItemType.Trim().ToLowerInvariant(), x.ItemId), x => x);
+            var now = DateTime.Now;
+
+            foreach (var pair in requirements)
+            {
+                if (rowsByKey.TryGetValue(pair.Key, out var row))
+                {
+                    row.RemainingPortions = Round2(Math.Max(0m, row.RemainingPortions) + pair.Value);
+                    row.UpdatedAt = now;
+                }
+            }
+        }
+
+        private async Task<Dictionary<int, string>> LoadDishNamesAsync(OrderRequest request)
+        {
+            var ids = request.Dishes.Select(x => x.DishId).Distinct().ToList();
+            return ids.Count == 0
+                ? new Dictionary<int, string>()
+                : await _db.Dishes
+                    .AsNoTracking()
+                    .Where(x => ids.Contains(x.Id))
+                    .ToDictionaryAsync(x => x.Id, x => x.Name ?? $"Блюдо #{x.Id}");
+        }
+
+        private async Task<Dictionary<int, string>> LoadDrinkNamesAsync(OrderRequest request)
+        {
+            var ids = request.Drinks.Select(x => x.DrinkId).Distinct().ToList();
+            return ids.Count == 0
+                ? new Dictionary<int, string>()
+                : await _db.Drinks
+                    .AsNoTracking()
+                    .Where(x => ids.Contains(x.Id))
+                    .ToDictionaryAsync(x => x.Id, x => x.Name ?? $"Напиток #{x.Id}");
+        }
+
+        private async Task<Dictionary<int, string>> LoadToppingNamesAsync(OrderRequest request)
+        {
+            var ids = request.Dishes.SelectMany(x => x.Toppings ?? []).Select(x => x.ToppingId)
+                .Concat(request.Drinks.SelectMany(x => x.Toppings ?? []).Select(x => x.ToppingId))
+                .Concat(request.Toppings.Select(x => x.ToppingId))
+                .Distinct()
+                .ToList();
+            return ids.Count == 0
+                ? new Dictionary<int, string>()
+                : await _db.ToppingsAndSyrups
+                    .AsNoTracking()
+                    .Where(x => ids.Contains(x.Id))
+                    .ToDictionaryAsync(x => x.Id, x => x.Name ?? $"Добавка #{x.Id}");
+        }
+
+        private async Task<Dictionary<int, string>> BuildCompositionSummariesAsync(IReadOnlyCollection<int> orderIds)
+        {
+            var result = orderIds.Distinct().ToDictionary(x => x, _ => new List<string>());
+            if (result.Count == 0)
+            {
+                return new Dictionary<int, string>();
+            }
+
+            var ids = result.Keys.ToList();
+            var dishes = await _db.OrderDishItems
+                .AsNoTracking()
+                .Where(x => x.OrderId.HasValue && ids.Contains(x.OrderId.Value))
+                .Select(x => new { OrderId = x.OrderId!.Value, Name = x.Dish != null ? x.Dish.Name : null, Quantity = x.Quantity ?? 0m })
+                .ToListAsync();
+            foreach (var item in dishes)
+            {
+                result[item.OrderId].Add($"{item.Name ?? "Блюдо"} x{FormatQuantity(item.Quantity)}");
+            }
+
+            var drinks = await _db.OrderDrinkItems
+                .AsNoTracking()
+                .Where(x => x.OrderId.HasValue && ids.Contains(x.OrderId.Value))
+                .Select(x => new { OrderId = x.OrderId!.Value, Name = x.Drink != null ? x.Drink.Name : null, Quantity = x.Quantity ?? 0m })
+                .ToListAsync();
+            foreach (var item in drinks)
+            {
+                result[item.OrderId].Add($"{item.Name ?? "Напиток"} x{FormatQuantity(item.Quantity)}");
+            }
+
+            var toppings = await _db.OrderToppingItems
+                .AsNoTracking()
+                .Where(x => ids.Contains(x.OrderId))
+                .Select(x => new { x.OrderId, Name = x.Topping != null ? x.Topping.Name : null, Quantity = (decimal)x.Quantity })
+                .ToListAsync();
+            foreach (var item in toppings)
+            {
+                result[item.OrderId].Add($"{item.Name ?? "Добавка"} x{FormatQuantity(item.Quantity)}");
+            }
+
+            return result.ToDictionary(
+                x => x.Key,
+                x => x.Value.Count == 0 ? "Состав не указан" : string.Join(", ", x.Value.Take(4)) + (x.Value.Count > 4 ? "..." : string.Empty));
+        }
+
+        private async Task<OrderHistoryDetailsDto?> BuildOrderHistoryDetailsAsync(int orderId, bool includeOptions)
+        {
+            var order = await _db.Orders
+                .AsNoTracking()
+                .Where(o => o.Id == orderId)
+                .Select(o => new OrderHistoryDetailsDto
+                {
+                    OrderId = o.Id,
+                    CreatedAt = o.CreatedAt,
+                    PickupAt = o.PickupAt,
+                    ClientId = o.ClientId,
+                    ClientName = o.Client != null ? (o.Client.FullName ?? string.Empty) : string.Empty,
+                    ClientPhone = o.Client != null ? (o.Client.PhoneNumber ?? string.Empty) : string.Empty,
+                    OrderTypeId = o.OrderTypeId,
+                    OrderType = o.OrderType != null ? (o.OrderType.Name ?? string.Empty) : string.Empty,
+                    StatusId = o.StatusId,
+                    Status = o.Status != null ? (o.Status.Name ?? string.Empty) : string.Empty,
+                    DiscountId = o.DiscountId,
+                    DiscountName = o.Discount != null ? (o.Discount.Name ?? string.Empty) : string.Empty,
+                    DiscountPercent = o.Discount != null ? (o.Discount.DiscountPercent ?? 0m) : 0m,
+                    TotalPrice = o.TotalPrice ?? 0m,
+                    TotalCalories = o.TotalCalories ?? 0m,
+                    Comment = o.Comment ?? string.Empty
+                })
+                .FirstOrDefaultAsync();
+
+            if (order == null)
+            {
+                return null;
+            }
+
+            order.Dishes = await LoadHistoryDishesAsync(orderId);
+            order.Drinks = await LoadHistoryDrinksAsync(orderId);
+            order.Toppings = await LoadHistoryToppingsAsync(orderId);
+            order.CompositionSummary = string.Join(", ", order.Dishes.Select(x => $"{x.Name} x{FormatQuantity(x.Quantity)}")
+                .Concat(order.Drinks.Select(x => $"{x.Name} x{FormatQuantity(x.Quantity)}"))
+                .Concat(order.Toppings.Select(x => $"{x.Name} x{FormatQuantity(x.Quantity)}")));
+
+            if (includeOptions)
+            {
+                order.OrderTypes = await _db.OrderTypes
+                    .AsNoTracking()
+                    .OrderBy(x => x.Id)
+                    .Select(x => new OrderHistoryOptionDto { Id = x.Id, Name = x.Name ?? $"Тип #{x.Id}" })
+                    .ToListAsync();
+                order.Statuses = await _db.OrderStatuses
+                    .AsNoTracking()
+                    .OrderBy(x => x.Id)
+                    .Select(x => new OrderHistoryOptionDto { Id = x.Id, Name = x.Name ?? $"Статус #{x.Id}" })
+                    .ToListAsync();
+                order.Discounts = await _db.Discounts
+                    .AsNoTracking()
+                    .OrderBy(x => x.Id)
+                    .Select(x => new OrderHistoryDiscountOptionDto
+                    {
+                        Id = x.Id,
+                        Name = x.Name ?? $"Скидка #{x.Id}",
+                        DiscountPercent = x.DiscountPercent ?? 0m
+                    })
+                    .ToListAsync();
+            }
+
+            return order;
+        }
+
+        private async Task<List<OrderHistoryDishItemDto>> LoadHistoryDishesAsync(int orderId)
+        {
+            var dishes = await _db.OrderDishItems
+                .AsNoTracking()
+                .Where(x => x.OrderId == orderId && x.DishId.HasValue)
+                .OrderBy(x => x.Id)
+                .Select(x => new OrderHistoryDishItemDto
+                {
+                    ItemId = x.Id,
+                    DishId = x.DishId!.Value,
+                    Name = x.Dish != null ? (x.Dish.Name ?? string.Empty) : string.Empty,
+                    Quantity = x.Quantity ?? 0m,
+                    FinalPrice = x.FinalPrice ?? 0m
+                })
+                .ToListAsync();
+            var itemIds = dishes.Select(x => x.ItemId).ToList();
+            var toppings = itemIds.Count == 0
+                ? []
+                : await _db.DishToppings
+                    .AsNoTracking()
+                    .Where(x => x.OrderDishItemId.HasValue && itemIds.Contains(x.OrderDishItemId.Value) && x.ToppingId.HasValue)
+                    .OrderBy(x => x.Id)
+                    .Select(x => new
+                    {
+                        ParentId = x.OrderDishItemId!.Value,
+                        Topping = new OrderHistoryLinkedToppingDto
+                        {
+                            ToppingId = x.ToppingId!.Value,
+                            Name = x.Topping != null ? (x.Topping.Name ?? string.Empty) : string.Empty,
+                            Quantity = x.Quantity ?? 0m,
+                            FinalPrice = x.FinalPrice ?? 0m
+                        }
+                    })
+                    .ToListAsync();
+
+            foreach (var dish in dishes)
+            {
+                dish.Toppings = toppings.Where(x => x.ParentId == dish.ItemId).Select(x => x.Topping).ToList();
+            }
+
+            return dishes;
+        }
+
+        private async Task<List<OrderHistoryDrinkItemDto>> LoadHistoryDrinksAsync(int orderId)
+        {
+            var drinks = await _db.OrderDrinkItems
+                .AsNoTracking()
+                .Where(x => x.OrderId == orderId && x.DrinkId.HasValue)
+                .OrderBy(x => x.Id)
+                .Select(x => new OrderHistoryDrinkItemDto
+                {
+                    ItemId = x.Id,
+                    DrinkId = x.DrinkId!.Value,
+                    Name = x.Drink != null ? (x.Drink.Name ?? string.Empty) : string.Empty,
+                    Quantity = x.Quantity ?? 0m,
+                    FinalPrice = x.FinalPrice ?? 0m,
+                    MilkIngredientId = x.OrderDrinkItemModifier != null ? x.OrderDrinkItemModifier.MilkIngredientId : null,
+                    MilkIngredientName = x.OrderDrinkItemModifier != null && x.OrderDrinkItemModifier.MilkIngredient != null ? (x.OrderDrinkItemModifier.MilkIngredient.Name ?? string.Empty) : string.Empty,
+                    CoffeeIngredientId = x.OrderDrinkItemModifier != null ? x.OrderDrinkItemModifier.CoffeeIngredientId : null,
+                    CoffeeIngredientName = x.OrderDrinkItemModifier != null && x.OrderDrinkItemModifier.CoffeeIngredient != null ? (x.OrderDrinkItemModifier.CoffeeIngredient.Name ?? string.Empty) : string.Empty
+                })
+                .ToListAsync();
+            var itemIds = drinks.Select(x => x.ItemId).ToList();
+            var toppings = itemIds.Count == 0
+                ? []
+                : await _db.DrinkToppings
+                    .AsNoTracking()
+                    .Where(x => x.OrderDrinkItemId.HasValue && itemIds.Contains(x.OrderDrinkItemId.Value) && x.ToppingId.HasValue)
+                    .OrderBy(x => x.Id)
+                    .Select(x => new
+                    {
+                        ParentId = x.OrderDrinkItemId!.Value,
+                        Topping = new OrderHistoryLinkedToppingDto
+                        {
+                            ToppingId = x.ToppingId!.Value,
+                            Name = x.Topping != null ? (x.Topping.Name ?? string.Empty) : string.Empty,
+                            Quantity = x.Quantity ?? 0m,
+                            FinalPrice = x.FinalPrice ?? 0m
+                        }
+                    })
+                    .ToListAsync();
+
+            foreach (var drink in drinks)
+            {
+                drink.Toppings = toppings.Where(x => x.ParentId == drink.ItemId).Select(x => x.Topping).ToList();
+            }
+
+            return drinks;
+        }
+
+        private async Task<List<OrderHistoryToppingItemDto>> LoadHistoryToppingsAsync(int orderId)
+        {
+            return await _db.OrderToppingItems
+                .AsNoTracking()
+                .Where(x => x.OrderId == orderId)
+                .OrderBy(x => x.Id)
+                .Select(x => new OrderHistoryToppingItemDto
+                {
+                    ItemId = x.Id,
+                    ToppingId = x.ToppingId,
+                    Name = x.Topping != null ? (x.Topping.Name ?? string.Empty) : string.Empty,
+                    Quantity = x.Quantity,
+                    TotalPrice = x.TotalPrice
+                })
+                .ToListAsync();
+        }
+
+        private static string FormatQuantity(decimal quantity)
+        {
+            return quantity == decimal.Truncate(quantity)
+                ? quantity.ToString("0", CultureInfo.CurrentCulture)
+                : quantity.ToString("0.##", CultureInfo.CurrentCulture);
         }
 
         private async Task<DiscountResolution> ResolveDiscountForOrderAsync(Client client, int? requestedDiscountId)

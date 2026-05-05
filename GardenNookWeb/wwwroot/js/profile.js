@@ -17,10 +17,7 @@ function loadCartForBadge() {
     const cartStorageKey = getCartStorageKey();
     let raw = localStorage.getItem(cartStorageKey);
 
-    if (!raw) {
-        raw = localStorage.getItem(LEGACY_CART_STORAGE_KEY);
-    }
-
+    if (!raw) raw = localStorage.getItem(LEGACY_CART_STORAGE_KEY);
     if (!raw) return [];
 
     try {
@@ -36,10 +33,8 @@ function updateCartBadge() {
 
     const cart = loadCartForBadge();
     const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
-
     badge.textContent = String(count);
-    if (count > 0) badge.classList.remove('hidden');
-    else badge.classList.add('hidden');
+    badge.classList.toggle('hidden', count <= 0);
 }
 
 function clearMessages() {
@@ -73,10 +68,8 @@ function showSuccess(message) {
 
 function formatDate(value) {
     if (!value) return '-';
-
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '-';
-
     return date.toLocaleString('ru-RU');
 }
 
@@ -138,38 +131,17 @@ function renderOrderItems(items) {
     `;
 }
 
-function getOrderStatusVariant(status, canCancel) {
+function getOrderStatusVariant(status) {
     const normalized = String(status ?? '').trim().toLowerCase();
 
-    if (normalized.includes('отмен') || normalized.includes('cancel')) {
-        return 'cancelled';
-    }
-
-    if (
-        normalized.includes('готов') ||
-        normalized.includes('ready') ||
-        normalized.includes('выдан') ||
-        normalized.includes('done')
-    ) {
-        return 'ready';
-    }
-
-    if (
-        normalized.includes('процесс') ||
-        normalized.includes('process') ||
-        normalized.includes('готовит') ||
-        normalized.includes('prepar') ||
-        normalized.includes('создан') ||
-        normalized.includes('new')
-    ) {
-        return 'in-progress';
-    }
-
+    if (normalized.includes('отмен') || normalized.includes('cancel')) return 'cancelled';
+    if (normalized.includes('готов') || normalized.includes('ready') || normalized.includes('выдан') || normalized.includes('done')) return 'ready';
+    if (normalized.includes('процесс') || normalized.includes('process') || normalized.includes('готовит') || normalized.includes('prepar') || normalized.includes('создан') || normalized.includes('new')) return 'in-progress';
     return 'unknown';
 }
 
-function getOrderStatusClasses(status, canCancel) {
-    const statusVariant = getOrderStatusVariant(status, canCancel);
+function getOrderStatusClasses(status) {
+    const statusVariant = getOrderStatusVariant(status);
 
     return {
         itemClass: `order-history-item status-${statusVariant}`,
@@ -189,7 +161,7 @@ function renderOrders(orders) {
     container.innerHTML = orders.map(order => {
         const statusText = order.status || '-';
         const status = escapeHtml(statusText);
-        const { itemClass, badgeClass } = getOrderStatusClasses(statusText, order.canCancel);
+        const { itemClass, badgeClass } = getOrderStatusClasses(statusText);
 
         const comment = order.comment
             ? `<div class="order-history-comment">Комментарий: ${escapeHtml(order.comment)}</div>`
@@ -198,7 +170,6 @@ function renderOrders(orders) {
             ? `<div class="order-history-meta">Самовывоз: ${formatDate(order.pickupAt)}</div>`
             : '';
         const composition = renderOrderItems(order.items || []);
-
         const cancelButton = order.canCancel
             ? `<button class="order-cancel-btn" data-order-id="${order.orderId}">Отменить заказ</button>`
             : '';
@@ -233,13 +204,8 @@ async function loadProfile(options = {}) {
         clearExistingMessages = !silent
     } = options;
 
-    if (isProfileLoading) {
-        return;
-    }
-
-    if (clearExistingMessages) {
-        clearMessages();
-    }
+    if (isProfileLoading) return;
+    if (clearExistingMessages) clearMessages();
 
     try {
         isProfileLoading = true;
@@ -256,21 +222,16 @@ async function loadProfile(options = {}) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            if (!silent) {
-                showError(errorText || 'Не удалось загрузить профиль');
-            }
+            if (!silent) showError(errorText || 'Не удалось загрузить профиль');
             return;
         }
 
         const data = await response.json();
         document.getElementById('profile-fullname').textContent = data?.client?.fullName || '-';
         document.getElementById('profile-category').textContent = data?.client?.category || '-';
-
         renderOrders(data?.orders || []);
     } catch {
-        if (!silent) {
-            showError('Ошибка сети. Попробуйте ещё раз.');
-        }
+        if (!silent) showError('Ошибка сети. Попробуйте ещё раз.');
     } finally {
         isProfileLoading = false;
     }
@@ -310,19 +271,15 @@ async function cancelOrder(orderId, button) {
 document.addEventListener('click', event => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
-
     if (!target.classList.contains('order-cancel-btn')) return;
 
-    const rawOrderId = target.dataset.orderId;
-    const orderId = Number(rawOrderId);
+    const orderId = Number(target.dataset.orderId);
     if (!Number.isFinite(orderId) || orderId <= 0) return;
-
     cancelOrder(orderId, target);
 });
 
 function startProfileAutoRefresh() {
     stopProfileAutoRefresh();
-
     profileRefreshTimerId = window.setInterval(() => {
         loadProfile({
             silent: true,
@@ -332,10 +289,7 @@ function startProfileAutoRefresh() {
 }
 
 function stopProfileAutoRefresh() {
-    if (profileRefreshTimerId === null) {
-        return;
-    }
-
+    if (profileRefreshTimerId === null) return;
     window.clearInterval(profileRefreshTimerId);
     profileRefreshTimerId = null;
 }
