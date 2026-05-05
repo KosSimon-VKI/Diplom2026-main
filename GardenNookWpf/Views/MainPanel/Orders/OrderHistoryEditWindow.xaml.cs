@@ -24,6 +24,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
         private readonly OrderHistoryDetailsDto _details;
         private readonly MenuResponse _menu;
         private readonly ObservableCollection<OrderLineViewModel> _items = new ObservableCollection<OrderLineViewModel>();
+        private readonly ObservableCollection<MenuItemOption> _visibleMenuItems = new ObservableCollection<MenuItemOption>();
         private readonly List<MenuItemOption> _dishOptions;
         private readonly List<MenuItemOption> _drinkOptions;
         private readonly List<MenuItemOption> _toppingOptions;
@@ -61,6 +62,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
             InitializeComponent();
 
             ItemsGrid.ItemsSource = _items;
+            MenuItemComboBox.ItemsSource = _visibleMenuItems;
             ItemTypeComboBox.ItemsSource = new[] { DishTypeText, DrinkTypeText, ToppingTypeText };
             ItemTypeComboBox.SelectedIndex = 0;
             MilkComboBox.ItemsSource = _milkOptions;
@@ -150,15 +152,41 @@ namespace GardenNookWpf.Views.MainPanel.Orders
 
         private void ItemTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectedType = ItemTypeComboBox.SelectedItem as string;
-            MenuItemComboBox.ItemsSource = selectedType switch
+            ApplyMenuSearch();
+        }
+
+        private void MenuSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyMenuSearch();
+        }
+
+        private void ApplyMenuSearch()
+        {
+            if (_visibleMenuItems == null || MenuSearchTextBox == null)
+            {
+                return;
+            }
+
+            var selectedType = ItemTypeComboBox?.SelectedItem as string;
+            var source = selectedType switch
             {
                 DishTypeText => _dishOptions,
                 DrinkTypeText => _drinkOptions,
                 ToppingTypeText => _toppingOptions,
                 _ => _dishOptions
             };
-            MenuItemComboBox.SelectedIndex = MenuItemComboBox.Items.Count > 0 ? 0 : -1;
+            var query = (MenuSearchTextBox.Text ?? string.Empty).Trim().ToLowerInvariant();
+            var filtered = source
+                .Where(x => string.IsNullOrWhiteSpace(query) || x.Name.ToLowerInvariant().Contains(query))
+                .ToList();
+
+            _visibleMenuItems.Clear();
+            foreach (var item in filtered)
+            {
+                _visibleMenuItems.Add(item);
+            }
+
+            MenuItemComboBox.SelectedIndex = _visibleMenuItems.Count > 0 ? 0 : -1;
         }
 
         private void AddItem_Click(object sender, RoutedEventArgs e)

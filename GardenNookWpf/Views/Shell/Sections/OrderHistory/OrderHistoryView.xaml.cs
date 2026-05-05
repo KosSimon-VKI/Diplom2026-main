@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using GardenNookWpf.Views.MainPanel.Orders;
 using GardenNookWpf.Views.Shell;
 using TransferModels.Menu;
@@ -24,6 +25,7 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         private const string HistoryAddress = ApiBaseAddress + "/api/orders/history";
         private const string MenuAddress = ApiBaseAddress + "/api/menu";
         private const string AllStatusesText = "Все статусы";
+        private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(7);
 
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
@@ -34,6 +36,7 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         private readonly ObservableCollection<OrderHistoryListItemViewModel> _visibleOrders = new ObservableCollection<OrderHistoryListItemViewModel>();
         private readonly List<OrderHistoryListItemViewModel> _allOrders = new List<OrderHistoryListItemViewModel>();
         private readonly List<string> _statuses = new List<string>();
+        private readonly DispatcherTimer _refreshTimer;
         private MenuResponse? _menu;
         private bool _isLoadedOnce;
         private bool _isBusy;
@@ -42,6 +45,12 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         public OrderHistoryView(HttpClient httpClient, string userRole)
         {
             _httpClient = httpClient;
+            _refreshTimer = new DispatcherTimer
+            {
+                Interval = RefreshInterval
+            };
+            _refreshTimer.Tick += RefreshTimer_Tick;
+
             InitializeComponent();
 
             OrdersList.ItemsSource = _visibleOrders;
@@ -58,18 +67,26 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
             if (_isLoadedOnce)
             {
                 ApplyFilters();
+                _refreshTimer.Start();
                 return;
             }
 
             await ReloadAsync();
+            _refreshTimer.Start();
         }
 
         public void Deactivate()
         {
+            _refreshTimer.Stop();
         }
 
-        private async void Refresh_Click(object sender, RoutedEventArgs e)
+        private async void RefreshTimer_Tick(object? sender, EventArgs e)
         {
+            if (_isBusy || _isOpeningDetails)
+            {
+                return;
+            }
+
             await ReloadAsync();
         }
 

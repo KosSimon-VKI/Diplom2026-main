@@ -131,19 +131,15 @@
 
                     <TabItem Header="Состав">
                         <Grid Margin="0,12,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="330"/>
-                            </Grid.ColumnDefinitions>
-
                             <Border Style="{StaticResource ModalCardBorder}"
                                     Background="White"
                                     CornerRadius="10"
-                                    Margin="0,0,12,0">
+                                    Margin="0,0,0,0">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
                                     <TextBlock Text="Позиции заказа"
                                                FontSize="24"
@@ -207,65 +203,115 @@
                                             </ListBox.ItemTemplate>
                                         </ListBox>
                                     </ScrollViewer>
+                                    <Grid Grid.Row="2" Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="210"/>
+                                            <ColumnDefinition Width="180"/>
+                                            <ColumnDefinition Width="180"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Выбранная позиция"
+                                                   FontSize="20"
+                                                   FontWeight="Bold"
+                                                   VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1"
+                                                Content="Настроить добавки"
+                                                Height="42"
+                                                Margin="0,0,10,0"
+                                                Style="{StaticResource ModalSecondaryButton}"
+                                                Click="EditToppings_Click"/>
+                                        <Button Grid.Column="2"
+                                                Content="Удалить позицию"
+                                                Height="42"
+                                                Margin="0,0,10,0"
+                                                Background="#FF742C27"
+                                                Style="{StaticResource ModalPrimaryButton}"
+                                                Click="RemoveItem_Click"/>
+                                        <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                            <ComboBox x:Name="MilkComboBox"
+                                                      Width="0"
+                                                      Height="0"
+                                                      Visibility="Collapsed"
+                                                      DisplayMemberPath="Name"
+                                                      SelectedValuePath="Id"
+                                                      SelectionChanged="Modifier_SelectionChanged"/>
+                                            <ComboBox x:Name="CoffeeComboBox"
+                                                      Width="0"
+                                                      Height="0"
+                                                      Visibility="Collapsed"
+                                                      DisplayMemberPath="Name"
+                                                      SelectedValuePath="Id"
+                                                      SelectionChanged="Modifier_SelectionChanged"/>
+                                        </StackPanel>
+                                    </Grid>
                                 </Grid>
                             </Border>
-
-                            <Border Grid.Column="1"
-                                    Style="{StaticResource ModalCardBorder}"
-                                    Background="White"
-                                    CornerRadius="10">
-                                <StackPanel>
-                                    <TextBlock Text="Добавить позицию" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
-                                    <ComboBox x:Name="ItemTypeComboBox"
-                                              Height="40"
-                                              FontSize="18"
-                                              SelectionChanged="ItemTypeComboBox_SelectionChanged"/>
-                                    <ComboBox x:Name="MenuItemComboBox"
-                                              Height="40"
-                                              FontSize="18"
-                                              Margin="0,10,0,0"
-                                              DisplayMemberPath="Name"/>
-                                    <TextBox x:Name="QuantityTextBox"
-                                             Height="40"
-                                             FontSize="18"
-                                             Margin="0,10,0,0"
-                                             Text="1"
-                                             VerticalContentAlignment="Center"/>
-                                    <Button Content="Добавить"
-                                            Height="44"
-                                            Margin="0,12,0,20"
-                                            Style="{StaticResource ModalPrimaryButton}"
-                                            Click="AddItem_Click"/>
-
-                                    <TextBlock Text="Выбранная позиция" FontSize="22" FontWeight="Bold"/>
-                                    <Button Content="Настроить добавки"
-                                            Height="42"
-                                            Margin="0,10,0,0"
-                                            Style="{StaticResource ModalSecondaryButton}"
-                                            Click="EditToppings_Click"/>
-                                    <ComboBox x:Name="MilkComboBox"
-                                              Height="40"
-                                              FontSize="17"
-                                              Margin="0,10,0,0"
-                                              DisplayMemberPath="Name"
-                                              SelectedValuePath="Id"
-                                              SelectionChanged="Modifier_SelectionChanged"/>
-                                    <ComboBox x:Name="CoffeeComboBox"
-                                              Height="40"
-                                              FontSize="17"
-                                              Margin="0,10,0,0"
-                                              DisplayMemberPath="Name"
-                                              SelectedValuePath="Id"
-                                              SelectionChanged="Modifier_SelectionChanged"/>
-                                    <Button Content="Удалить позицию"
-                                            Height="42"
-                                            Margin="0,14,0,0"
-                                            Background="#FF742C27"
-                                            Style="{StaticResource ModalPrimaryButton}"
-                                            Click="RemoveItem_Click"/>
-                                </StackPanel>
-                            </Border>
                         </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Добавить позицию">
+                        <Border Style="{StaticResource ModalCardBorder}"
+                                Background="White"
+                                CornerRadius="10"
+                                Margin="0,12,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="ItemTypeComboBox"
+                                              Height="42"
+                                              FontSize="18"
+                                              Margin="0,0,10,0"
+                                              SelectionChanged="ItemTypeComboBox_SelectionChanged"/>
+                                    <TextBox x:Name="MenuSearchTextBox"
+                                             Grid.Column="1"
+                                             Height="42"
+                                             FontSize="18"
+                                             Margin="0,0,10,0"
+                                             VerticalContentAlignment="Center"
+                                             TextChanged="MenuSearchTextBox_TextChanged"/>
+                                    <TextBox x:Name="QuantityTextBox"
+                                             Grid.Column="2"
+                                             Height="42"
+                                             FontSize="18"
+                                             Text="1"
+                                             TextAlignment="Center"
+                                             VerticalContentAlignment="Center"/>
+                                </Grid>
+
+                                <TextBlock Grid.Row="1"
+                                           Text="Меню"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Margin="0,0,0,10"/>
+
+                                <ScrollViewer Grid.Row="2"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox x:Name="MenuItemComboBox"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             DisplayMemberPath="Name"/>
+                                </ScrollViewer>
+
+                                <Button Grid.Row="3"
+                                        Content="Добавить выбранную позицию"
+                                        Height="46"
+                                        Margin="0,12,0,0"
+                                        Style="{StaticResource ModalPrimaryButton}"
+                                        Click="AddItem_Click"/>
+                            </Grid>
+                        </Border>
                     </TabItem>
                 </TabControl>
             </Grid>

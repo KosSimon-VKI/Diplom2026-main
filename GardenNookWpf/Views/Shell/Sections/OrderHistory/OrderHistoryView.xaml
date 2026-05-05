@@ -8,7 +8,7 @@
         <Style x:Key="OrderHistoryCardStyle" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
@@ -31,20 +31,11 @@
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0" Margin="0,0,0,14">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
                 <TextBlock Text="ИСТОРИЯ ЗАКАЗОВ"
                            FontSize="34"
                            FontWeight="Bold"
                            Foreground="{StaticResource ModalColorTextBrush}"
                            VerticalAlignment="Center"/>
-                <Button Grid.Column="1"
-                        Content="Обновить"
-                        Width="150"
-                        Style="{StaticResource ModalSecondaryButton}"
-                        Click="Refresh_Click"/>
             </Grid>
 
             <Border Grid.Row="1"
@@ -55,10 +46,10 @@
                     Margin="0,0,0,14">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="230"/>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="220"/>
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="SearchTextBox"
                              Height="42"
@@ -90,91 +81,90 @@
                     Style="{StaticResource ModalCardBorder}"
                     Background="White"
                     CornerRadius="10"
-                    Padding="14">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <ListBox x:Name="OrdersList"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             ItemContainerStyle="{StaticResource OrderHistoryCardStyle}"
-                             SelectionChanged="OrdersList_SelectionChanged">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderThickness="8,2,2,2"
-                                        BorderBrush="{Binding StatusBorderBrush}"
-                                        Background="{Binding StatusBackgroundBrush}"
-                                        CornerRadius="10"
-                                        Padding="12"
-                                        Cursor="Hand">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
+                    Padding="12">
+                <ListBox x:Name="OrdersList"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ItemContainerStyle="{StaticResource OrderHistoryCardStyle}"
+                         SelectionChanged="OrdersList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderThickness="8,2,2,2"
+                                    BorderBrush="{Binding StatusBorderBrush}"
+                                    Background="{Binding StatusBackgroundBrush}"
+                                    CornerRadius="10"
+                                    Padding="10"
+                                    Cursor="Hand">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                                        <Grid Grid.Row="0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding Title}"
-                                                       FontSize="22"
-                                                       FontWeight="ExtraBold"
-                                                       Foreground="{StaticResource ModalColorTextBrush}"
-                                                       TextWrapping="Wrap"/>
-                                            <Border Grid.Column="1"
-                                                    BorderBrush="{Binding StatusAccentBrush}"
-                                                    Background="{Binding StatusBadgeBrush}"
-                                                    BorderThickness="2"
-                                                    CornerRadius="20"
-                                                    Padding="12,4"
-                                                    Margin="12,0,0,0">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Ellipse Width="10"
-                                                             Height="10"
-                                                             Fill="{Binding StatusAccentBrush}"
-                                                             VerticalAlignment="Center"
-                                                             Margin="0,0,8,0"/>
-                                                    <TextBlock Text="{Binding Status}"
-                                                               FontSize="18"
-                                                               FontWeight="Bold"
-                                                               Foreground="{Binding StatusAccentBrush}"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </Grid>
-
-                                        <TextBlock Grid.Row="1"
-                                                   Text="{Binding MetaDisplay}"
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Title}"
                                                    FontSize="20"
-                                                   Foreground="#FF555555"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,8,0,0"/>
-
-                                        <TextBlock Grid.Row="2"
-                                                   Text="{Binding TotalDisplay}"
-                                                   FontSize="20"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#FF555555"
-                                                   Margin="0,4,0,0"/>
-
-                                        <Border Grid.Row="3"
-                                                BorderBrush="#FFC7D8A7"
-                                                BorderThickness="0,1,0,0"
-                                                Margin="0,10,0,0"
-                                                Padding="0,8,0,0">
-                                            <TextBlock Text="{Binding CompositionSummary}"
-                                                       FontSize="20"
-                                                       Foreground="{StaticResource ModalColorTextBrush}"
-                                                       TextWrapping="Wrap"/>
+                                                   FontWeight="ExtraBold"
+                                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                                   TextWrapping="Wrap"/>
+                                        <Border Grid.Column="1"
+                                                BorderBrush="{Binding StatusAccentBrush}"
+                                                Background="{Binding StatusBadgeBrush}"
+                                                BorderThickness="2"
+                                                CornerRadius="20"
+                                                        Padding="12,4"
+                                                        Margin="12,0,0,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="10"
+                                                         Height="10"
+                                                         Fill="{Binding StatusAccentBrush}"
+                                                         VerticalAlignment="Center"
+                                                         Margin="0,0,8,0"/>
+                                                <TextBlock Text="{Binding Status}"
+                                                           FontSize="16"
+                                                           FontWeight="Bold"
+                                                           Foreground="{Binding StatusAccentBrush}"/>
+                                            </StackPanel>
                                         </Border>
                                     </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </ScrollViewer>
+
+                                    <TextBlock Grid.Row="1"
+                                               Text="{Binding MetaDisplay}"
+                                               FontSize="18"
+                                               Foreground="#FF555555"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0"/>
+
+                                    <TextBlock Grid.Row="2"
+                                               Text="{Binding TotalDisplay}"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="#FF555555"
+                                               Margin="0,3,0,0"/>
+
+                                    <Border Grid.Row="3"
+                                            BorderBrush="#FFC7D8A7"
+                                            BorderThickness="0,1,0,0"
+                                            Margin="0,8,0,0"
+                                            Padding="0,6,0,0">
+                                        <TextBlock Text="{Binding CompositionSummary}"
+                                                   FontSize="18"
+                                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </Border>
 
             <TextBlock x:Name="StatusText"
