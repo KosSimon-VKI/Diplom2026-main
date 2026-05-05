@@ -139,8 +139,10 @@
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Background="White">
-        <Viewbox Stretch="Fill" StretchDirection="Both">
-            <Grid Width="1200" Height="900">
+        <Viewbox x:Name="OrderScaleViewbox"
+                 Stretch="Fill"
+                 StretchDirection="Both">
+            <Grid x:Name="ScaledContentGrid" Width="1200" Height="900">
                 <Grid Margin="18,20,18,20">
                     <Border Style="{StaticResource ModalCardBorder}"
                             Background="{StaticResource ModalColorWhiteBrush}"
@@ -153,7 +155,8 @@
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0" Margin="0,0,0,10">
-                                <TextBlock Text="МЕНЮ"
+                                <TextBlock x:Name="TitleText"
+                                           Text="МЕНЮ"
                                            FontSize="34"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource ModalColorTextBrush}"
@@ -411,7 +414,7 @@
                                     </Grid>
                                 </TabItem>
 
-                                <TabItem Header="КОРЗИНА">
+                                <TabItem x:Name="CartTabItem" Header="КОРЗИНА">
                                     <Grid Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="1.15*"/>
@@ -609,6 +612,19 @@
                                                          AcceptsReturn="True"
                                                          VerticalScrollBarVisibility="Auto"
                                                          Margin="0,8,0,14"/>
+
+                                                <StackPanel x:Name="StatusPanel" Visibility="Collapsed" Margin="0,0,0,14">
+                                                    <TextBlock Text="Статус:"
+                                                               FontSize="20"
+                                                               FontWeight="Bold"
+                                                               Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                    <ComboBox x:Name="StatusComboBox"
+                                                              Height="42"
+                                                              FontSize="19"
+                                                              Margin="0,8,0,0"
+                                                              DisplayMemberPath="Name"
+                                                              SelectedValuePath="Id"/>
+                                                </StackPanel>
 
                                                 <Button x:Name="SubmitOrderButton"
                                                         Content="Оформить"

@@ -133,7 +133,7 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
                     return;
                 }
 
-                var editWindow = new OrderHistoryEditWindow(details, menu)
+                var editWindow = new OrderHistoryEditWindow(_httpClient, details, menu)
                 {
                     Owner = Window.GetWindow(this)
                 };

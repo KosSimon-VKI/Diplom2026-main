@@ -48,16 +48,24 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
         private readonly List<ToppingDto> _allToppings = new List<ToppingDto>();
         private readonly ObservableCollection<DiscountOptionViewModel> _discounts = new ObservableCollection<DiscountOptionViewModel>();
         private readonly ObservableCollection<PickupSlotViewModel> _pickupSlots = new ObservableCollection<PickupSlotViewModel>();
+        private readonly OrderHistoryDetailsDto? _editDetails;
         private DrinkModifierCatalogDto _drinkModifiers = new DrinkModifierCatalogDto();
         private string _activeType = "all";
         private string? _activeSubcategory;
         private int _takeawayOrderTypeId = DefaultTakeawayOrderTypeId;
         private bool _isLoadedOnce;
+        private bool _isEditInitialized;
         private bool _isBusy;
 
         public OrderItemView(HttpClient httpClient, string userRole)
+            : this(httpClient, userRole, null)
+        {
+        }
+
+        public OrderItemView(HttpClient httpClient, string userRole, OrderHistoryDetailsDto? editDetails)
         {
             _httpClient = httpClient;
+            _editDetails = editDetails;
             InitializeComponent();
 
             MenuItemsList.ItemsSource = _visibleItems;
@@ -66,8 +74,49 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
             PickupSlotComboBox.ItemsSource = _pickupSlots;
             _discounts.Add(new DiscountOptionViewModel());
             DiscountComboBox.SelectedIndex = 0;
+            UseFullscreenLayout();
+            ConfigureMode();
             UpdateTotals();
         }
+
+        private bool IsEditMode => _editDetails != null;
+
+        private void ConfigureMode()
+        {
+            if (!IsEditMode)
+            {
+                return;
+            }
+
+            TitleText.Text = $"РЕДАКТИРОВАТЬ ЗАКАЗ №{_editDetails!.OrderId}";
+            CartTabItem.Header = "ДЕТАЛИ";
+            SubmitOrderButton.Content = "Сохранить";
+            StatusPanel.Visibility = Visibility.Visible;
+            StatusComboBox.ItemsSource = _editDetails.Statuses ?? new List<OrderHistoryOptionDto>();
+            StatusComboBox.SelectedValue = _editDetails.StatusId;
+            OrderCommentTextBox.Text = _editDetails.Comment ?? string.Empty;
+        }
+
+        private void UseFullscreenLayout()
+        {
+            if (RootGrid == null || OrderScaleViewbox == null || ScaledContentGrid == null)
+            {
+                return;
+            }
+
+            OrderScaleViewbox.Child = null;
+            ScaledContentGrid.Width = double.NaN;
+            ScaledContentGrid.Height = double.NaN;
+            ScaledContentGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
+            ScaledContentGrid.VerticalAlignment = VerticalAlignment.Stretch;
+
+            RootGrid.Children.Clear();
+            RootGrid.Children.Add(ScaledContentGrid);
+        }
+
+        public event EventHandler? EditSaved;
+
+        public OrderHistoryUpdateRequest? EditRequest { get; private set; }
 
         public bool IsBusy => _isBusy;
 
@@ -97,6 +146,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 await LoadDiscountsAsync();
                 await LoadPickupSlotsAsync();
 
+                InitializeEditState();
                 _isLoadedOnce = true;
                 SetStatus(string.Empty);
                 ApplyFilters();
@@ -173,6 +223,16 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 _discounts.Add(new DiscountOptionViewModel(discount));
             }
 
+            if (_editDetails?.DiscountId != null && _discounts.All(x => x.Id != _editDetails.DiscountId))
+            {
+                var historyDiscount = (_editDetails.Discounts ?? new List<OrderHistoryDiscountOptionDto>())
+                    .FirstOrDefault(x => x.Id == _editDetails.DiscountId);
+                if (historyDiscount != null)
+                {
+                    _discounts.Add(new DiscountOptionViewModel(historyDiscount));
+                }
+            }
+
             DiscountComboBox.SelectedIndex = 0;
         }
 
@@ -212,6 +272,121 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 PickupSlotNoteText.Text = "На сегодня нет доступных слотов. Можно оформить без времени.";
                 PickupSlotNoteText.Visibility = Visibility.Visible;
             }
+        }
+
+        private void InitializeEditState()
+        {
+            if (!IsEditMode || _isEditInitialized || _editDetails == null)
+            {
+                return;
+            }
+
+            _isEditInitialized = true;
+            RestaurantOrderTypeRadio.IsChecked = !IsTakeawayOrderType(_editDetails.OrderTypeId, _editDetails.OrderType);
+            TakeawayOrderTypeRadio.IsChecked = IsTakeawayOrderType(_editDetails.OrderTypeId, _editDetails.OrderType);
+            DiscountComboBox.SelectedItem = _discounts.FirstOrDefault(x => x.Id == _editDetails.DiscountId) ?? _discounts.FirstOrDefault();
+            StatusComboBox.SelectedValue = _editDetails.StatusId;
+            SelectPickupSlot(_editDetails.PickupAt);
+
+            foreach (var dish in _editDetails.Dishes ?? new List<OrderHistoryDishItemDto>())
+            {
+                var menuItem = _allItems.FirstOrDefault(x => x.ItemType == DishType && x.ItemId == dish.DishId);
+                if (menuItem == null)
+                {
+                    continue;
+                }
+
+                _cartItems.Add(CartItemViewModel.FromMenuPosition(
+                    menuItem,
+                    BuildCartToppings(dish.Toppings, dish.Quantity),
+                    null,
+                    ToCartQuantity(dish.Quantity)));
+            }
+
+            foreach (var drink in _editDetails.Drinks ?? new List<OrderHistoryDrinkItemDto>())
+            {
+                var menuItem = _allItems.FirstOrDefault(x => x.ItemType == DrinkType && x.ItemId == drink.DrinkId);
+                if (menuItem == null)
+                {
+                    continue;
+                }
+
+                _cartItems.Add(CartItemViewModel.FromMenuPosition(
+                    menuItem,
+                    BuildCartToppings(drink.Toppings, drink.Quantity),
+                    new DrinkModifierSelection(
+                        drink.MilkIngredientId,
+                        drink.MilkIngredientName,
+                        drink.CoffeeIngredientId,
+                        drink.CoffeeIngredientName),
+                    ToCartQuantity(drink.Quantity)));
+            }
+
+            foreach (var topping in _editDetails.Toppings ?? new List<OrderHistoryToppingItemDto>())
+            {
+                var menuItem = _allItems.FirstOrDefault(x => x.ItemType == ToppingType && x.ItemId == topping.ToppingId);
+                if (menuItem == null)
+                {
+                    continue;
+                }
+
+                _cartItems.Add(CartItemViewModel.FromStandaloneTopping(menuItem, ToCartQuantity(topping.Quantity)));
+            }
+
+            AfterCartChanged();
+        }
+
+        private List<CartToppingViewModel> BuildCartToppings(IEnumerable<OrderHistoryLinkedToppingDto>? toppings, decimal parentQuantity)
+        {
+            return (toppings ?? new List<OrderHistoryLinkedToppingDto>())
+                .Where(x => x.Quantity > 0m)
+                .Select(x =>
+                {
+                    var source = _allToppings.FirstOrDefault(t => t.Id == x.ToppingId);
+                    var quantityPerItem = parentQuantity > 0m ? x.Quantity / parentQuantity : x.Quantity;
+                    return new CartToppingViewModel
+                    {
+                        ToppingId = x.ToppingId,
+                        Name = source?.Name ?? x.Name,
+                        Price = source?.Price ?? 0m,
+                        Calories = source?.Calories ?? 0,
+                        Quantity = ToCartQuantity(quantityPerItem)
+                    };
+                })
+                .ToList();
+        }
+
+        private void SelectPickupSlot(DateTime? pickupAt)
+        {
+            if (!pickupAt.HasValue)
+            {
+                PickupSlotComboBox.SelectedIndex = _pickupSlots.Count > 0 ? 0 : -1;
+                return;
+            }
+
+            var value = pickupAt.Value.ToString("O", CultureInfo.InvariantCulture);
+            var existing = _pickupSlots.FirstOrDefault(x =>
+                DateTime.TryParse(x.Value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var parsed) &&
+                parsed == pickupAt.Value);
+
+            if (existing == null)
+            {
+                existing = new PickupSlotViewModel(value, pickupAt.Value.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture));
+                _pickupSlots.Insert(0, existing);
+            }
+
+            PickupSlotComboBox.SelectedItem = existing;
+        }
+
+        private bool IsTakeawayOrderType(int? orderTypeId, string? orderTypeName)
+        {
+            if (orderTypeId.HasValue && orderTypeId.Value == _takeawayOrderTypeId)
+            {
+                return true;
+            }
+
+            var normalized = (orderTypeName ?? string.Empty).Trim().ToLowerInvariant();
+            return normalized.Contains("с собой") || normalized.Contains("самовывоз");
         }
 
         private void AddMenuItemButton_Click(object sender, RoutedEventArgs e)
@@ -729,6 +904,12 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 return;
             }
 
+            if (IsEditMode)
+            {
+                SubmitEditOrder();
+                return;
+            }
+
             try
             {
                 SetBusy(true);
@@ -774,6 +955,16 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 SubmitOrderButton.IsEnabled = true;
                 SetBusy(false);
             }
+        }
+
+        private void SubmitEditOrder()
+        {
+            var orderTypeId = TakeawayOrderTypeRadio.IsChecked == true
+                ? _takeawayOrderTypeId
+                : ResolveRestaurantOrderTypeId();
+
+            EditRequest = BuildOrderHistoryUpdateRequest(orderTypeId);
+            EditSaved?.Invoke(this, EventArgs.Empty);
         }
 
         private OrderRequest BuildOrderRequest(int orderTypeId)
@@ -834,6 +1025,29 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
             }
 
             return request;
+        }
+
+        private OrderHistoryUpdateRequest BuildOrderHistoryUpdateRequest(int orderTypeId)
+        {
+            var request = BuildOrderRequest(orderTypeId);
+            return new OrderHistoryUpdateRequest
+            {
+                OrderTypeId = request.OrderTypeId,
+                StatusId = StatusComboBox.SelectedValue as int?,
+                DiscountId = request.DiscountId,
+                Comment = request.Comment ?? string.Empty,
+                PickupAt = request.PickupAt,
+                Dishes = request.Dishes,
+                Drinks = request.Drinks,
+                Toppings = request.Toppings
+            };
+        }
+
+        private int ResolveRestaurantOrderTypeId()
+        {
+            var restaurantType = (_editDetails?.OrderTypes ?? new List<OrderHistoryOptionDto>())
+                .FirstOrDefault(x => (x.Name ?? string.Empty).Contains("рестор", StringComparison.CurrentCultureIgnoreCase));
+            return restaurantType?.Id ?? 1;
         }
 
         private DateTime? ResolveSelectedPickupAt(int orderTypeId)
@@ -950,6 +1164,9 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
         private static decimal Round2(decimal value)
             => Math.Round(value, 2, MidpointRounding.AwayFromZero);
 
+        private static int ToCartQuantity(decimal value)
+            => Math.Max(1, (int)Math.Round(value, MidpointRounding.AwayFromZero));
+
         private sealed record DrinkModifierSelection(
             int? MilkIngredientId,
             string? MilkIngredientName,
@@ -976,6 +1193,14 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
             }
 
             public DiscountOptionViewModel(DiscountDto dto)
+            {
+                Id = dto.Id;
+                Name = dto.Name;
+                DiscountPercent = dto.DiscountPercent;
+                DisplayName = $"{dto.Name} - {dto.DiscountPercent:0.##}%";
+            }
+
+            public DiscountOptionViewModel(OrderHistoryDiscountOptionDto dto)
             {
                 Id = dto.Id;
                 Name = dto.Name;
@@ -1242,7 +1467,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            public static CartItemViewModel FromStandaloneTopping(MenuPositionViewModel item)
+            public static CartItemViewModel FromStandaloneTopping(MenuPositionViewModel item, int quantity = 1)
             {
                 return new CartItemViewModel
                 {
@@ -1250,14 +1475,16 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Price = item.Price,
-                    Calories = item.Calories
+                    Calories = item.Calories,
+                    Quantity = quantity
                 };
             }
 
             public static CartItemViewModel FromMenuPosition(
                 MenuPositionViewModel item,
                 List<CartToppingViewModel> toppings,
-                DrinkModifierSelection? modifiers)
+                DrinkModifierSelection? modifiers,
+                int quantity = 1)
             {
                 return new CartItemViewModel
                 {
@@ -1270,7 +1497,8 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
                     MilkIngredientId = modifiers?.MilkIngredientId,
                     MilkIngredientName = modifiers?.MilkIngredientName,
                     CoffeeIngredientId = modifiers?.CoffeeIngredientId,
-                    CoffeeIngredientName = modifiers?.CoffeeIngredientName
+                    CoffeeIngredientName = modifiers?.CoffeeIngredientName,
+                    Quantity = quantity
                 };
             }
         }

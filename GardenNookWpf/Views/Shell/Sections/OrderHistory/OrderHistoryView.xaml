@@ -30,13 +30,12 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,0,0,14">
-                <TextBlock Text="ИСТОРИЯ ЗАКАЗОВ"
-                           FontSize="34"
-                           FontWeight="Bold"
-                           Foreground="{StaticResource ModalColorTextBrush}"
-                           VerticalAlignment="Center"/>
-            </Grid>
+            <TextBlock Grid.Row="0"
+                       Text="ИСТОРИЯ ЗАКАЗОВ"
+                       FontSize="34"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource ModalColorTextBrush}"
+                       Margin="0,0,0,14"/>
 
             <Border Grid.Row="1"
                     Style="{StaticResource ModalCardBorder}"
@@ -120,8 +119,8 @@
                                                 Background="{Binding StatusBadgeBrush}"
                                                 BorderThickness="2"
                                                 CornerRadius="20"
-                                                        Padding="12,4"
-                                                        Margin="12,0,0,0">
+                                                Padding="12,4"
+                                                Margin="12,0,0,0">
                                             <StackPanel Orientation="Horizontal">
                                                 <Ellipse Width="10"
                                                          Height="10"
