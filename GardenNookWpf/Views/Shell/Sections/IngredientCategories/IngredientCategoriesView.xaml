@@ -16,8 +16,6 @@
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Background="White">
-        <Viewbox Stretch="Fill" StretchDirection="Both">
-            <Grid Width="1200" Height="900">
                 <Grid Margin="18,20,18,20">
                     <Border Style="{StaticResource ModalCardBorder}"
                             Background="{StaticResource ModalColorWhiteBrush}"
@@ -164,7 +162,5 @@
                         </Grid>
                     </Border>
                 </Grid>
-            </Grid>
-        </Viewbox>
     </Grid>
 </UserControl>

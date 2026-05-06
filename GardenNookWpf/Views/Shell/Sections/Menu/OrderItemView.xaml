@@ -139,10 +139,6 @@
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Background="White">
-        <Viewbox x:Name="OrderScaleViewbox"
-                 Stretch="Fill"
-                 StretchDirection="Both">
-            <Grid x:Name="ScaledContentGrid" Width="1200" Height="900">
                 <Grid Margin="18,20,18,20">
                     <Border Style="{StaticResource ModalCardBorder}"
                             Background="{StaticResource ModalColorWhiteBrush}"
@@ -177,8 +173,11 @@
                                 <TabItem Header="МЕНЮ">
                                     <Grid Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="300"/>
+                                            <ColumnDefinition Width="*"
+                                                              MinWidth="280"/>
+                                            <ColumnDefinition Width="0.34*"
+                                                              MinWidth="220"
+                                                              MaxWidth="320"/>
                                         </Grid.ColumnDefinitions>
 
                                         <Grid Grid.Column="0" Margin="0,0,14,0">
@@ -417,8 +416,11 @@
                                 <TabItem x:Name="CartTabItem" Header="КОРЗИНА">
                                     <Grid Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="1.15*"/>
-                                            <ColumnDefinition Width="0.85*"/>
+                                            <ColumnDefinition Width="1.15*"
+                                                              MinWidth="280"/>
+                                            <ColumnDefinition Width="0.85*"
+                                                              MinWidth="260"
+                                                              MaxWidth="430"/>
                                         </Grid.ColumnDefinitions>
 
                                         <Border Grid.Column="0"
@@ -648,7 +650,5 @@
                         </Grid>
                     </Border>
                 </Grid>
-            </Grid>
-        </Viewbox>
     </Grid>
 </UserControl>

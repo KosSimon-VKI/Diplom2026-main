@@ -13,8 +13,6 @@
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Background="White">
-        <Viewbox Stretch="Fill" StretchDirection="Both">
-            <Grid Width="1200" Height="900">
                 <Grid Margin="18,20">
                     <Border Style="{StaticResource ModalCardBorder}"
                             Background="{StaticResource ModalColorWhiteBrush}"
@@ -37,6 +35,7 @@
                                            FontSize="34"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource ModalColorTextBrush}"
+                                           TextWrapping="Wrap"
                                            VerticalAlignment="Center"/>
 
                                 <Button x:Name="AddButton"
@@ -152,7 +151,5 @@
                         </Grid>
                     </Border>
                 </Grid>
-            </Grid>
-        </Viewbox>
     </Grid>
 </UserControl>

@@ -74,7 +74,6 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
             PickupSlotComboBox.ItemsSource = _pickupSlots;
             _discounts.Add(new DiscountOptionViewModel());
             DiscountComboBox.SelectedIndex = 0;
-            UseFullscreenLayout();
             ConfigureMode();
             UpdateTotals();
         }
@@ -95,23 +94,6 @@ namespace GardenNookWpf.Views.Shell.Sections.Menu
             StatusComboBox.ItemsSource = _editDetails.Statuses ?? new List<OrderHistoryOptionDto>();
             StatusComboBox.SelectedValue = _editDetails.StatusId;
             OrderCommentTextBox.Text = _editDetails.Comment ?? string.Empty;
-        }
-
-        private void UseFullscreenLayout()
-        {
-            if (RootGrid == null || OrderScaleViewbox == null || ScaledContentGrid == null)
-            {
-                return;
-            }
-
-            OrderScaleViewbox.Child = null;
-            ScaledContentGrid.Width = double.NaN;
-            ScaledContentGrid.Height = double.NaN;
-            ScaledContentGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
-            ScaledContentGrid.VerticalAlignment = VerticalAlignment.Stretch;
-
-            RootGrid.Children.Clear();
-            RootGrid.Children.Add(ScaledContentGrid);
         }
 
         public event EventHandler? EditSaved;
