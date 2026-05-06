@@ -25,10 +25,14 @@ namespace GardenNookApi.Controllers
         private const string DrinkItemType = "drink";
         private const string ToppingItemType = "topping";
         private const string IngredientItemType = "ingredient";
-        private const string SemiFinishedItemType = "semiFinished";
         private const decimal DecimalEpsilon = 0.000001m;
 
         private readonly AppDbContext _db;
+        private readonly Dictionary<int, List<CardIngredientRow>> _ingredientRowsByCard = new Dictionary<int, List<CardIngredientRow>>();
+        private readonly Dictionary<int, List<CardSemiFinishedRow>> _semiFinishedRowsByCard = new Dictionary<int, List<CardSemiFinishedRow>>();
+        private readonly Dictionary<int, int?> _semiFinishedCardById = new Dictionary<int, int?>();
+        private readonly Dictionary<int, decimal> _technicalCardOutputById = new Dictionary<int, decimal>();
+        private readonly Dictionary<int, IngredientMetadata> _ingredientMetadataById = new Dictionary<int, IngredientMetadata>();
 
         public ReportsController(AppDbContext db)
         {
@@ -72,15 +76,18 @@ namespace GardenNookApi.Controllers
                 .Select(x => x.Id)
                 .ToListAsync();
 
+            var warnings = new List<string>();
+
             return new ReportsResponse
             {
                 Period = resolvedPeriod.Code,
                 PeriodName = resolvedPeriod.Name,
                 From = resolvedPeriod.From,
                 To = resolvedPeriod.To,
+                Warnings = warnings,
                 PopularItems = await BuildPopularItemsAsync(orderIds),
                 UnpopularItems = await BuildUnpopularItemsAsync(orderIds),
-                InventoryItems = await BuildInventoryItemsAsync(orderIds)
+                InventoryItems = await BuildInventoryItemsAsync(orderIds, resolvedPeriod, warnings)
             };
         }
 
@@ -98,6 +105,44 @@ namespace GardenNookApi.Controllers
             if (period.To.HasValue)
             {
                 query = query.Where(x => x.CreatedAt <= period.To.Value);
+            }
+
+            return query;
+        }
+
+        private IQueryable<WriteOffAct> BuildWriteOffQuery(ResolvedPeriod period)
+        {
+            var query = _db.WriteOffActs.AsNoTracking();
+
+            if (period.From.HasValue)
+            {
+                query = query.Where(x => x.Date >= period.From.Value);
+            }
+
+            if (period.To.HasValue)
+            {
+                query = query.Where(x => x.Date <= period.To.Value);
+            }
+
+            return query;
+        }
+
+        private IQueryable<Preparation> BuildPreparationQuery(ResolvedPeriod period)
+        {
+            var query = _db.Preparations
+                .AsNoTracking()
+                .Where(x => x.ProductionDate.HasValue && x.SemiFinishedId.HasValue && x.StockGrams.HasValue && x.StockGrams.Value > 0m);
+
+            if (period.From.HasValue)
+            {
+                var fromDate = DateOnly.FromDateTime(period.From.Value.Date);
+                query = query.Where(x => x.ProductionDate >= fromDate);
+            }
+
+            if (period.To.HasValue)
+            {
+                var toDate = DateOnly.FromDateTime(period.To.Value.Date);
+                query = query.Where(x => x.ProductionDate <= toDate);
             }
 
             return query;
@@ -313,9 +358,18 @@ namespace GardenNookApi.Controllers
             return dishes.Concat(drinks).Concat(toppings).ToList();
         }
 
-        private async Task<List<InventoryReportItemDto>> BuildInventoryItemsAsync(List<int> orderIds)
+        private async Task<List<InventoryReportItemDto>> BuildInventoryItemsAsync(
+            List<int> orderIds,
+            ResolvedPeriod period,
+            List<string> warnings)
         {
-            var requirements = await BuildRequirementsAsync(orderIds);
+            var orderConsumption = new Dictionary<int, decimal>();
+            var writeOffConsumption = new Dictionary<int, decimal>();
+            var preparationConsumption = new Dictionary<int, decimal>();
+
+            await AddOrderIngredientConsumptionAsync(orderIds, orderConsumption, warnings);
+            await AddWriteOffIngredientConsumptionAsync(period, writeOffConsumption, warnings);
+            await AddPreparationIngredientConsumptionAsync(period, preparationConsumption, warnings);
 
             var ingredientRows = await _db.Ingredients
                 .AsNoTracking()
@@ -330,80 +384,40 @@ namespace GardenNookApi.Controllers
                 })
                 .ToListAsync();
 
-            var ingredientReportRows = ingredientRows.Select(x =>
-            {
-                requirements.RequiredByIngredients.TryGetValue(x.Id, out var required);
-                var actual = ConvertToBaseUnits(ToNonNegative(x.Stock), x.UnitOfMeasureId);
-
-                return new InventoryReportItemDto
+            return ingredientRows.Select(x =>
                 {
-                    ItemType = IngredientItemType,
-                    ItemTypeName = "Сырье",
-                    ItemId = x.Id,
-                    Name = x.Name,
-                    UnitName = ResolveBaseUnitName(x.UnitOfMeasureId, x.UnitName),
-                    ExpectedConsumption = Round2(required),
-                    ActualStock = Round2(actual),
-                    Difference = Round2(actual - required)
-                };
-            });
+                    orderConsumption.TryGetValue(x.Id, out var orderRequired);
+                    writeOffConsumption.TryGetValue(x.Id, out var writeOffRequired);
+                    preparationConsumption.TryGetValue(x.Id, out var preparationRequired);
+                    var totalRequired = orderRequired + writeOffRequired + preparationRequired;
+                    var actual = ConvertToBaseUnits(ToNonNegative(x.Stock), x.UnitOfMeasureId);
 
-            var semiStocks = await _db.Preparations
-                .AsNoTracking()
-                .Where(x => x.SemiFinishedId.HasValue)
-                .GroupBy(x => x.SemiFinishedId!.Value)
-                .Select(g => new
-                {
-                    SemiFinishedId = g.Key,
-                    Stock = g.Sum(x => x.StockGrams ?? 0m)
+                    return new InventoryReportItemDto
+                    {
+                        ItemType = IngredientItemType,
+                        ItemTypeName = "Сырье",
+                        ItemId = x.Id,
+                        Name = x.Name,
+                        UnitName = ResolveBaseUnitName(x.UnitOfMeasureId, x.UnitName),
+                        OrderConsumption = Round2(orderRequired),
+                        WriteOffConsumption = Round2(writeOffRequired),
+                        PreparationConsumption = Round2(preparationRequired),
+                        ExpectedConsumption = Round2(totalRequired),
+                        ActualStock = Round2(actual),
+                        Difference = Round2(actual - totalRequired)
+                    };
                 })
-                .ToDictionaryAsync(x => x.SemiFinishedId, x => x.Stock);
-
-            var semiRows = await _db.SemiFinisheds
-                .AsNoTracking()
-                .OrderBy(x => x.Name)
-                .Select(x => new
-                {
-                    x.Id,
-                    Name = x.Name ?? string.Empty,
-                    x.UnitOfMeasureId,
-                    UnitName = x.UnitOfMeasure != null ? x.UnitOfMeasure.Name ?? string.Empty : string.Empty
-                })
-                .ToListAsync();
-
-            var semiReportRows = semiRows.Select(x =>
-            {
-                requirements.RequiredBySemiFinished.TryGetValue(x.Id, out var required);
-                semiStocks.TryGetValue(x.Id, out var actual);
-
-                return new InventoryReportItemDto
-                {
-                    ItemType = SemiFinishedItemType,
-                    ItemTypeName = "Полуфабрикат",
-                    ItemId = x.Id,
-                    Name = x.Name,
-                    UnitName = ResolveBaseUnitName(x.UnitOfMeasureId, x.UnitName),
-                    ExpectedConsumption = Round2(required),
-                    ActualStock = Round2(actual),
-                    Difference = Round2(actual - required)
-                };
-            });
-
-            return ingredientReportRows
-                .Concat(semiReportRows)
-                .OrderBy(x => x.ItemTypeName)
-                .ThenBy(x => x.Name)
                 .ToList();
         }
 
-        private async Task<OrderRequirements> BuildRequirementsAsync(List<int> orderIds)
+        private async Task AddOrderIngredientConsumptionAsync(
+            List<int> orderIds,
+            Dictionary<int, decimal> target,
+            List<string> warnings)
         {
-            var requiredBySemiFinished = new Dictionary<int, decimal>();
-            var requiredByIngredients = new Dictionary<int, decimal>();
-
             if (orderIds.Count == 0)
             {
-                return new OrderRequirements(requiredBySemiFinished, requiredByIngredients);
+                return;
             }
 
             var dishItems = await _db.OrderDishItems
@@ -416,7 +430,6 @@ namespace GardenNookApi.Controllers
                 .AsNoTracking()
                 .Where(x => x.OrderId.HasValue && orderIds.Contains(x.OrderId.Value) && x.DrinkId.HasValue)
                 .Select(x => new SoldDrinkItem(
-                    x.Id,
                     x.DrinkId!.Value,
                     x.Quantity ?? 0m,
                     x.OrderDrinkItemModifier != null ? x.OrderDrinkItemModifier.MilkIngredientId : null,
@@ -459,46 +472,25 @@ namespace GardenNookApi.Controllers
                 .ToList();
             var toppingCardById = await LoadToppingCardsAsync(toppingIds);
 
-            var allCardIds = dishCardById.Values
-                .Concat(drinkCardById.Values)
-                .Concat(toppingCardById.Values)
-                .Where(x => x.HasValue)
-                .Select(x => x!.Value)
-                .Distinct()
-                .ToList();
-
-            var semiRequirementsByCard = await LoadSemiRequirementsByCardAsync(allCardIds);
-            var ingredientRequirementsByCard = await LoadIngredientRequirementsByCardAsync(allCardIds);
-            var ingredientMetadata = await LoadIngredientMetadataAsync(
-                ingredientRequirementsByCard.Values.SelectMany(x => x).Select(x => x.IngredientId)
-                    .Concat(drinkItems.SelectMany(x => new[] { x.MilkIngredientId, x.CoffeeIngredientId }).Where(x => x.HasValue).Select(x => x!.Value))
-                    .Distinct()
-                    .ToList());
-
             foreach (var item in dishItems)
             {
                 if (dishCardById.TryGetValue(item.ItemId, out var cardId) && cardId.HasValue)
                 {
-                    AddCardRequirements(requiredBySemiFinished, semiRequirementsByCard, cardId.Value, item.Quantity);
-                    AddIngredientRows(requiredByIngredients, ingredientRequirementsByCard, cardId.Value, item.Quantity);
+                    await AddTechnicalCardIngredientsAsync(cardId.Value, item.Quantity, target, warnings, new HashSet<int>(), null);
                 }
             }
 
             foreach (var item in drinkItems)
             {
-                if (!drinkCardById.TryGetValue(item.ItemId, out var cardId) || !cardId.HasValue)
+                if (drinkCardById.TryGetValue(item.ItemId, out var cardId) && cardId.HasValue)
                 {
-                    continue;
-                }
-
-                AddCardRequirements(requiredBySemiFinished, semiRequirementsByCard, cardId.Value, item.Quantity);
-
-                if (ingredientRequirementsByCard.TryGetValue(cardId.Value, out var ingredientRows))
-                {
-                    foreach (var row in ApplyDrinkIngredientModifiers(ingredientRows, item, ingredientMetadata))
-                    {
-                        AddRequirement(requiredByIngredients, row.IngredientId, row.RequiredBase * item.Quantity);
-                    }
+                    await AddTechnicalCardIngredientsAsync(
+                        cardId.Value,
+                        item.Quantity,
+                        target,
+                        warnings,
+                        new HashSet<int>(),
+                        new DrinkModifier(item.MilkIngredientId, item.CoffeeIngredientId));
                 }
             }
 
@@ -506,12 +498,294 @@ namespace GardenNookApi.Controllers
             {
                 if (toppingCardById.TryGetValue(item.ItemId, out var cardId) && cardId.HasValue)
                 {
-                    AddCardRequirements(requiredBySemiFinished, semiRequirementsByCard, cardId.Value, item.Quantity);
-                    AddIngredientRows(requiredByIngredients, ingredientRequirementsByCard, cardId.Value, item.Quantity);
+                    await AddTechnicalCardIngredientsAsync(cardId.Value, item.Quantity, target, warnings, new HashSet<int>(), null);
                 }
             }
+        }
 
-            return new OrderRequirements(requiredBySemiFinished, requiredByIngredients);
+        private async Task AddWriteOffIngredientConsumptionAsync(
+            ResolvedPeriod period,
+            Dictionary<int, decimal> target,
+            List<string> warnings)
+        {
+            var directIngredientRows = await BuildWriteOffQuery(period)
+                .SelectMany(x => x.IngredientItems)
+                .Select(x => new
+                {
+                    x.IngredientId,
+                    x.Quantity,
+                    x.UnitOfMeasureId
+                })
+                .ToListAsync();
+
+            foreach (var row in directIngredientRows)
+            {
+                AddRequirement(target, row.IngredientId, ConvertToBaseUnits(row.Quantity, row.UnitOfMeasureId));
+            }
+
+            var semiRows = await BuildWriteOffQuery(period)
+                .SelectMany(x => x.SemiFinishedItems)
+                .Select(x => new
+                {
+                    x.SemiFinishedId,
+                    x.Quantity,
+                    x.UnitOfMeasureId
+                })
+                .ToListAsync();
+
+            foreach (var row in semiRows)
+            {
+                var cardId = await ResolveSemiFinishedTechnicalCardIdAsync(row.SemiFinishedId, warnings);
+                if (!cardId.HasValue)
+                {
+                    continue;
+                }
+
+                var quantityBase = ConvertToBaseUnits(row.Quantity, row.UnitOfMeasureId);
+                await AddSemiFinishedTechnicalCardIngredientsByWeightAsync(
+                    cardId.Value,
+                    quantityBase,
+                    target,
+                    warnings,
+                    new HashSet<int>());
+            }
+        }
+
+        private async Task AddPreparationIngredientConsumptionAsync(
+            ResolvedPeriod period,
+            Dictionary<int, decimal> target,
+            List<string> warnings)
+        {
+            var preparations = await BuildPreparationQuery(period)
+                .Select(x => new
+                {
+                    SemiFinishedId = x.SemiFinishedId!.Value,
+                    StockGrams = x.StockGrams!.Value
+                })
+                .ToListAsync();
+
+            foreach (var preparation in preparations)
+            {
+                var cardId = await ResolveSemiFinishedTechnicalCardIdAsync(preparation.SemiFinishedId, warnings);
+                if (!cardId.HasValue)
+                {
+                    continue;
+                }
+
+                await AddSemiFinishedTechnicalCardIngredientsByWeightAsync(
+                    cardId.Value,
+                    preparation.StockGrams,
+                    target,
+                    warnings,
+                    new HashSet<int>());
+            }
+        }
+
+        private async Task AddSemiFinishedTechnicalCardIngredientsByWeightAsync(
+            int technicalCardId,
+            decimal requiredBaseWeight,
+            Dictionary<int, decimal> target,
+            List<string> warnings,
+            HashSet<int> visitedTechnicalCardIds)
+        {
+            if (requiredBaseWeight <= DecimalEpsilon)
+            {
+                return;
+            }
+
+            var outputBaseWeight = await LoadTechnicalCardOutputBaseAsync(technicalCardId);
+            if (outputBaseWeight <= DecimalEpsilon)
+            {
+                AddWarning(warnings, $"У техкарты #{technicalCardId} не найден выход. Расход сырья по полуфабрикату не рассчитан.");
+                return;
+            }
+
+            await AddTechnicalCardIngredientsAsync(
+                technicalCardId,
+                requiredBaseWeight / outputBaseWeight,
+                target,
+                warnings,
+                visitedTechnicalCardIds,
+                null);
+        }
+
+        private async Task AddTechnicalCardIngredientsAsync(
+            int technicalCardId,
+            decimal multiplier,
+            Dictionary<int, decimal> target,
+            List<string> warnings,
+            HashSet<int> visitedTechnicalCardIds,
+            DrinkModifier? drinkModifier)
+        {
+            if (multiplier <= DecimalEpsilon)
+            {
+                return;
+            }
+
+            if (!visitedTechnicalCardIds.Add(technicalCardId))
+            {
+                AddWarning(warnings, $"Найдена циклическая техкарта #{technicalCardId}. Вложенная ветка пропущена.");
+                return;
+            }
+
+            var ingredientRows = await LoadIngredientRowsByCardAsync(technicalCardId);
+            foreach (var row in ApplyDrinkIngredientModifiers(ingredientRows, drinkModifier))
+            {
+                AddRequirement(target, row.IngredientId, row.RequiredBase * multiplier);
+            }
+
+            var semiFinishedRows = await LoadSemiFinishedRowsByCardAsync(technicalCardId);
+            foreach (var row in semiFinishedRows)
+            {
+                var cardId = await ResolveSemiFinishedTechnicalCardIdAsync(row.SemiFinishedId, warnings);
+                if (!cardId.HasValue)
+                {
+                    continue;
+                }
+
+                await AddSemiFinishedTechnicalCardIngredientsByWeightAsync(
+                    cardId.Value,
+                    row.RequiredBase * multiplier,
+                    target,
+                    warnings,
+                    new HashSet<int>(visitedTechnicalCardIds));
+            }
+        }
+
+        private async Task<decimal> LoadTechnicalCardOutputBaseAsync(int technicalCardId)
+        {
+            if (_technicalCardOutputById.TryGetValue(technicalCardId, out var cachedOutput))
+            {
+                return cachedOutput;
+            }
+
+            var ingredientOutput = await _db.TechnicalCardIngredientCompositions
+                .AsNoTracking()
+                .Where(x => x.TechnicalCardId == technicalCardId)
+                .Select(x => ConvertToBaseUnits(GetRequiredWeight(x), x.UnitOfMeasureId))
+                .ToListAsync();
+
+            var semiFinishedOutput = await _db.TechnicalCardSemiFinishedCompositions
+                .AsNoTracking()
+                .Where(x => x.TechnicalCardId == technicalCardId)
+                .Select(x => ConvertToBaseUnits(GetRequiredWeight(x), x.UnitOfMeasureId))
+                .ToListAsync();
+
+            var output = ingredientOutput.Sum() + semiFinishedOutput.Sum();
+            _technicalCardOutputById[technicalCardId] = output;
+            return output;
+        }
+
+        private async Task<List<CardIngredientRow>> LoadIngredientRowsByCardAsync(int technicalCardId)
+        {
+            if (_ingredientRowsByCard.TryGetValue(technicalCardId, out var cachedRows))
+            {
+                return cachedRows;
+            }
+
+            var rows = await _db.TechnicalCardIngredientCompositions
+                .AsNoTracking()
+                .Where(x => x.TechnicalCardId == technicalCardId && x.IngredientId.HasValue)
+                .Select(x => new CardIngredientRow(
+                    x.IngredientId!.Value,
+                    ConvertToBaseUnits(GetRequiredWeight(x), x.UnitOfMeasureId)))
+                .ToListAsync();
+
+            rows = rows
+                .Where(x => x.RequiredBase > DecimalEpsilon)
+                .GroupBy(x => x.IngredientId)
+                .Select(x => new CardIngredientRow(x.Key, x.Sum(y => y.RequiredBase)))
+                .ToList();
+
+            _ingredientRowsByCard[technicalCardId] = rows;
+            return rows;
+        }
+
+        private async Task<List<CardSemiFinishedRow>> LoadSemiFinishedRowsByCardAsync(int technicalCardId)
+        {
+            if (_semiFinishedRowsByCard.TryGetValue(technicalCardId, out var cachedRows))
+            {
+                return cachedRows;
+            }
+
+            var rows = await _db.TechnicalCardSemiFinishedCompositions
+                .AsNoTracking()
+                .Where(x => x.TechnicalCardId == technicalCardId && x.SemiFinishedId.HasValue)
+                .Select(x => new CardSemiFinishedRow(
+                    x.SemiFinishedId!.Value,
+                    ConvertToBaseUnits(GetRequiredWeight(x), x.UnitOfMeasureId)))
+                .ToListAsync();
+
+            rows = rows
+                .Where(x => x.RequiredBase > DecimalEpsilon)
+                .GroupBy(x => x.SemiFinishedId)
+                .Select(x => new CardSemiFinishedRow(x.Key, x.Sum(y => y.RequiredBase)))
+                .ToList();
+
+            _semiFinishedRowsByCard[technicalCardId] = rows;
+            return rows;
+        }
+
+        private async Task<int?> ResolveSemiFinishedTechnicalCardIdAsync(int semiFinishedId, List<string> warnings)
+        {
+            if (!_semiFinishedCardById.TryGetValue(semiFinishedId, out var cardId))
+            {
+                cardId = await _db.SemiFinisheds
+                    .AsNoTracking()
+                    .Where(x => x.Id == semiFinishedId)
+                    .Select(x => x.TechnicalCardId)
+                    .FirstOrDefaultAsync();
+
+                _semiFinishedCardById[semiFinishedId] = cardId;
+            }
+
+            if (!cardId.HasValue)
+            {
+                AddWarning(warnings, $"У полуфабриката #{semiFinishedId} не указана техкарта. Расход сырья по нему не рассчитан.");
+            }
+
+            return cardId;
+        }
+
+        private IEnumerable<CardIngredientRow> ApplyDrinkIngredientModifiers(
+            List<CardIngredientRow> baseRows,
+            DrinkModifier? modifier)
+        {
+            foreach (var row in baseRows)
+            {
+                var ingredientId = row.IngredientId;
+                if (modifier != null)
+                {
+                    var metadata = LoadIngredientMetadata(row.IngredientId);
+                    if (modifier.MilkIngredientId.HasValue && metadata.CategoryId == MilkCategoryId)
+                    {
+                        ingredientId = modifier.MilkIngredientId.Value;
+                    }
+                    else if (modifier.CoffeeIngredientId.HasValue && metadata.CategoryId == CoffeeCategoryId)
+                    {
+                        ingredientId = modifier.CoffeeIngredientId.Value;
+                    }
+                }
+
+                yield return new CardIngredientRow(ingredientId, row.RequiredBase);
+            }
+        }
+
+        private IngredientMetadata LoadIngredientMetadata(int ingredientId)
+        {
+            if (_ingredientMetadataById.TryGetValue(ingredientId, out var metadata))
+            {
+                return metadata;
+            }
+
+            metadata = _db.Ingredients
+                .AsNoTracking()
+                .Where(x => x.Id == ingredientId)
+                .Select(x => new IngredientMetadata(x.Id, x.CategoryId))
+                .FirstOrDefault() ?? new IngredientMetadata(ingredientId, null);
+
+            _ingredientMetadataById[ingredientId] = metadata;
+            return metadata;
         }
 
         private async Task<Dictionary<int, int?>> LoadDishCardsAsync(List<int> ids)
@@ -535,131 +809,6 @@ namespace GardenNookApi.Controllers
                 : await _db.ToppingsAndSyrups.AsNoTracking().Where(x => ids.Contains(x.Id)).ToDictionaryAsync(x => x.Id, x => x.TechnicalCardId);
         }
 
-        private async Task<Dictionary<int, List<SemiRequirementRow>>> LoadSemiRequirementsByCardAsync(List<int> cardIds)
-        {
-            if (cardIds.Count == 0)
-            {
-                return new Dictionary<int, List<SemiRequirementRow>>();
-            }
-
-            var rows = await _db.TechnicalCardSemiFinishedCompositions
-                .AsNoTracking()
-                .Where(x => x.TechnicalCardId.HasValue && x.SemiFinishedId.HasValue && cardIds.Contains(x.TechnicalCardId.Value))
-                .Select(x => new
-                {
-                    TechnicalCardId = x.TechnicalCardId!.Value,
-                    SemiFinishedId = x.SemiFinishedId!.Value,
-                    Required = ConvertToBaseUnits(GetRequiredWeight(x), x.UnitOfMeasureId)
-                })
-                .ToListAsync();
-
-            return rows
-                .Where(x => x.Required > DecimalEpsilon)
-                .GroupBy(x => x.TechnicalCardId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.GroupBy(x => x.SemiFinishedId)
-                        .Select(x => new SemiRequirementRow(x.Key, x.Sum(y => y.Required)))
-                        .ToList());
-        }
-
-        private async Task<Dictionary<int, List<IngredientRequirementRow>>> LoadIngredientRequirementsByCardAsync(List<int> cardIds)
-        {
-            if (cardIds.Count == 0)
-            {
-                return new Dictionary<int, List<IngredientRequirementRow>>();
-            }
-
-            var rows = await _db.TechnicalCardIngredientCompositions
-                .AsNoTracking()
-                .Where(x => x.TechnicalCardId.HasValue && x.IngredientId.HasValue && cardIds.Contains(x.TechnicalCardId.Value))
-                .Select(x => new
-                {
-                    TechnicalCardId = x.TechnicalCardId!.Value,
-                    IngredientId = x.IngredientId!.Value,
-                    Required = ConvertToBaseUnits(GetRequiredWeight(x), x.UnitOfMeasureId)
-                })
-                .ToListAsync();
-
-            return rows
-                .Where(x => x.Required > DecimalEpsilon)
-                .GroupBy(x => x.TechnicalCardId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.GroupBy(x => x.IngredientId)
-                        .Select(x => new IngredientRequirementRow(x.Key, x.Sum(y => y.Required)))
-                        .ToList());
-        }
-
-        private async Task<Dictionary<int, IngredientMetadata>> LoadIngredientMetadataAsync(List<int> ingredientIds)
-        {
-            return ingredientIds.Count == 0
-                ? new Dictionary<int, IngredientMetadata>()
-                : await _db.Ingredients
-                    .AsNoTracking()
-                    .Where(x => ingredientIds.Contains(x.Id))
-                    .Select(x => new IngredientMetadata(x.Id, x.CategoryId))
-                    .ToDictionaryAsync(x => x.Id, x => x);
-        }
-
-        private static IEnumerable<IngredientRequirementRow> ApplyDrinkIngredientModifiers(
-            List<IngredientRequirementRow> baseRows,
-            SoldDrinkItem drink,
-            Dictionary<int, IngredientMetadata> ingredientMetadata)
-        {
-            foreach (var row in baseRows)
-            {
-                var ingredientId = row.IngredientId;
-                if (ingredientMetadata.TryGetValue(row.IngredientId, out var metadata))
-                {
-                    if (drink.MilkIngredientId.HasValue && metadata.CategoryId == MilkCategoryId)
-                    {
-                        ingredientId = drink.MilkIngredientId.Value;
-                    }
-                    else if (drink.CoffeeIngredientId.HasValue && metadata.CategoryId == CoffeeCategoryId)
-                    {
-                        ingredientId = drink.CoffeeIngredientId.Value;
-                    }
-                }
-
-                yield return new IngredientRequirementRow(ingredientId, row.RequiredBase);
-            }
-        }
-
-        private static void AddCardRequirements(
-            Dictionary<int, decimal> target,
-            Dictionary<int, List<SemiRequirementRow>> requirementsByCard,
-            int cardId,
-            decimal quantity)
-        {
-            if (quantity <= DecimalEpsilon || !requirementsByCard.TryGetValue(cardId, out var rows))
-            {
-                return;
-            }
-
-            foreach (var row in rows)
-            {
-                AddRequirement(target, row.SemiFinishedId, row.RequiredBase * quantity);
-            }
-        }
-
-        private static void AddIngredientRows(
-            Dictionary<int, decimal> target,
-            Dictionary<int, List<IngredientRequirementRow>> requirementsByCard,
-            int cardId,
-            decimal quantity)
-        {
-            if (quantity <= DecimalEpsilon || !requirementsByCard.TryGetValue(cardId, out var rows))
-            {
-                return;
-            }
-
-            foreach (var row in rows)
-            {
-                AddRequirement(target, row.IngredientId, row.RequiredBase * quantity);
-            }
-        }
-
         private static void AddRequirement(Dictionary<int, decimal> target, int id, decimal quantity)
         {
             if (id <= 0 || quantity <= DecimalEpsilon)
@@ -670,6 +819,14 @@ namespace GardenNookApi.Controllers
             target[id] = target.TryGetValue(id, out var current)
                 ? current + quantity
                 : quantity;
+        }
+
+        private static void AddWarning(List<string> warnings, string warning)
+        {
+            if (!warnings.Contains(warning))
+            {
+                warnings.Add(warning);
+            }
         }
 
         private static byte[] BuildExcel(ReportsResponse report)
@@ -711,26 +868,30 @@ namespace GardenNookApi.Controllers
         {
             sheet.Cell(1, 1).Value = "Отчет";
             sheet.Cell(1, 2).Value = report.PeriodName;
-            sheet.Cell(3, 1).Value = "Тип";
-            sheet.Cell(3, 2).Value = "Название";
-            sheet.Cell(3, 3).Value = "Ед. изм.";
-            sheet.Cell(3, 4).Value = "Расход";
-            sheet.Cell(3, 5).Value = "Факт";
-            sheet.Cell(3, 6).Value = "Разница";
+            sheet.Cell(3, 1).Value = "Сырье";
+            sheet.Cell(3, 2).Value = "Ед. изм.";
+            sheet.Cell(3, 3).Value = "По заказам";
+            sheet.Cell(3, 4).Value = "По списаниям";
+            sheet.Cell(3, 5).Value = "По заготовкам";
+            sheet.Cell(3, 6).Value = "Суммарный расход";
+            sheet.Cell(3, 7).Value = "Текущий остаток";
+            sheet.Cell(3, 8).Value = "Разница";
 
             for (var i = 0; i < report.InventoryItems.Count; i++)
             {
                 var row = report.InventoryItems[i];
                 var excelRow = i + 4;
-                sheet.Cell(excelRow, 1).Value = row.ItemTypeName;
-                sheet.Cell(excelRow, 2).Value = row.Name;
-                sheet.Cell(excelRow, 3).Value = row.UnitName;
-                sheet.Cell(excelRow, 4).Value = row.ExpectedConsumption;
-                sheet.Cell(excelRow, 5).Value = row.ActualStock;
-                sheet.Cell(excelRow, 6).Value = row.Difference;
+                sheet.Cell(excelRow, 1).Value = row.Name;
+                sheet.Cell(excelRow, 2).Value = row.UnitName;
+                sheet.Cell(excelRow, 3).Value = row.OrderConsumption;
+                sheet.Cell(excelRow, 4).Value = row.WriteOffConsumption;
+                sheet.Cell(excelRow, 5).Value = row.PreparationConsumption;
+                sheet.Cell(excelRow, 6).Value = row.ExpectedConsumption;
+                sheet.Cell(excelRow, 7).Value = row.ActualStock;
+                sheet.Cell(excelRow, 8).Value = row.Difference;
             }
 
-            sheet.Range(3, 1, 3, 6).Style.Font.Bold = true;
+            sheet.Range(3, 1, 3, 8).Style.Font.Bold = true;
             sheet.Columns().AdjustToContents();
         }
 
@@ -795,13 +956,13 @@ namespace GardenNookApi.Controllers
             PdfDocument document)
         {
             EnsurePdfSpace(ref gfx, ref page, document, ref y, 70);
-            DrawText(gfx, "Инвентаризация", boldFont, 36, ref y);
-            DrawText(gfx, "Тип | Название | Расход | Факт | Разница", font, 36, ref y);
+            DrawText(gfx, "Инвентаризация сырья", boldFont, 36, ref y);
+            DrawText(gfx, "Сырье | Заказы | Списания | Заготовки | Сумма | Остаток | Разница", font, 36, ref y);
 
             foreach (var row in rows)
             {
                 EnsurePdfSpace(ref gfx, ref page, document, ref y, 25);
-                var line = $"{row.ItemTypeName} | {TrimForPdf(row.Name)} | {FormatDecimal(row.ExpectedConsumption)} | {FormatDecimal(row.ActualStock)} | {FormatDecimal(row.Difference)} {row.UnitName}";
+                var line = $"{TrimForPdf(row.Name)} | {FormatDecimal(row.OrderConsumption)} | {FormatDecimal(row.WriteOffConsumption)} | {FormatDecimal(row.PreparationConsumption)} | {FormatDecimal(row.ExpectedConsumption)} | {FormatDecimal(row.ActualStock)} | {FormatDecimal(row.Difference)} {row.UnitName}";
                 DrawText(gfx, line, font, 36, ref y);
                 var width = Math.Min(180, Math.Abs((double)row.Difference) * 0.5);
                 var brush = row.Difference < 0 ? XBrushes.IndianRed : XBrushes.DarkSeaGreen;
@@ -932,13 +1093,13 @@ namespace GardenNookApi.Controllers
 
         private sealed record SoldItem(int ItemId, decimal Quantity);
 
-        private sealed record SoldDrinkItem(int OrderDrinkItemId, int ItemId, decimal Quantity, int? MilkIngredientId, int? CoffeeIngredientId);
+        private sealed record SoldDrinkItem(int ItemId, decimal Quantity, int? MilkIngredientId, int? CoffeeIngredientId);
 
-        private sealed record OrderRequirements(Dictionary<int, decimal> RequiredBySemiFinished, Dictionary<int, decimal> RequiredByIngredients);
+        private sealed record DrinkModifier(int? MilkIngredientId, int? CoffeeIngredientId);
 
-        private sealed record SemiRequirementRow(int SemiFinishedId, decimal RequiredBase);
+        private sealed record CardIngredientRow(int IngredientId, decimal RequiredBase);
 
-        private sealed record IngredientRequirementRow(int IngredientId, decimal RequiredBase);
+        private sealed record CardSemiFinishedRow(int SemiFinishedId, decimal RequiredBase);
 
         private sealed record IngredientMetadata(int Id, int? CategoryId);
     }

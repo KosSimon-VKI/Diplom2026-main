@@ -103,7 +103,10 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
 
                 ApplyReport(report);
                 _isLoadedOnce = true;
-                SetStatus("Отчет сформирован: " + report.PeriodName + ".", false);
+                var warningText = report.Warnings.Count == 0
+                    ? string.Empty
+                    : " Предупреждения: " + string.Join(" ", report.Warnings.Take(3));
+                SetStatus("Отчет сформирован: " + report.PeriodName + "." + warningText, false);
             }
             catch (Exception ex)
             {
@@ -403,6 +406,9 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
             public string ItemTypeName => Source.ItemTypeName;
             public string Name => Source.Name;
             public string UnitName => Source.UnitName;
+            public string OrderConsumptionDisplay => FormatDecimal(Source.OrderConsumption);
+            public string WriteOffConsumptionDisplay => FormatDecimal(Source.WriteOffConsumption);
+            public string PreparationConsumptionDisplay => FormatDecimal(Source.PreparationConsumption);
             public string ExpectedConsumptionDisplay => FormatDecimal(Source.ExpectedConsumption);
             public string ActualStockDisplay => FormatDecimal(Source.ActualStock);
             public string DifferenceDisplay => FormatDecimal(Source.Difference);

@@ -38,7 +38,7 @@
                     </StackPanel>
 
                     <Button Grid.Column="1"
-                            Content="?"
+                            Content="×"
                             Style="{StaticResource ModalCloseButton}"
                             Click="HeaderClose_Click"/>
                 </Grid>

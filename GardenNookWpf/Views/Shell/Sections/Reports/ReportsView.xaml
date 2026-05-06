@@ -248,11 +248,13 @@
                                           HeadersVisibility="Column"
                                           ItemsSource="{Binding InventoryItems}">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Тип" Binding="{Binding ItemTypeName}" Width="130"/>
-                                        <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*"/>
+                                        <DataGridTextColumn Header="Сырье" Binding="{Binding Name}" Width="*"/>
                                         <DataGridTextColumn Header="Ед." Binding="{Binding UnitName}" Width="70"/>
-                                        <DataGridTextColumn Header="Расход" Binding="{Binding ExpectedConsumptionDisplay}" Width="110"/>
-                                        <DataGridTextColumn Header="Факт" Binding="{Binding ActualStockDisplay}" Width="110"/>
+                                        <DataGridTextColumn Header="По заказам" Binding="{Binding OrderConsumptionDisplay}" Width="120"/>
+                                        <DataGridTextColumn Header="По списаниям" Binding="{Binding WriteOffConsumptionDisplay}" Width="135"/>
+                                        <DataGridTextColumn Header="По заготовкам" Binding="{Binding PreparationConsumptionDisplay}" Width="140"/>
+                                        <DataGridTextColumn Header="Суммарный" Binding="{Binding ExpectedConsumptionDisplay}" Width="115"/>
+                                        <DataGridTextColumn Header="Текущий остаток" Binding="{Binding ActualStockDisplay}" Width="150"/>
                                         <DataGridTextColumn Header="Разница" Binding="{Binding DifferenceDisplay}" Width="120"/>
                                     </DataGrid.Columns>
                                 </DataGrid>

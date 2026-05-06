@@ -9,6 +9,7 @@ namespace TransferModels.Reports
         public string PeriodName { get; set; } = string.Empty;
         public DateTime? From { get; set; }
         public DateTime? To { get; set; }
+        public List<string> Warnings { get; set; } = new List<string>();
         public List<ReportMenuItemDto> PopularItems { get; set; } = new List<ReportMenuItemDto>();
         public List<ReportMenuItemDto> UnpopularItems { get; set; } = new List<ReportMenuItemDto>();
         public List<InventoryReportItemDto> InventoryItems { get; set; } = new List<InventoryReportItemDto>();
@@ -31,6 +32,9 @@ namespace TransferModels.Reports
         public int ItemId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string UnitName { get; set; } = string.Empty;
+        public decimal OrderConsumption { get; set; }
+        public decimal WriteOffConsumption { get; set; }
+        public decimal PreparationConsumption { get; set; }
         public decimal ExpectedConsumption { get; set; }
         public decimal ActualStock { get; set; }
         public decimal Difference { get; set; }
