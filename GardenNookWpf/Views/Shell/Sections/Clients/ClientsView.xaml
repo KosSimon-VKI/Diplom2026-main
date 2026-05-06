@@ -1,0 +1,153 @@
+<UserControl x:Class="GardenNookWpf.Views.Shell.Sections.Clients.ClientsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style x:Key="ClientCardActionButtonStyle" TargetType="Button" BasedOn="{StaticResource ModalSecondaryButton}">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="RootGrid" Background="White">
+        <Grid Margin="18,20">
+            <Border Style="{StaticResource ModalCardBorder}"
+                    Background="{StaticResource ModalColorWhiteBrush}"
+                    Padding="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="КЛИЕНТЫ"
+                               FontSize="34"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource ModalColorTextBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,12"/>
+
+                    <TextBlock x:Name="StatusText"
+                               Grid.Row="1"
+                               Margin="0,0,0,10"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               Visibility="Collapsed"/>
+
+                    <TextBox x:Name="SearchTextBox"
+                             Grid.Row="2"
+                             Height="44"
+                             FontSize="18"
+                             Margin="0,0,0,12"
+                             VerticalContentAlignment="Center"
+                             TextChanged="SearchTextBox_TextChanged"/>
+
+                    <Border Grid.Row="3"
+                            BorderBrush="#FF6F6864"
+                            BorderThickness="2"
+                            CornerRadius="10"
+                            Padding="14"
+                            Background="#FFF9F9F9">
+                        <Grid>
+                            <ScrollViewer x:Name="ClientsScrollViewer"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          Padding="0,0,12,0">
+                                <ItemsControl x:Name="ClientsList">
+                                    <ItemsControl.ItemContainerStyle>
+                                        <Style TargetType="ContentPresenter">
+                                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                        </Style>
+                                    </ItemsControl.ItemContainerStyle>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border MinHeight="158"
+                                                    Margin="0,0,0,12"
+                                                    HorizontalAlignment="Stretch"
+                                                    Style="{StaticResource ModalCardBorder}"
+                                                    Background="{StaticResource ModalColorWhiteBrush}">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Text="{Binding FullNameDisplay}"
+                                                               FontSize="26"
+                                                               FontWeight="Bold"
+                                                               Foreground="{StaticResource ModalColorTextBrush}"
+                                                               TextWrapping="Wrap"/>
+
+                                                    <StackPanel Grid.Row="1"
+                                                                Margin="0,12,0,0">
+                                                        <TextBlock Text="{Binding PhoneDisplay}"
+                                                                   FontSize="18"
+                                                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                                                   TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding CategoryDisplay}"
+                                                                   Margin="0,5,0,0"
+                                                                   FontSize="19"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource ModalColorPrimaryDarkBrush}"
+                                                                   TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding OrdersDisplay}"
+                                                                   Margin="0,5,0,0"
+                                                                   FontSize="18"
+                                                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+
+                                                    <WrapPanel Grid.Row="2"
+                                                               Margin="0,12,0,0"
+                                                               HorizontalAlignment="Right">
+                                                        <Button Content="Изменить категорию"
+                                                                Width="190"
+                                                                Margin="0,0,8,8"
+                                                                Style="{StaticResource ClientCardActionButtonStyle}"
+                                                                Tag="{Binding}"
+                                                                Click="EditCategoryButton_Click"/>
+                                                        <Button Content="История заказов"
+                                                                Width="170"
+                                                                Margin="0,0,8,8"
+                                                                Style="{StaticResource ClientCardActionButtonStyle}"
+                                                                Tag="{Binding}"
+                                                                Click="OrderHistoryButton_Click"/>
+                                                        <Button Content="Удалить"
+                                                                Width="118"
+                                                                Margin="0,0,0,8"
+                                                                Style="{StaticResource ClientCardActionButtonStyle}"
+                                                                Background="#FF742C27"
+                                                                Foreground="White"
+                                                                Tag="{Binding}"
+                                                                Click="DeleteClientButton_Click"/>
+                                                    </WrapPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <TextBlock x:Name="EmptyText"
+                                       Text="Клиенты не найдены."
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ModalColorTextBrush}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Visibility="Collapsed"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

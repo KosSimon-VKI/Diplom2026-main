@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using GardenNookWpf.Views.Shell.Sections.Clients;
 using GardenNookWpf.Views.Shell.Sections.Menu;
 using GardenNookWpf.Views.Shell.Sections.Inventory;
 using GardenNookWpf.Views.Shell.Sections.IngredientCategories;
@@ -149,6 +150,11 @@ namespace GardenNookWpf.Views.Shell
 
         private async void OrderHistoryButton_Click(object sender, RoutedEventArgs e)
         {
+            if (GetOrCreateSection(MainSection.OrderHistory) is OrderHistoryView orderHistoryView)
+            {
+                orderHistoryView.ClearClientFilter();
+            }
+
             await NavigateToSectionAsync(MainSection.OrderHistory);
         }
 
@@ -252,6 +258,7 @@ namespace GardenNookWpf.Views.Shell
                 MainSection.Inventory => new InventoryView(_httpClient, _userRole),
                 MainSection.IngredientCategories => new IngredientCategoriesView(_httpClient, _userRole),
                 MainSection.OrderHistory => new OrderHistoryView(_httpClient, _userRole),
+                MainSection.Clients => new ClientsView(_httpClient, _userRole, OpenClientOrderHistoryAsync),
                 MainSection.Loyalty => new LoyaltyView(_httpClient, _userRole),
                 MainSection.Staff => new StaffView(_httpClient, _userRole),
                 _ => new PlaceholderSectionView(GetSectionTitle(section), _userRole)
@@ -272,6 +279,16 @@ namespace GardenNookWpf.Views.Shell
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             }
+        }
+
+        private async Task OpenClientOrderHistoryAsync(int clientId, string clientName)
+        {
+            if (GetOrCreateSection(MainSection.OrderHistory) is OrderHistoryView orderHistoryView)
+            {
+                orderHistoryView.SetClientFilter(clientId, clientName);
+            }
+
+            await NavigateToSectionAsync(MainSection.OrderHistory);
         }
 
         private MainSection ResolveStartupSection()

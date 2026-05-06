@@ -45,6 +45,8 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         };
         private readonly DispatcherTimer _refreshTimer;
         private MenuResponse? _menu;
+        private int? _clientFilterId;
+        private string _clientFilterTitle = string.Empty;
         private bool _isLoadedOnce;
         private bool _isBusy;
         private bool _isOpeningDetails;
@@ -70,6 +72,28 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         }
 
         public bool IsBusy => _isBusy;
+
+        public void SetClientFilter(int clientId, string clientName)
+        {
+            _clientFilterId = clientId > 0 ? clientId : null;
+            _clientFilterTitle = clientName?.Trim() ?? string.Empty;
+            _isLoadedOnce = false;
+            UpdateClientFilterUi();
+        }
+
+        public void ClearClientFilter()
+        {
+            if (!_clientFilterId.HasValue && string.IsNullOrWhiteSpace(_clientFilterTitle))
+            {
+                UpdateClientFilterUi();
+                return;
+            }
+
+            _clientFilterId = null;
+            _clientFilterTitle = string.Empty;
+            _isLoadedOnce = false;
+            UpdateClientFilterUi();
+        }
 
         public async Task ActivateAsync()
         {
@@ -102,6 +126,12 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         private void Filter_Changed(object sender, EventArgs e)
         {
             ApplyFilters();
+        }
+
+        private async void AllClientsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ClearClientFilter();
+            await ReloadAsync();
         }
 
         private async void PeriodFilter_Changed(object sender, SelectionChangedEventArgs e)
@@ -367,7 +397,27 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         private string BuildHistoryAddress()
         {
             var period = (PeriodFilterComboBox?.SelectedItem as OrderHistoryPeriodOption)?.Token ?? "today";
-            return $"{HistoryAddress}?period={Uri.EscapeDataString(period)}";
+            var address = $"{HistoryAddress}?period={Uri.EscapeDataString(period)}";
+            if (_clientFilterId.HasValue)
+            {
+                address += "&clientId=" + _clientFilterId.Value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return address;
+        }
+
+        private void UpdateClientFilterUi()
+        {
+            if (TitleText == null || AllClientsButton == null)
+            {
+                return;
+            }
+
+            var hasClientFilter = _clientFilterId.HasValue;
+            TitleText.Text = hasClientFilter && !string.IsNullOrWhiteSpace(_clientFilterTitle)
+                ? "ИСТОРИЯ ЗАКАЗОВ: " + _clientFilterTitle
+                : "ИСТОРИЯ ЗАКАЗОВ";
+            AllClientsButton.Visibility = hasClientFilter ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private static string FormatDate(DateTime? value)

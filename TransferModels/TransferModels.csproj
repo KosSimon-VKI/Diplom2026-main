@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Clients\ClientDto.cs" />
+    <Compile Include="Clients\ClientManagementDtos.cs" />
     <Compile Include="Clients\ClientRequest.cs" />
     <Compile Include="Clients\ClientResponse.cs" />
     <Compile Include="Kitchen\KitchenOrdersResponse.cs" />

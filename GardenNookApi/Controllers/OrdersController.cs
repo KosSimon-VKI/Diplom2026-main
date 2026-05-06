@@ -89,13 +89,20 @@ namespace GardenNookApi.Controllers
 
         [HttpGet("history")]
         [Authorize(Roles = "Администратор")]
-        public async Task<ActionResult<OrderHistoryResponse>> GetHistory([FromQuery] string? period = null)
+        public async Task<ActionResult<OrderHistoryResponse>> GetHistory([FromQuery] string? period = null, [FromQuery] int? clientId = null)
         {
             var fromDate = ResolveHistoryPeriodStart(period);
 
-            var orders = await _db.Orders
+            var query = _db.Orders
                 .AsNoTracking()
-                .Where(o => o.CreatedAt.HasValue && o.CreatedAt.Value >= fromDate)
+                .Where(o => o.CreatedAt.HasValue && o.CreatedAt.Value >= fromDate);
+
+            if (clientId.HasValue && clientId.Value > 0)
+            {
+                query = query.Where(o => o.ClientId == clientId.Value);
+            }
+
+            var orders = await query
                 .OrderByDescending(o => o.CreatedAt)
                 .ThenByDescending(o => o.Id)
                 .Select(o => new OrderHistoryListItemDto

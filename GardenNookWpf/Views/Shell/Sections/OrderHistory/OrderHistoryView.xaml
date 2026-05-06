@@ -30,12 +30,30 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0"
-                       Text="ИСТОРИЯ ЗАКАЗОВ"
-                       FontSize="34"
-                       FontWeight="Bold"
-                       Foreground="{StaticResource ModalColorTextBrush}"
-                       Margin="0,0,0,14"/>
+            <Grid Grid.Row="0" Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="TitleText"
+                           Text="ИСТОРИЯ ЗАКАЗОВ"
+                           FontSize="34"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource ModalColorTextBrush}"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"/>
+
+                <Button x:Name="AllClientsButton"
+                        Grid.Column="1"
+                        Content="Все клиенты"
+                        Width="150"
+                        Height="42"
+                        Margin="12,0,0,0"
+                        Style="{StaticResource ModalSecondaryButton}"
+                        Visibility="Collapsed"
+                        Click="AllClientsButton_Click"/>
+            </Grid>
 
             <Border Grid.Row="1"
                     Style="{StaticResource ModalCardBorder}"
