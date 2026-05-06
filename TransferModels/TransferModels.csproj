@@ -73,6 +73,7 @@
     <Compile Include="Profile\ProfileCancelOrderResponse.cs" />
     <Compile Include="Profile\ProfileResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reports\ReportDtos.cs" />
     <Compile Include="Staff\StaffDto.cs" />
     <Compile Include="Staff\StaffManagementDtos.cs" />
     <Compile Include="Staff\StaffRequest.cs" />

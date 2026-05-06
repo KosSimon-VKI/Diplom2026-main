@@ -14,6 +14,7 @@ using GardenNookWpf.Views.Shell.Sections.Loyalty;
 using GardenNookWpf.Views.Shell.Sections.Orders;
 using GardenNookWpf.Views.Shell.Sections.OrderHistory;
 using GardenNookWpf.Views.Shell.Sections.Preparations;
+using GardenNookWpf.Views.Shell.Sections.Reports;
 using GardenNookWpf.Views.Shell.Sections.Shared;
 using GardenNookWpf.Views.Shell.Sections.Staff;
 using GardenNookWpf.Views.Shell.Sections.StopList;
@@ -260,6 +261,7 @@ namespace GardenNookWpf.Views.Shell
                 MainSection.OrderHistory => new OrderHistoryView(_httpClient, _userRole),
                 MainSection.Clients => new ClientsView(_httpClient, _userRole, OpenClientOrderHistoryAsync),
                 MainSection.Loyalty => new LoyaltyView(_httpClient, _userRole),
+                MainSection.Reports => new ReportsView(_httpClient, _userRole),
                 MainSection.Staff => new StaffView(_httpClient, _userRole),
                 _ => new PlaceholderSectionView(GetSectionTitle(section), _userRole)
             };
