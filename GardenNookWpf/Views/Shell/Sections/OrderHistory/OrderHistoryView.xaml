@@ -47,8 +47,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="230"/>
-                        <ColumnDefinition Width="220"/>
-                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="260"/>
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="SearchTextBox"
                              Height="42"
@@ -62,17 +61,12 @@
                               FontSize="18"
                               Margin="0,0,10,0"
                               SelectionChanged="Filter_Changed"/>
-                    <DatePicker x:Name="DateFromPicker"
-                                Grid.Column="2"
-                                Height="42"
-                                FontSize="18"
-                                Margin="0,0,10,0"
-                                SelectedDateChanged="Filter_Changed"/>
-                    <DatePicker x:Name="DateToPicker"
-                                Grid.Column="3"
-                                Height="42"
-                                FontSize="18"
-                                SelectedDateChanged="Filter_Changed"/>
+                    <ComboBox x:Name="PeriodFilterComboBox"
+                              Grid.Column="2"
+                              Height="42"
+                              FontSize="18"
+                              DisplayMemberPath="Title"
+                              SelectionChanged="PeriodFilter_Changed"/>
                 </Grid>
             </Border>
 

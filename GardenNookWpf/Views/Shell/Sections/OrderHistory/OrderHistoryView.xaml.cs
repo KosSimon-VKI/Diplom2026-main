@@ -25,7 +25,7 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         private const string HistoryAddress = ApiBaseAddress + "/api/orders/history";
         private const string MenuAddress = ApiBaseAddress + "/api/menu";
         private const string AllStatusesText = "Все статусы";
-        private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(7);
+        private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(10);
 
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
@@ -36,6 +36,13 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         private readonly ObservableCollection<OrderHistoryListItemViewModel> _visibleOrders = new ObservableCollection<OrderHistoryListItemViewModel>();
         private readonly List<OrderHistoryListItemViewModel> _allOrders = new List<OrderHistoryListItemViewModel>();
         private readonly List<string> _statuses = new List<string>();
+        private readonly List<OrderHistoryPeriodOption> _periods = new List<OrderHistoryPeriodOption>
+        {
+            new OrderHistoryPeriodOption("today", "Сегодня"),
+            new OrderHistoryPeriodOption("week", "Последняя неделя"),
+            new OrderHistoryPeriodOption("month", "Последний месяц"),
+            new OrderHistoryPeriodOption("threeMonths", "Последние 3 месяца")
+        };
         private readonly DispatcherTimer _refreshTimer;
         private MenuResponse? _menu;
         private bool _isLoadedOnce;
@@ -55,9 +62,11 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
 
             OrdersList.ItemsSource = _visibleOrders;
             StatusFilterComboBox.ItemsSource = _statuses;
+            PeriodFilterComboBox.ItemsSource = _periods;
             SearchTextBox.Text = string.Empty;
             _statuses.Add(AllStatusesText);
             StatusFilterComboBox.SelectedIndex = 0;
+            PeriodFilterComboBox.SelectedIndex = 0;
         }
 
         public bool IsBusy => _isBusy;
@@ -93,6 +102,16 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         private void Filter_Changed(object sender, EventArgs e)
         {
             ApplyFilters();
+        }
+
+        private async void PeriodFilter_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoadedOnce || _isBusy)
+            {
+                return;
+            }
+
+            await ReloadAsync();
         }
 
         private async void OrdersList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -157,7 +176,7 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
                 SetBusy(true);
                 SetStatus("Загрузка истории заказов...", false);
 
-                using var response = await _httpClient.GetAsync(HistoryAddress);
+                using var response = await _httpClient.GetAsync(BuildHistoryAddress());
                 if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
                 {
                     SetStatus("Нет доступа к истории заказов.", true);
@@ -284,8 +303,6 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
         {
             var query = (SearchTextBox?.Text ?? string.Empty).Trim().ToLowerInvariant();
             var selectedStatus = StatusFilterComboBox?.SelectedItem as string;
-            var dateFrom = DateFromPicker?.SelectedDate?.Date;
-            var dateTo = DateToPicker?.SelectedDate?.Date;
 
             var filtered = _allOrders.Where(order =>
             {
@@ -296,10 +313,7 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
                 var matchesStatus = string.IsNullOrWhiteSpace(selectedStatus) ||
                     selectedStatus == AllStatusesText ||
                     string.Equals(order.Status, selectedStatus, StringComparison.CurrentCultureIgnoreCase);
-                var createdDate = order.CreatedAt?.Date;
-                var matchesFrom = !dateFrom.HasValue || (createdDate.HasValue && createdDate.Value >= dateFrom.Value);
-                var matchesTo = !dateTo.HasValue || (createdDate.HasValue && createdDate.Value <= dateTo.Value);
-                return matchesQuery && matchesStatus && matchesFrom && matchesTo;
+                return matchesQuery && matchesStatus;
             }).ToList();
 
             _visibleOrders.Clear();
@@ -350,6 +364,12 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
             return string.IsNullOrWhiteSpace(text) ? fallback : text;
         }
 
+        private string BuildHistoryAddress()
+        {
+            var period = (PeriodFilterComboBox?.SelectedItem as OrderHistoryPeriodOption)?.Token ?? "today";
+            return $"{HistoryAddress}?period={Uri.EscapeDataString(period)}";
+        }
+
         private static string FormatDate(DateTime? value)
         {
             return value.HasValue ? value.Value.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture) : "-";
@@ -363,6 +383,18 @@ namespace GardenNookWpf.Views.Shell.Sections.OrderHistory
             }
 
             return string.IsNullOrWhiteSpace(name) ? phone : name;
+        }
+
+        private sealed class OrderHistoryPeriodOption
+        {
+            public OrderHistoryPeriodOption(string token, string title)
+            {
+                Token = token;
+                Title = title;
+            }
+
+            public string Token { get; }
+            public string Title { get; }
         }
 
         private sealed class OrderHistoryListItemViewModel

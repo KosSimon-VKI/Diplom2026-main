@@ -89,10 +89,13 @@ namespace GardenNookApi.Controllers
 
         [HttpGet("history")]
         [Authorize(Roles = "Администратор")]
-        public async Task<ActionResult<OrderHistoryResponse>> GetHistory()
+        public async Task<ActionResult<OrderHistoryResponse>> GetHistory([FromQuery] string? period = null)
         {
+            var fromDate = ResolveHistoryPeriodStart(period);
+
             var orders = await _db.Orders
                 .AsNoTracking()
+                .Where(o => o.CreatedAt.HasValue && o.CreatedAt.Value >= fromDate)
                 .OrderByDescending(o => o.CreatedAt)
                 .ThenByDescending(o => o.Id)
                 .Select(o => new OrderHistoryListItemDto
@@ -128,6 +131,20 @@ namespace GardenNookApi.Controllers
             {
                 Orders = orders
             });
+        }
+
+        private static DateTime ResolveHistoryPeriodStart(string? period)
+        {
+            var now = DateTime.Now;
+            var normalized = (period ?? string.Empty).Trim();
+
+            return normalized switch
+            {
+                "week" => now.AddDays(-7),
+                "month" => now.AddMonths(-1),
+                "threeMonths" => now.AddMonths(-3),
+                _ => DateTime.Today
+            };
         }
 
         [HttpGet("history/{orderId:int}")]
