@@ -279,3 +279,130 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 1200px) and (hover: none), (max-width: 1200px) and (pointer: coarse) {
+    .app-container {
+        grid-template-columns: 143px 1fr;
+        grid-template-rows: 1fr;
+    }
+
+    .profile-grid {
+        gap: 30px;
+    }
+
+    .profile-card {
+        padding: 24px;
+    }
+
+    .profile-title {
+        font-size: 2.25rem;
+        margin-bottom: 24px;
+    }
+
+    .profile-row {
+        gap: 15px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .profile-label {
+        min-width: 180px;
+        font-size: 36px;
+    }
+
+    .profile-value {
+        font-size: 36px;
+    }
+
+    .order-history-empty {
+        padding: 15px 0;
+        font-size: 30px;
+    }
+
+    .order-history-item {
+        padding: 18px;
+        margin-bottom: 18px;
+    }
+
+    .order-history-top {
+        gap: 18px;
+        margin-bottom: 12px;
+    }
+
+    .order-history-title {
+        font-size: 30px;
+    }
+
+    .order-history-status {
+        gap: 12px;
+        padding: 6px 18px;
+        font-size: 27px;
+    }
+
+    .order-history-status-dot {
+        width: 15px;
+        height: 15px;
+    }
+
+    .order-history-meta,
+    .order-history-comment {
+        font-size: 36px;
+    }
+
+    .order-history-comment {
+        margin-top: 12px;
+    }
+
+    .order-history-composition {
+        margin-top: 15px;
+        padding-top: 12px;
+    }
+
+    .order-history-composition.empty,
+    .order-history-composition-title {
+        font-size: 34px;
+    }
+
+    .order-composition-list {
+        gap: 12px;
+    }
+
+    .order-composition-item {
+        padding: 12px 15px;
+    }
+
+    .order-composition-name {
+        font-size: 36px;
+    }
+
+    .order-composition-meta {
+        font-size: 34px;
+    }
+
+    .order-composition-addons-title {
+        margin-top: 9px;
+        margin-bottom: 6px;
+        font-size: 33px;
+    }
+
+    .order-composition-addons {
+        gap: 5px;
+    }
+
+    .order-composition-addon {
+        font-size: 33px;
+    }
+
+    .order-cancel-btn {
+        margin-top: 15px;
+        padding: 12px 18px;
+        font-size: 27px;
+    }
+
+    .profile-error,
+    .profile-success {
+        margin-bottom: 15px;
+        padding: 15px 18px;
+        font-size: 36px;
+    }
+}

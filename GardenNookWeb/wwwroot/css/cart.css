@@ -75,7 +75,7 @@
 }
 
 .cart-topping {
-    font-size: 1.05rem;
+    font-size: 1.4rem;
     color: #333;
     font-weight: 600;
     line-height: 1.25;
@@ -84,4 +84,50 @@
 .cart-modifier {
     color: #4a4a4a;
     font-weight: 500;
+}
+
+@media (max-width: 1200px) and (hover: none), (max-width: 1200px) and (pointer: coarse) {
+    .cart-item {
+        padding: 15px 0;
+    }
+
+    .cart-header,
+    .cart-name,
+    .cart-price,
+    .cart-total-price,
+    .cart-quanity {
+        font-size: 2.25rem;
+        line-height: 1.2;
+    }
+
+    .cart-header {
+        margin-bottom: 15px;
+    }
+
+    .cart-controls {
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .cart-quanity-btn {
+        width: 51px;
+        height: 51px;
+        font-size: 2.25rem;
+    }
+
+    .cart-remove {
+        width: 42px;
+        height: 42px;
+        font-size: 30px;
+    }
+
+    .cart-toppings {
+        margin-top: 9px;
+        gap: 3px;
+    }
+
+    .cart-topping {
+        font-size: 2.1rem;
+        line-height: 1.3;
+    }
 }

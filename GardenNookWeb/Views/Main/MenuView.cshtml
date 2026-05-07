@@ -46,6 +46,11 @@
                 <h1>МЕНЮ</h1>
             </div>
 
+            <div class="mobile-menu-tools">
+                <input type="text" placeholder="Поиск..." id="mobile-search-input" class="mobile-search-input">
+                <button type="button" class="mobile-filter-btn" id="mobile-filter-open">Фильтры</button>
+            </div>
+
             <!-- Список товаров -->
             <div class="items-list" id="items-list">
                 <!-- Блюда -->
@@ -160,8 +165,14 @@
             </div>
         </div>
 
+        <div class="filters-backdrop hidden" id="filters-backdrop"></div>
+
         <!-- Правая панель (категории/фильтры/поиск, без корзины) -->
         <div class="filters">
+            <div class="mobile-filters-header">
+                <div class="mobile-filters-title">Фильтры</div>
+                <button type="button" class="mobile-filters-close" id="mobile-filter-close">×</button>
+            </div>
 
             <div class="search-box">
                 <input type="text" placeholder="Поиск..." id="search-input">

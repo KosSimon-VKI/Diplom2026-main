@@ -90,3 +90,83 @@ button {
     font-size: 30px;
     color: #2DE24B;
 }
+
+@media (max-width: 1200px) and (hover: none), (max-width: 1200px) and (pointer: coarse) {
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        min-height: 100vh;
+        overflow: hidden;
+    }
+
+    .container {
+        flex-direction: column;
+        min-height: 100vh;
+        height: 100vh;
+    }
+
+    .left {
+        width: 100%;
+        height: 24vh;
+        min-height: 220px;
+        padding: 30px;
+    }
+
+    .left img {
+        max-width: 68%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .right {
+        width: 100%;
+        flex: 1;
+        align-items: flex-start;
+        padding: 42px 48px;
+        overflow-y: auto;
+    }
+
+    .form-wrapper {
+        width: 100%;
+        max-width: none;
+    }
+
+    h2 {
+        margin-bottom: 45px;
+        font-size: 67px;
+        line-height: 1.1;
+    }
+
+    label {
+        margin: 24px 0 15px;
+        font-size: 45px;
+    }
+
+    input {
+        width: 100%;
+        padding: 23px 30px;
+        border-radius: 30px;
+        font-size: 45px;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 45px;
+        padding: 23px 30px;
+        border-radius: 30px;
+        font-size: 45px;
+    }
+
+    button.secondary {
+        margin-top: 30px;
+    }
+
+    .error,
+    .success {
+        margin-top: 45px;
+        font-size: 45px;
+        line-height: 1.25;
+    }
+}

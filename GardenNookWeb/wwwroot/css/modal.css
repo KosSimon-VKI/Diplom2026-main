@@ -154,3 +154,82 @@
         gap: 14px;
     }
 }
+
+@media (max-width: 1200px) and (hover: none), (max-width: 1200px) and (pointer: coarse) {
+    .modal-btn {
+        padding: 23px 45px;
+        border-radius: 57px;
+        font-size: 36px;
+    }
+
+    .modal-content {
+        width: calc(100vw - 36px);
+        max-width: calc(100vw - 36px);
+        max-height: 94vh;
+        margin: 24px auto;
+        font-size: 36px;
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 27px;
+    }
+
+    .modal-header h2 {
+        font-size: 54px;
+        line-height: 1.1;
+    }
+
+    .modal-footer {
+        gap: 23px;
+        flex-wrap: wrap;
+    }
+
+    .modal-close {
+        font-size: 50px;
+    }
+
+    .topping-list {
+        padding: 23px;
+    }
+
+    .topping-item {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 21px;
+        padding: 32px 0;
+    }
+
+    .topping-name {
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    .topping-price {
+        text-align: left;
+    }
+
+    .topping-actions {
+        align-items: flex-start;
+        gap: 18px;
+    }
+
+    .topping-qty-controls {
+        grid-template-columns: 72px 99px 72px;
+        column-gap: 23px;
+    }
+
+    .topping-qty {
+        min-width: 99px;
+    }
+
+    .topping-qty-controls button {
+        width: 63px;
+        height: 63px;
+        font-size: 41px;
+    }
+
+    .topping-unavailable {
+        font-size: 27px;
+        text-align: left;
+    }
+}

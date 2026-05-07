@@ -477,6 +477,12 @@ body {
     font-size: 1.5rem;
 }
 
+.mobile-menu-tools,
+.mobile-filters-header,
+.filters-backdrop {
+    display: none;
+}
+
 /* ========== Адаптивность ========== */
 @media (max-width: 1200px) {
     .app-container {
@@ -488,10 +494,304 @@ body {
     }
 }
 
+@media (max-width: 1200px) and (hover: none), (max-width: 1200px) and (pointer: coarse) {
+    .app-container {
+        grid-template-columns: 143px 1fr;
+        grid-template-rows: 1fr;
+    }
+
+    .sidebar {
+        grid-row: 1;
+    }
+
+    .filters {
+        display: flex;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 900;
+        width: min(780px, calc(100vw - 143px));
+        max-width: calc(100vw - 143px);
+        flex-direction: column;
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+        border-left: 2px solid #6F6864;
+        border-top: none;
+        box-shadow: -8px 0 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .filters.filters-open {
+        transform: translateX(0);
+    }
+
+    .filters-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 850;
+        display: block;
+        background: rgba(0, 0, 0, 0.35);
+    }
+
+    .mobile-filters-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 24px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .mobile-filters-title {
+        color: #1E5928;
+        font-size: 2.7rem;
+        font-weight: 800;
+    }
+
+    .mobile-filters-close {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        border: 2px solid #742C27;
+        background: white;
+        color: #742C27;
+        font-size: 48px;
+        font-weight: 800;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .back-btn {
+        width: 101px;
+        height: 101px;
+    }
+
+    .nav-btn {
+        width: 101px;
+        height: 101px;
+    }
+
+    .btn-image {
+        width: 52px;
+        height: 52px;
+    }
+
+    .cart-badge {
+        top: -20px;
+        min-width: 52px;
+        height: 44px;
+        padding: 0 16px;
+        font-size: 28px;
+        border-width: 4px;
+    }
+
+    .main-content {
+        padding: 30px;
+    }
+
+    .content-header {
+        margin-bottom: 30px;
+    }
+
+    .content-header h1 {
+        font-size: 3rem;
+    }
+
+    .mobile-menu-tools {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        margin-bottom: 24px;
+        align-items: center;
+    }
+
+    .mobile-search-input {
+        min-width: 0;
+        width: 100%;
+        padding: 18px;
+        border: 2px solid #1E5928;
+        border-radius: 12px;
+        color: #333;
+        font-size: 2.25rem;
+        font-weight: 600;
+        outline: none;
+    }
+
+    .mobile-search-input:focus {
+        box-shadow: 0 0 0 3px rgba(141, 182, 114, 0.25);
+    }
+
+    .mobile-filter-btn {
+        padding: 18px 24px;
+        border: 2px solid #1E5928;
+        border-radius: 12px;
+        background: #91A56E;
+        color: white;
+        font-size: 2.25rem;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .items-list {
+        gap: 23px;
+    }
+
+    .item-card {
+        align-items: flex-start;
+        gap: 23px;
+        padding: 23px;
+    }
+
+    .item-name-row {
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 8px;
+    }
+
+    .item-name {
+        font-size: 2.7rem;
+        white-space: normal;
+        line-height: 1.12;
+    }
+
+    .item-volume {
+        font-size: 2.7rem;
+    }
+
+    .item-category {
+        font-size: 2.025rem;
+        margin-bottom: 8px;
+    }
+
+    .item-price,
+    .item-details {
+        font-size: 2.85rem;
+        margin-bottom: 15px;
+        line-height: 1.15;
+    }
+
+    .item-details-note {
+        font-size: 1.8rem;
+    }
+
+    .item-ingredients {
+        font-size: 1.95rem;
+        line-height: 1.35;
+        margin-bottom: 15px;
+    }
+
+    .item-quantity {
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding-right: 0;
+        min-height: 72px;
+        margin-top: 18px;
+    }
+
+    .quantity-label {
+        font-size: 2.4rem;
+    }
+
+    .item-quantity .quantity {
+        font-size: 2.7rem;
+        min-width: 36px;
+    }
+
+    .item-quantity .quantity-btn.plus {
+        position: static;
+        padding: 15px 33px;
+        border-radius: 30px;
+        font-size: 2.1rem;
+    }
+
+    .item-unavailable-label {
+        font-size: 1.65rem;
+    }
+
+    .no-items {
+        padding: 60px;
+        font-size: 1.8rem;
+    }
+
+    .filters {
+        padding: 30px;
+    }
+
+    .filters-section {
+        margin-bottom: 30px;
+        padding-bottom: 24px;
+    }
+
+    .filters-title {
+        font-size: 2.325rem;
+        margin-bottom: 18px;
+    }
+
+    .search-box {
+        margin-bottom: 30px;
+    }
+
+    .search-box input {
+        padding: 18px;
+        font-size: 2.25rem;
+    }
+
+    .main-categories {
+        gap: 15px;
+        margin-bottom: 24px;
+    }
+
+    .main-category-btn {
+        padding: 15px 21px;
+        font-size: 2.25rem;
+    }
+
+    .subcategory-title {
+        font-size: 2.25rem;
+        margin-bottom: 12px;
+    }
+
+    .subcategory-buttons {
+        gap: 12px;
+    }
+
+    .subcategory-btn {
+        padding: 12px 18px;
+        font-size: 2.25rem;
+    }
+
+    .subcategory-btn.active {
+        background-color: #91A56E;
+        color: white;
+        border-color: #91A56E;
+    }
+
+    .filter-group,
+    .price-range {
+        font-size: 2.25rem;
+    }
+
+    .filter-group label {
+        margin-bottom: 12px;
+    }
+
+    .price-filter {
+        height: 12px;
+        margin: 15px 0;
+    }
+
+    .price-filter::-webkit-slider-thumb {
+        width: 30px;
+        height: 30px;
+    }
+}
+
 @media (max-width: 768px) {
     .app-container {
-        grid-template-columns: 90px 1fr;
-        grid-template-rows: 1fr auto;
+        grid-template-columns: 143px 1fr;
+        grid-template-rows: 1fr;
     }
 
     .sidebar {
@@ -500,25 +800,26 @@ body {
         border-right: 2px solid #6F6864;
         border-bottom: none;
         background-color: #91A56E;
+        grid-row: 1;
     }
 
     .back-btn {
         display: flex;
-        width: 68px;
-        height: 68px;
+        width: 101px;
+        height: 101px;
     }
 
     .nav-btn {
-        width: 68px;
-        height: 68px;
+        width: 101px;
+        height: 101px;
         padding: 0;
         border-radius: 50%;
         background-color: #f0f0f0;
     }
 
     .btn-image {
-        width: 34px;
-        height: 34px;
+        width: 52px;
+        height: 52px;
     }
 }
 

@@ -43,6 +43,10 @@
     text-align: right;
 }
 
+.checkout-total-info {
+    text-align: left;
+}
+
 .order-label {
     font-weight: 700;
     color: #1E5928;
@@ -173,5 +177,77 @@
 @media (max-width: 1200px) {
     .checkout-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 1200px) and (hover: none), (max-width: 1200px) and (pointer: coarse) {
+    .app-container {
+        grid-template-columns: 143px 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .checkout-grid {
+        gap: 30px;
+    }
+
+    .checkout-card {
+        font-size: 1.95rem;
+        padding: 24px;
+    }
+
+    .checkout-title {
+        font-size: 2.7rem;
+        margin-bottom: 23px;
+    }
+
+    .checkout-total {
+        margin-top: 18px;
+        padding-top: 18px;
+        font-size: 2.25rem;
+    }
+
+    .order-label {
+        margin-bottom: 12px;
+        font-size: 2.25rem;
+    }
+
+    .order-type-switch {
+        gap: 15px;
+        margin-bottom: 23px;
+    }
+
+    .order-type-option {
+        gap: 12px;
+        padding: 12px 21px;
+        border-radius: 30px;
+        font-size: 2.25rem;
+    }
+
+    .order-comment-input,
+    .pickup-slot-select {
+        padding: 15px 18px;
+        font-size: 2.25rem;
+    }
+
+    .order-comment-input,
+    .pickup-time {
+        margin-bottom: 23px;
+    }
+
+    .pickup-slot-note {
+        margin-top: 12px;
+        font-size: 1.8rem;
+    }
+
+    .order-submit-btn {
+        padding: 18px 21px;
+        font-size: 2.25rem;
+    }
+
+    .order-error,
+    .order-success {
+        margin-top: 15px;
+        padding: 15px 18px;
+        font-size: 2.25rem;
     }
 }

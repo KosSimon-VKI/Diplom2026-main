@@ -48,3 +48,39 @@
         width: calc(100vw - 24px);
     }
 }
+
+@media (max-width: 1200px) and (hover: none), (max-width: 1200px) and (pointer: coarse) {
+    .drink-modifier-modal-content {
+        width: calc(100vw - 36px);
+        max-width: calc(100vw - 36px);
+    }
+
+    .drink-modifier-body {
+        padding: 32px 36px;
+        gap: 32px;
+    }
+
+    .drink-modifier-section {
+        padding: 27px;
+    }
+
+    .drink-modifier-title {
+        margin-bottom: 23px;
+        font-size: 2.25rem;
+    }
+
+    .drink-modifier-options {
+        gap: 18px;
+    }
+
+    .drink-modifier-option {
+        gap: 18px;
+        font-size: 2.205rem;
+        line-height: 1.25;
+    }
+
+    .drink-modifier-option input[type="radio"] {
+        width: 2.25em;
+        height: 2.25em;
+    }
+}
