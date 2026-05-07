@@ -1,4 +1,4 @@
-window.API_BASE = 'https://localhost:7235';
+window.API_BASE = '';
 
 const CURRENT_USER_STORAGE_KEY = 'gardenNook.currentUser.v1';
 const CART_STORAGE_PREFIX = 'gardenNook.cart.v2.';
