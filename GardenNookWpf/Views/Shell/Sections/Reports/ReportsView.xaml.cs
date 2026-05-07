@@ -72,6 +72,13 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
 
         public string[] InventoryLabels { get; private set; } = Array.Empty<string>();
 
+        public Func<double, string> WholeNumberAxisFormatter { get; } =
+            value => value.ToString("0", CultureInfo.CurrentCulture);
+
+        public double PopularAxisStep { get; private set; } = 1d;
+
+        public double UnpopularAxisStep { get; private set; } = 1d;
+
         public async Task ActivateAsync()
         {
             if (_isLoadedOnce)
@@ -148,6 +155,8 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
 
             PopularLabels = PopularItems.Select(x => ShortenLabel(x.Name)).ToArray();
             UnpopularLabels = UnpopularItems.Select(x => ShortenLabel(x.Name)).ToArray();
+            PopularAxisStep = CalculateSalesAxisStep(PopularItems);
+            UnpopularAxisStep = CalculateSalesAxisStep(UnpopularItems);
             InventoryLabels = InventoryItems
                 .OrderByDescending(x => Math.Abs(x.Source.Difference))
                 .Take(10)
@@ -161,6 +170,8 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
             OnPropertyChanged(nameof(PopularLabels));
             OnPropertyChanged(nameof(UnpopularLabels));
             OnPropertyChanged(nameof(InventoryLabels));
+            OnPropertyChanged(nameof(PopularAxisStep));
+            OnPropertyChanged(nameof(UnpopularAxisStep));
         }
 
         private void ClearReport()
@@ -176,9 +187,13 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
             PopularLabels = Array.Empty<string>();
             UnpopularLabels = Array.Empty<string>();
             InventoryLabels = Array.Empty<string>();
+            PopularAxisStep = 1d;
+            UnpopularAxisStep = 1d;
             OnPropertyChanged(nameof(PopularLabels));
             OnPropertyChanged(nameof(UnpopularLabels));
             OnPropertyChanged(nameof(InventoryLabels));
+            OnPropertyChanged(nameof(PopularAxisStep));
+            OnPropertyChanged(nameof(UnpopularAxisStep));
         }
 
         private static void RebuildMenuSeries(
@@ -192,8 +207,21 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
                 Title = "Продано",
                 Values = new ChartValues<decimal>(items.Select(x => x.Source.QuantitySold)),
                 Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)),
+                FontSize = 16,
+                FontWeight = FontWeights.SemiBold,
                 DataLabels = true
             });
+        }
+
+        private static double CalculateSalesAxisStep(IEnumerable<MenuReportItemViewModel> items)
+        {
+            var max = items.Select(x => (double)x.Source.QuantitySold).DefaultIfEmpty(0d).Max();
+            if (max <= 5d)
+            {
+                return 1d;
+            }
+
+            return Math.Ceiling(max / 5d);
         }
 
         private void RebuildInventorySeries()
@@ -209,6 +237,8 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
                 Title = "Разница",
                 Values = new ChartValues<decimal>(topDiffs.Select(x => x.Source.Difference)),
                 Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF606E52")),
+                FontSize = 16,
+                FontWeight = FontWeights.SemiBold,
                 DataLabels = true
             });
         }
