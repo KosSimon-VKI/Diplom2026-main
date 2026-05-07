@@ -181,9 +181,7 @@ namespace GardenNookApi.Controllers
                     Proteins = Convert.ToInt32(d.ProteinsG),
                     Fats = Convert.ToInt32(d.FatsG),
                     Carbs = Convert.ToInt32(d.CarbsG),
-                    ImageUrl = string.IsNullOrWhiteSpace(d.ImageUrl)
-                        ? "/Images/placeholder.png"
-                        : "/Images/" + d.ImageUrl,
+                    d.ImageUrl,
                     IsAvailable = d.IsAvailable,
                     d.TechnicalCardId
                 })
