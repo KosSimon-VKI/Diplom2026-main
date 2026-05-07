@@ -31,6 +31,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
         };
 
         private readonly HttpClient _httpClient;
+        private readonly List<InventoryReportItemViewModel> _allInventoryItems = new List<InventoryReportItemViewModel>();
         private bool _isLoadedOnce;
         private bool _isBusy;
         private string _selectedPeriod = "week";
@@ -54,6 +55,8 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
         public ObservableCollection<MenuReportItemViewModel> PopularItems { get; } = new ObservableCollection<MenuReportItemViewModel>();
 
         public ObservableCollection<MenuReportItemViewModel> UnpopularItems { get; } = new ObservableCollection<MenuReportItemViewModel>();
+
+        public ObservableCollection<AbcReportItemViewModel> AbcItems { get; } = new ObservableCollection<AbcReportItemViewModel>();
 
         public ObservableCollection<InventoryReportItemViewModel> InventoryItems { get; } = new ObservableCollection<InventoryReportItemViewModel>();
 
@@ -133,11 +136,15 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
                 UnpopularItems.Add(item);
             }
 
-            InventoryItems.Clear();
-            foreach (var item in report.InventoryItems.Select(x => new InventoryReportItemViewModel(x)))
+            AbcItems.Clear();
+            foreach (var item in report.AbcItems.Select(x => new AbcReportItemViewModel(x)))
             {
-                InventoryItems.Add(item);
+                AbcItems.Add(item);
             }
+
+            _allInventoryItems.Clear();
+            _allInventoryItems.AddRange(report.InventoryItems.Select(x => new InventoryReportItemViewModel(x)));
+            ApplyInventoryFilter();
 
             PopularLabels = PopularItems.Select(x => ShortenLabel(x.Name)).ToArray();
             UnpopularLabels = UnpopularItems.Select(x => ShortenLabel(x.Name)).ToArray();
@@ -160,6 +167,8 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
         {
             PopularItems.Clear();
             UnpopularItems.Clear();
+            AbcItems.Clear();
+            _allInventoryItems.Clear();
             InventoryItems.Clear();
             PopularSeries.Clear();
             UnpopularSeries.Clear();
@@ -229,6 +238,46 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
         private async void ExportPdfButton_Click(object sender, RoutedEventArgs e)
         {
             await ExportAsync("pdf", "PDF (*.pdf)|*.pdf");
+        }
+
+        private void InventoryDetailsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as Button)?.Tag is not InventoryReportItemViewModel item)
+            {
+                return;
+            }
+
+            var window = new InventoryDetailsWindow(item)
+            {
+                Owner = Window.GetWindow(this)
+            };
+            window.ShowDialog();
+        }
+
+        private void InventorySearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyInventoryFilter();
+        }
+
+        private void ApplyInventoryFilter()
+        {
+            if (InventoryItems == null)
+            {
+                return;
+            }
+
+            var query = (InventorySearchTextBox?.Text ?? string.Empty).Trim();
+            var filtered = string.IsNullOrWhiteSpace(query)
+                ? _allInventoryItems
+                : _allInventoryItems
+                    .Where(x => x.Name.IndexOf(query, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                    .ToList();
+
+            InventoryItems.Clear();
+            foreach (var item in filtered)
+            {
+                InventoryItems.Add(item);
+            }
         }
 
         private async Task ExportAsync(string format, string filter)
@@ -400,18 +449,56 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
             public InventoryReportItemViewModel(InventoryReportItemDto source)
             {
                 Source = source;
+                Details = new ObservableCollection<InventoryDetailViewModel>(
+                    (source.Details ?? new List<InventoryDetailDto>()).Select(x => new InventoryDetailViewModel(x)));
             }
 
             public InventoryReportItemDto Source { get; }
             public string ItemTypeName => Source.ItemTypeName;
             public string Name => Source.Name;
             public string UnitName => Source.UnitName;
+            public ObservableCollection<InventoryDetailViewModel> Details { get; }
             public string OrderConsumptionDisplay => FormatDecimal(Source.OrderConsumption);
             public string WriteOffConsumptionDisplay => FormatDecimal(Source.WriteOffConsumption);
             public string PreparationConsumptionDisplay => FormatDecimal(Source.PreparationConsumption);
             public string ExpectedConsumptionDisplay => FormatDecimal(Source.ExpectedConsumption);
             public string ActualStockDisplay => FormatDecimal(Source.ActualStock);
             public string DifferenceDisplay => FormatDecimal(Source.Difference);
+            public string UnitCostDisplay => FormatDecimal(Source.UnitCostRub);
+            public string DifferenceCostDisplay => FormatDecimal(Source.DifferenceCostRub);
+        }
+
+        public sealed class AbcReportItemViewModel
+        {
+            public AbcReportItemViewModel(AbcReportItemDto source)
+            {
+                Source = source;
+            }
+
+            public AbcReportItemDto Source { get; }
+            public string Group => Source.Group;
+            public string ItemTypeName => Source.ItemTypeName;
+            public string Name => Source.Name;
+            public string QuantityDisplay => FormatDecimal(Source.QuantitySold);
+            public string RevenueDisplay => FormatDecimal(Source.Revenue) + " руб.";
+            public string RevenueShareDisplay => FormatDecimal(Source.RevenueSharePercent) + "%";
+            public string CumulativeShareDisplay => FormatDecimal(Source.CumulativeSharePercent) + "%";
+        }
+
+        public sealed class InventoryDetailViewModel
+        {
+            public InventoryDetailViewModel(InventoryDetailDto source)
+            {
+                Source = source;
+            }
+
+            public InventoryDetailDto Source { get; }
+            public string SourceType => Source.SourceType;
+            public string SourceName => Source.SourceName;
+            public string SourceDateDisplay => Source.SourceDate.HasValue
+                ? Source.SourceDate.Value.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)
+                : string.Empty;
+            public string QuantityDisplay => FormatDecimal(Source.Quantity) + " " + Source.UnitName;
         }
     }
 }

@@ -216,10 +216,42 @@
                             </Border>
                         </Grid>
 
+                        <Border Margin="0,0,0,12"
+                                Style="{StaticResource ModalCardBorder}"
+                                Background="{StaticResource ModalColorCardBrush}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="260"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="ABC-анализ по выручке"
+                                           Style="{StaticResource ReportSectionTitleStyle}"/>
+                                <DataGrid x:Name="AbcGrid"
+                                          Grid.Row="1"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          IsReadOnly="True"
+                                          HeadersVisibility="Column"
+                                          ItemsSource="{Binding AbcItems}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Место" Binding="{Binding Group}" Width="90"/>
+                                        <DataGridTextColumn Header="Тип" Binding="{Binding ItemTypeName}" Width="120"/>
+                                        <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*"/>
+                                        <DataGridTextColumn Header="Продано" Binding="{Binding QuantityDisplay}" Width="110"/>
+                                        <DataGridTextColumn Header="Выручка" Binding="{Binding RevenueDisplay}" Width="120"/>
+                                        <DataGridTextColumn Header="Доля" Binding="{Binding RevenueShareDisplay}" Width="100"/>
+                                        <DataGridTextColumn Header="Накопительно" Binding="{Binding CumulativeShareDisplay}" Width="130"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Border>
+
                         <Border Style="{StaticResource ModalCardBorder}"
                                 Background="{StaticResource ModalColorCardBrush}">
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="300"/>
                                     <RowDefinition Height="360"/>
@@ -227,8 +259,17 @@
 
                                 <TextBlock Text="Инвентаризация"
                                            Style="{StaticResource ReportSectionTitleStyle}"/>
+                                <TextBox x:Name="InventorySearchTextBox"
+                                         Grid.Row="1"
+                                         Height="42"
+                                         Margin="0,0,0,12"
+                                         Padding="12,0"
+                                         FontSize="18"
+                                         ToolTip="Поиск по сырью"
+                                         VerticalContentAlignment="Center"
+                                         TextChanged="InventorySearchTextBox_TextChanged"/>
                                 <lvc:CartesianChart x:Name="InventoryChart"
-                                                    Grid.Row="1"
+                                                    Grid.Row="2"
                                                     LegendLocation="Top"
                                                     Series="{Binding InventorySeries}">
                                     <lvc:CartesianChart.AxisX>
@@ -241,23 +282,161 @@
                                 </lvc:CartesianChart>
 
                                 <DataGrid x:Name="InventoryGrid"
-                                          Grid.Row="2"
-                                          AutoGenerateColumns="False"
-                                          CanUserAddRows="False"
-                                          IsReadOnly="True"
-                                          HeadersVisibility="Column"
-                                          ItemsSource="{Binding InventoryItems}">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Сырье" Binding="{Binding Name}" Width="*"/>
-                                        <DataGridTextColumn Header="Ед." Binding="{Binding UnitName}" Width="70"/>
-                                        <DataGridTextColumn Header="По заказам" Binding="{Binding OrderConsumptionDisplay}" Width="120"/>
-                                        <DataGridTextColumn Header="По списаниям" Binding="{Binding WriteOffConsumptionDisplay}" Width="135"/>
-                                        <DataGridTextColumn Header="По заготовкам" Binding="{Binding PreparationConsumptionDisplay}" Width="140"/>
-                                        <DataGridTextColumn Header="Суммарный" Binding="{Binding ExpectedConsumptionDisplay}" Width="115"/>
-                                        <DataGridTextColumn Header="Текущий остаток" Binding="{Binding ActualStockDisplay}" Width="150"/>
-                                        <DataGridTextColumn Header="Разница" Binding="{Binding DifferenceDisplay}" Width="120"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
+                                          Grid.Row="3"
+                                          Visibility="Collapsed"/>
+                                <ScrollViewer Grid.Row="3"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsControl ItemsSource="{Binding InventoryItems}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border HorizontalAlignment="Stretch"
+                                                        Margin="0,0,0,12"
+                                                        Padding="14"
+                                                        BorderBrush="{StaticResource ModalColorPrimaryDarkBrush}"
+                                                        BorderThickness="2"
+                                                        Background="{StaticResource ModalColorWhiteBrush}"
+                                                        CornerRadius="8">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <DockPanel>
+                                                            <TextBlock Text="{Binding UnitName}"
+                                                                       DockPanel.Dock="Right"
+                                                                       Margin="10,2,0,0"
+                                                                       FontSize="16"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       FontSize="20"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="{StaticResource ModalColorTextBrush}"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                        </DockPanel>
+
+                                                        <UniformGrid Grid.Row="1"
+                                                                     Columns="3"
+                                                                     Margin="0,12,0,0">
+                                                            <StackPanel Margin="0,0,8,0">
+                                                                <TextBlock Text="Расход"
+                                                                           FontSize="13"
+                                                                           Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                                <TextBlock Text="{Binding ExpectedConsumptionDisplay}"
+                                                                           FontSize="20"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="{StaticResource ModalColorTextBrush}"/>
+                                                            </StackPanel>
+                                                            <StackPanel Margin="4,0,4,0">
+                                                                <TextBlock Text="Остаток"
+                                                                           FontSize="13"
+                                                                           Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                                <TextBlock Text="{Binding ActualStockDisplay}"
+                                                                           FontSize="20"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="{StaticResource ModalColorTextBrush}"/>
+                                                            </StackPanel>
+                                                            <StackPanel Margin="8,0,0,0">
+                                                                <TextBlock Text="Разница"
+                                                                           FontSize="13"
+                                                                           Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                                <TextBlock Text="{Binding DifferenceDisplay}"
+                                                                           FontSize="20"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="{StaticResource ModalColorTextBrush}"/>
+                                                            </StackPanel>
+                                                        </UniformGrid>
+
+                                                        <Grid Grid.Row="2" Margin="0,12,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Border Grid.Column="0"
+                                                                    Margin="0,0,6,0"
+                                                                    Padding="8,6"
+                                                                    Background="{StaticResource ModalColorCardAltBrush}"
+                                                                    BorderBrush="#FFD8DEC8"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Заказы"
+                                                                               FontSize="14"
+                                                                               Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                                    <TextBlock Text="{Binding OrderConsumptionDisplay}"
+                                                                               FontSize="18"
+                                                                               FontWeight="SemiBold"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <Border Grid.Column="1"
+                                                                    Margin="3,0,3,0"
+                                                                    Padding="8,6"
+                                                                    Background="{StaticResource ModalColorCardAltBrush}"
+                                                                    BorderBrush="#FFD8DEC8"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Списания"
+                                                                               FontSize="14"
+                                                                               Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                                    <TextBlock Text="{Binding WriteOffConsumptionDisplay}"
+                                                                               FontSize="18"
+                                                                               FontWeight="SemiBold"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <Border Grid.Column="2"
+                                                                    Margin="6,0,0,0"
+                                                                    Padding="8,6"
+                                                                    Background="{StaticResource ModalColorCardAltBrush}"
+                                                                    BorderBrush="#FFD8DEC8"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Заготовки"
+                                                                               FontSize="14"
+                                                                               Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                                    <TextBlock Text="{Binding PreparationConsumptionDisplay}"
+                                                                               FontSize="18"
+                                                                               FontWeight="SemiBold"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </Grid>
+
+                                                        <DockPanel Grid.Row="3" Margin="0,12,0,0">
+                                                            <Button Content="Расшифровка"
+                                                                    Tag="{Binding}"
+                                                                    DockPanel.Dock="Right"
+                                                                    Width="140"
+                                                                    Height="34"
+                                                                    Padding="8,0"
+                                                                    Style="{StaticResource ReportActionButtonStyle}"
+                                                                    Click="InventoryDetailsButton_Click"/>
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding DifferenceCostDisplay, StringFormat=Разница: {0} руб.}"
+                                                                           FontSize="18"
+                                                                           FontWeight="SemiBold"
+                                                                           Foreground="{StaticResource ModalColorTextBrush}"/>
+                                                                <TextBlock Text="{Binding UnitCostDisplay, StringFormat=Цена: {0}}"
+                                                                           FontSize="15"
+                                                                           Foreground="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                                            </StackPanel>
+                                                        </DockPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
                             </Grid>
                         </Border>
                     </StackPanel>

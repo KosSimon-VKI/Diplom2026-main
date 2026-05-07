@@ -1,0 +1,114 @@
+<Window x:Class="GardenNookWpf.Views.Shell.Sections.Reports.InventoryDetailsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Расшифровка расхода"
+        Width="920"
+        Height="620"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        SnapsToDevicePixels="True">
+    <Border Style="{StaticResource ModalShellBorder}" Margin="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource ModalHeader}"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Расшифровка расхода"
+                               Style="{StaticResource ModalHeaderTitle}"/>
+
+                    <Button Grid.Column="1"
+                            Content="×"
+                            Style="{StaticResource ModalCloseButton}"
+                            Click="HeaderClose_Click"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="16,14,16,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Style="{StaticResource ModalCardBorder}"
+                        Background="{StaticResource ModalColorCardAltBrush}">
+                    <StackPanel>
+                        <TextBlock x:Name="IngredientNameText"
+                                   FontSize="26"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock x:Name="SummaryText"
+                                   Margin="0,8,0,0"
+                                   FontSize="18"
+                                   Foreground="{StaticResource ModalColorTextBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="1"
+                        Margin="0,12,0,0"
+                        Style="{StaticResource ModalCardBorder}"
+                        Padding="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                Background="{StaticResource ModalColorPrimaryBrush}"
+                                CornerRadius="14,14,0,0">
+                            <TextBlock Text="Источники расхода"
+                                       Margin="14,10"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource ModalColorTextBrush}"/>
+                        </Border>
+
+                        <DataGrid x:Name="DetailsGrid"
+                                  Grid.Row="1"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  ItemsSource="{Binding Details}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Источник" Binding="{Binding SourceType}" Width="140"/>
+                                <DataGridTextColumn Header="Документ" Binding="{Binding SourceName}" Width="*"/>
+                                <DataGridTextColumn Header="Дата" Binding="{Binding SourceDateDisplay}" Width="140"/>
+                                <DataGridTextColumn Header="Количество" Binding="{Binding QuantityDisplay}" Width="150"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Border Grid.Row="2"
+                    Padding="16,0,16,16"
+                    Background="{StaticResource ModalColorWhiteBrush}">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Content="Закрыть"
+                            Width="160"
+                            Style="{StaticResource ModalSecondaryButton}"
+                            Click="Cancel_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
