@@ -11,10 +11,24 @@ namespace GardenNookWpf.Views.Controls
     public partial class OrdersDisplayControl : UserControl
     {
         public event EventHandler<KitchenOrderCardViewModel>? OrderCardClicked;
+        public event EventHandler<KitchenOrdersStatusFilter>? StatusFilterChanged;
+        private bool _isUpdatingStatusFilter;
 
         public OrdersDisplayControl()
         {
             InitializeComponent();
+            SetStatusFilter(SelectedStatusFilter);
+        }
+
+        public KitchenOrdersStatusFilter SelectedStatusFilter { get; private set; } = KitchenOrdersStatusFilter.Active;
+
+        public void SetStatusFilter(KitchenOrdersStatusFilter statusFilter)
+        {
+            _isUpdatingStatusFilter = true;
+            SelectedStatusFilter = statusFilter;
+            ActiveOrdersToggle.IsChecked = statusFilter == KitchenOrdersStatusFilter.Active;
+            ReadyOrdersToggle.IsChecked = statusFilter == KitchenOrdersStatusFilter.Ready;
+            _isUpdatingStatusFilter = false;
         }
 
         public void ShowOrders(
@@ -55,6 +69,33 @@ namespace GardenNookWpf.Views.Controls
             }
 
             OrderCardClicked?.Invoke(this, card);
+        }
+
+        private void ActiveOrdersToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            ChangeStatusFilter(KitchenOrdersStatusFilter.Active);
+        }
+
+        private void ReadyOrdersToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            ChangeStatusFilter(KitchenOrdersStatusFilter.Ready);
+        }
+
+        private void ChangeStatusFilter(KitchenOrdersStatusFilter statusFilter)
+        {
+            if (_isUpdatingStatusFilter)
+            {
+                return;
+            }
+
+            if (SelectedStatusFilter == statusFilter)
+            {
+                SetStatusFilter(statusFilter);
+                return;
+            }
+
+            SetStatusFilter(statusFilter);
+            StatusFilterChanged?.Invoke(this, statusFilter);
         }
     }
 }

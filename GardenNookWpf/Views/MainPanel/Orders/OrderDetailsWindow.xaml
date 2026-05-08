@@ -120,6 +120,7 @@
                                                     Content="Готово"
                                                     Width="116"
                                                     Style="{StaticResource ModalPrimaryButton}"
+                                                    Visibility="{Binding CompleteButtonVisibility}"
                                                     Tag="{Binding}"
                                                     Click="CompleteItem_Click"/>
                                         </Grid>

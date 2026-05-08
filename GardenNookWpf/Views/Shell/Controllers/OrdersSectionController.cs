@@ -34,6 +34,7 @@ namespace GardenNookWpf.Views.Shell.Controllers
         private readonly DispatcherTimer _ordersRefreshTimer;
         private readonly DispatcherTimer _orderElapsedTimer;
         private bool _isLoadingOrders;
+        private KitchenOrdersStatusFilter _statusFilter = KitchenOrdersStatusFilter.Active;
         private List<KitchenOrderCardViewModel> _orderCards = new List<KitchenOrderCardViewModel>();
         private IReadOnlyList<KitchenOrderCardViewModel> _pickupCards = Array.Empty<KitchenOrderCardViewModel>();
         private IReadOnlyList<KitchenOrderCardViewModel> _noPickupCards = Array.Empty<KitchenOrderCardViewModel>();
@@ -79,6 +80,17 @@ namespace GardenNookWpf.Views.Shell.Controllers
             await LoadOrdersAsync();
         }
 
+        public async Task SetStatusFilterAsync(KitchenOrdersStatusFilter statusFilter)
+        {
+            if (_statusFilter == statusFilter)
+            {
+                return;
+            }
+
+            _statusFilter = statusFilter;
+            await LoadOrdersAsync();
+        }
+
         public KitchenOrderCardViewModel GetCardForDetails(KitchenOrderCardViewModel card)
         {
             var sourceCard = _orderCards.FirstOrDefault(c => c.OrderId == card.OrderId) ?? card;
@@ -106,7 +118,7 @@ namespace GardenNookWpf.Views.Shell.Controllers
             try
             {
                 SetBusy(true);
-                var response = await _httpClient.GetAsync(KitchenOrdersAddress);
+                var response = await _httpClient.GetAsync(BuildKitchenOrdersAddress());
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
                 {
@@ -133,8 +145,8 @@ namespace GardenNookWpf.Views.Shell.Controllers
                     .Where(o => !o.PickupAt.HasValue)
                     .ToList();
 
-                var pickupCards = BuildOrderCards(pickupOrders, _itemsVisibilityMode);
-                var noPickupCards = BuildOrderCards(noPickupOrders, _itemsVisibilityMode);
+                var pickupCards = BuildOrderCards(pickupOrders, _itemsVisibilityMode, _statusFilter);
+                var noPickupCards = BuildOrderCards(noPickupOrders, _itemsVisibilityMode, _statusFilter);
 
                 _pickupCards = pickupCards;
                 _noPickupCards = noPickupCards;
@@ -159,7 +171,7 @@ namespace GardenNookWpf.Views.Shell.Controllers
             StateChanged?.Invoke(new OrdersDisplayState
             {
                 IsMessageOnly = false,
-                MessageText = "Нет активных заказов",
+                MessageText = BuildEmptyOrdersText(_statusFilter),
                 PickupCards = _pickupCards,
                 NoPickupCards = _noPickupCards
             });
@@ -189,6 +201,19 @@ namespace GardenNookWpf.Views.Shell.Controllers
             }
         }
 
+        private string BuildKitchenOrdersAddress()
+        {
+            var statusToken = _statusFilter == KitchenOrdersStatusFilter.Ready ? "ready" : "active";
+            return $"{KitchenOrdersAddress}?status={Uri.EscapeDataString(statusToken)}";
+        }
+
+        private static string BuildEmptyOrdersText(KitchenOrdersStatusFilter statusFilter)
+        {
+            return statusFilter == KitchenOrdersStatusFilter.Ready
+                ? "Нет готовых заказов"
+                : "Нет активных заказов";
+        }
+
         private static string BuildElapsedText(DateTime? createdAt, DateTime now)
         {
             if (createdAt == null)
@@ -216,9 +241,13 @@ namespace GardenNookWpf.Views.Shell.Controllers
             return now - createdAt.Value >= TimeSpan.FromMinutes(OverdueOrderMinutes);
         }
 
-        private static List<KitchenOrderCardViewModel> BuildOrderCards(IEnumerable<KitchenOrderDto> orders, OrderItemsVisibilityMode mode)
+        private static List<KitchenOrderCardViewModel> BuildOrderCards(
+            IEnumerable<KitchenOrderDto> orders,
+            OrderItemsVisibilityMode mode,
+            KitchenOrdersStatusFilter statusFilter)
         {
             var cards = new List<KitchenOrderCardViewModel>();
+            var isReadOnly = statusFilter == KitchenOrdersStatusFilter.Ready;
 
             foreach (var order in orders)
             {
@@ -238,7 +267,8 @@ namespace GardenNookWpf.Views.Shell.Controllers
                             ItemTypeText = "Блюдо",
                             NameLine = $"{positionNumber}) {dish.Name} x{FormatQuantity(dish.Quantity)}",
                             ToppingsLine = toppingsLine,
-                            ToppingsVisibility = string.IsNullOrWhiteSpace(toppingsLine) ? Visibility.Collapsed : Visibility.Visible
+                            ToppingsVisibility = string.IsNullOrWhiteSpace(toppingsLine) ? Visibility.Collapsed : Visibility.Visible,
+                            CompleteButtonVisibility = isReadOnly ? Visibility.Collapsed : Visibility.Visible
                         });
 
                         positionNumber++;
@@ -258,7 +288,8 @@ namespace GardenNookWpf.Views.Shell.Controllers
                             ItemTypeText = "Напиток",
                             NameLine = $"{positionNumber}) {drink.Name} x{FormatQuantity(drink.Quantity)}",
                             ToppingsLine = toppingsLine,
-                            ToppingsVisibility = string.IsNullOrWhiteSpace(toppingsLine) ? Visibility.Collapsed : Visibility.Visible
+                            ToppingsVisibility = string.IsNullOrWhiteSpace(toppingsLine) ? Visibility.Collapsed : Visibility.Visible,
+                            CompleteButtonVisibility = isReadOnly ? Visibility.Collapsed : Visibility.Visible
                         });
 
                         positionNumber++;
@@ -275,7 +306,8 @@ namespace GardenNookWpf.Views.Shell.Controllers
                         ItemTypeText = "Добавка",
                         NameLine = $"{positionNumber}) {topping.Name} x{FormatQuantity(topping.Quantity)}",
                         ToppingsLine = string.Empty,
-                        ToppingsVisibility = Visibility.Collapsed
+                        ToppingsVisibility = Visibility.Collapsed,
+                        CompleteButtonVisibility = isReadOnly ? Visibility.Collapsed : Visibility.Visible
                     });
 
                     positionNumber++;
@@ -296,6 +328,8 @@ namespace GardenNookWpf.Views.Shell.Controllers
                     ElapsedText = BuildElapsedText(order.CreatedAt, DateTime.Now),
                     IsOverdue = IsOrderOverdue(order.CreatedAt, DateTime.Now),
                     OrderTypeText = BuildOrderTypeText(order.OrderType),
+                    StatusText = order.Status ?? string.Empty,
+                    IsReadOnly = isReadOnly,
                     PickupAtText = pickupAtText,
                     PickupAtVisibility = string.IsNullOrWhiteSpace(pickupAtText) ? Visibility.Collapsed : Visibility.Visible,
                     OrderCommentText = order.Comment ?? string.Empty,
@@ -317,7 +351,8 @@ namespace GardenNookWpf.Views.Shell.Controllers
                     ItemTypeText = i.ItemTypeText,
                     NameLine = i.NameLine,
                     ToppingsLine = i.ToppingsLine,
-                    ToppingsVisibility = i.ToppingsVisibility
+                    ToppingsVisibility = i.ToppingsVisibility,
+                    CompleteButtonVisibility = i.CompleteButtonVisibility
                 })
                 .ToList();
 
@@ -327,6 +362,8 @@ namespace GardenNookWpf.Views.Shell.Controllers
                 CreatedAt = source.CreatedAt,
                 OrderNumberText = source.OrderNumberText,
                 OrderTypeText = source.OrderTypeText,
+                StatusText = source.StatusText,
+                IsReadOnly = source.IsReadOnly,
                 PickupAtText = source.PickupAtText,
                 PickupAtVisibility = source.PickupAtVisibility,
                 OrderCommentText = source.OrderCommentText,

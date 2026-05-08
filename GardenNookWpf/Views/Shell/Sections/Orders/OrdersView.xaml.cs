@@ -27,6 +27,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Orders
             _controller.StateChanged += Controller_StateChanged;
             _controller.BusyStateChanged += Controller_BusyStateChanged;
             OrdersDisplayControl.OrderCardClicked += OrdersDisplayControl_OrderCardClicked;
+            OrdersDisplayControl.StatusFilterChanged += OrdersDisplayControl_StatusFilterChanged;
         }
 
         public bool IsBusy => _controller.IsBusy;
@@ -60,6 +61,11 @@ namespace GardenNookWpf.Views.Shell.Sections.Orders
         private async void OrderDetailsWindow_OrderUpdated(object? sender, EventArgs e)
         {
             await _controller.ReloadAsync();
+        }
+
+        private async void OrdersDisplayControl_StatusFilterChanged(object? sender, KitchenOrdersStatusFilter statusFilter)
+        {
+            await _controller.SetStatusFilterAsync(statusFilter);
         }
 
         private void Controller_StateChanged(OrdersSectionController.OrdersDisplayState state)

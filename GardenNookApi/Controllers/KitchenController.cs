@@ -17,6 +17,8 @@ namespace GardenNookApi.Controllers
     {
         private const string ActiveStatusTokenRu = "процесс";
         private const string ActiveStatusTokenEn = "process";
+        private const string KitchenOrdersStatusActive = "active";
+        private const string KitchenOrdersStatusReady = "ready";
         private const string ReadyStatusNameRu = "Готов";
         private const string ReadyStatusTokenRu = "готов";
         private const string ReadyStatusTokenEn = "ready";
@@ -53,15 +55,35 @@ namespace GardenNookApi.Controllers
         }
 
         [HttpGet("orders")]
-        public async Task<ActionResult<KitchenOrdersResponse>> GetOrders()
+        public async Task<ActionResult<KitchenOrdersResponse>> GetOrders([FromQuery] string? status = null)
         {
-            var orderSources = await _db.Orders
+            var statusFilter = NormalizeKitchenOrdersStatus(status);
+            if (statusFilter == null)
+            {
+                return BadRequest("Неизвестный фильтр статуса заказов");
+            }
+
+            var includeCompletedItems = statusFilter == KitchenOrdersStatusReady;
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+
+            var ordersQuery = _db.Orders
                 .AsNoTracking()
                 .Where(o =>
                     o.Status != null &&
-                    o.Status.Name != null &&
-                    (EF.Functions.Like(o.Status.Name.ToLower(), $"%{ActiveStatusTokenRu}%") ||
-                     EF.Functions.Like(o.Status.Name.ToLower(), $"%{ActiveStatusTokenEn}%")))
+                    o.Status.Name != null);
+
+            ordersQuery = statusFilter == KitchenOrdersStatusReady
+                ? ordersQuery.Where(o =>
+                    (EF.Functions.Like(o.Status!.Name!.ToLower(), $"%{ReadyStatusTokenRu}%") ||
+                     EF.Functions.Like(o.Status.Name.ToLower(), $"%{ReadyStatusTokenEn}%")) &&
+                    o.CreatedAt >= today &&
+                    o.CreatedAt < tomorrow)
+                : ordersQuery.Where(o =>
+                    EF.Functions.Like(o.Status!.Name!.ToLower(), $"%{ActiveStatusTokenRu}%") ||
+                    EF.Functions.Like(o.Status.Name.ToLower(), $"%{ActiveStatusTokenEn}%"));
+
+            var orderSources = await ordersQuery
                 .OrderBy(o => o.CreatedAt)
                 .ThenBy(o => o.Id)
                 .Select(o => new
@@ -70,7 +92,8 @@ namespace GardenNookApi.Controllers
                     o.Comment,
                     o.CreatedAt,
                     o.PickupAt,
-                    OrderType = o.OrderType != null ? o.OrderType.Name : null
+                    OrderType = o.OrderType != null ? o.OrderType.Name : null,
+                    Status = o.Status != null ? o.Status.Name : null
                 })
                 .ToListAsync();
 
@@ -128,7 +151,8 @@ namespace GardenNookApi.Controllers
                     Comment = o.Comment ?? string.Empty,
                     CreatedAt = o.CreatedAt,
                     PickupAt = o.PickupAt,
-                    OrderType = o.OrderType ?? string.Empty
+                    OrderType = o.OrderType ?? string.Empty,
+                    Status = o.Status ?? string.Empty
                 });
 
             var dishSources = await _db.OrderDishItems
@@ -136,7 +160,7 @@ namespace GardenNookApi.Controllers
                 .Where(i =>
                     i.OrderId.HasValue &&
                     orderIds.Contains(i.OrderId.Value) &&
-                    !i.IsCompleted)
+                    (includeCompletedItems || !i.IsCompleted))
                 .OrderBy(i => i.Id)
                 .Select(i => new DishSource
                 {
@@ -200,7 +224,7 @@ namespace GardenNookApi.Controllers
                 .Where(i =>
                     i.OrderId.HasValue &&
                     orderIds.Contains(i.OrderId.Value) &&
-                    !i.IsCompleted)
+                    (includeCompletedItems || !i.IsCompleted))
                 .OrderBy(i => i.Id)
                 .Select(i => new DrinkSource
                 {
@@ -263,7 +287,7 @@ namespace GardenNookApi.Controllers
                 .AsNoTracking()
                 .Where(i =>
                     orderIds.Contains(i.OrderId) &&
-                    !i.IsCompleted)
+                    (includeCompletedItems || !i.IsCompleted))
                 .OrderBy(i => i.Id)
                 .Select(i => new
                 {
@@ -2903,6 +2927,27 @@ namespace GardenNookApi.Controllers
                 KitchenOrderItemType.Topping => KitchenItemTypes.Topping,
                 _ => string.Empty
             };
+        }
+
+        private static string? NormalizeKitchenOrdersStatus(string? status)
+        {
+            var normalized = status?.Trim().ToLowerInvariant() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(normalized) ||
+                normalized == KitchenOrdersStatusActive ||
+                normalized.Contains(ActiveStatusTokenRu) ||
+                normalized.Contains(ActiveStatusTokenEn))
+            {
+                return KitchenOrdersStatusActive;
+            }
+
+            if (normalized == KitchenOrdersStatusReady ||
+                normalized.Contains(ReadyStatusTokenRu) ||
+                normalized.Contains(ReadyStatusTokenEn))
+            {
+                return KitchenOrdersStatusReady;
+            }
+
+            return null;
         }
 
         private static bool IsWithinPickupWindow(DateTime pickupAt, DateTime now, TimeSpan pickupWindow)

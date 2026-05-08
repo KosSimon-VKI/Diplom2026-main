@@ -33,6 +33,7 @@ namespace GardenNookWpf.Views.MainPanel.Orders
         private readonly KitchenOrderCardViewModel _orderCard;
         private readonly ObservableCollection<KitchenOrderItemViewModel> _items;
         private readonly bool _isAdmin;
+        private readonly bool _isReadOnly;
         private bool _isBusy;
 
         public event EventHandler? OrderUpdated;
@@ -43,6 +44,14 @@ namespace GardenNookWpf.Views.MainPanel.Orders
             _orderCard = orderCard;
             _items = new ObservableCollection<KitchenOrderItemViewModel>(orderCard.DisplayItems ?? new List<KitchenOrderItemViewModel>());
             _isAdmin = string.Equals(userRole?.Trim(), AdminRole, StringComparison.CurrentCulture);
+            _isReadOnly = orderCard.IsReadOnly;
+            if (_isReadOnly)
+            {
+                foreach (var item in _items)
+                {
+                    item.CompleteButtonVisibility = Visibility.Collapsed;
+                }
+            }
 
             InitializeComponent();
 
@@ -64,7 +73,9 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 : "не указано";
 
             OrderHeaderText.Text = $"Заказ №{_orderCard.OrderNumberText}";
-            OrderMetaText.Text = $"{_orderCard.OrderTypeText} | Создан: {createdAtText}";
+            OrderMetaText.Text = string.IsNullOrWhiteSpace(_orderCard.StatusText)
+                ? $"{_orderCard.OrderTypeText} | Создан: {createdAtText}"
+                : $"{_orderCard.OrderTypeText} | Статус: {_orderCard.StatusText} | Создан: {createdAtText}";
 
             if (!string.IsNullOrWhiteSpace(_orderCard.PickupAtText))
             {
@@ -106,6 +117,11 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 return;
             }
 
+            if (_isReadOnly)
+            {
+                return;
+            }
+
             await CompleteItemAsync(item);
         }
 
@@ -116,12 +132,17 @@ namespace GardenNookWpf.Views.MainPanel.Orders
                 return;
             }
 
+            if (_isReadOnly)
+            {
+                return;
+            }
+
             await CompleteOrderAsync();
         }
 
         private async void CancelOrder_Click(object sender, RoutedEventArgs e)
         {
-            if (_isBusy || !_isAdmin)
+            if (_isBusy || !_isAdmin || _isReadOnly)
             {
                 return;
             }
@@ -407,6 +428,13 @@ namespace GardenNookWpf.Views.MainPanel.Orders
 
         private void BindRoleActions()
         {
+            if (_isReadOnly)
+            {
+                CancelOrderButton.Visibility = Visibility.Collapsed;
+                CompleteOrderButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+
             CancelOrderButton.Visibility = _isAdmin ? Visibility.Visible : Visibility.Collapsed;
             CompleteOrderButton.Content = _isAdmin ? "Завершить заказ" : "Завершить позиции";
         }
@@ -418,4 +446,3 @@ namespace GardenNookWpf.Views.MainPanel.Orders
         }
     }
 }
-

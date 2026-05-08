@@ -10,6 +10,52 @@
             <WrapPanel Orientation="Vertical"/>
         </ItemsPanelTemplate>
 
+        <Style x:Key="OrderStatusToggleStyle"
+               TargetType="ToggleButton">
+            <Setter Property="MinWidth" Value="170"/>
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource ModalColorTextBrush}"/>
+            <Setter Property="Background" Value="{StaticResource ModalColorWhiteBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ModalColorBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="18,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="RootBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="RootBorder" Property="Background" Value="{StaticResource ModalColorPrimaryDarkBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource ModalColorWhiteBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RootBorder" Property="Background" Value="#FFE8ECE1"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsChecked" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="RootBorder" Property="Background" Value="#FF70825D"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <DataTemplate x:Key="OrderCardTemplate">
             <Border Width="360"
                     Margin="0,0,10,10"
@@ -157,7 +203,28 @@
     </UserControl.Resources>
 
     <Grid Margin="20,20,20,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,14">
+            <ToggleButton x:Name="ActiveOrdersToggle"
+                          Content="В процессе"
+                          Style="{StaticResource OrderStatusToggleStyle}"
+                          Checked="ActiveOrdersToggle_Checked"/>
+            <ToggleButton x:Name="ReadyOrdersToggle"
+                          Content="Готов"
+                          Margin="10,0,0,0"
+                          Style="{StaticResource OrderStatusToggleStyle}"
+                          Checked="ReadyOrdersToggle_Checked"/>
+        </StackPanel>
+
         <TextBlock x:Name="EmptyOrdersText"
+                   Grid.Row="1"
                    Text="Нет активных заказов"
                    FontSize="38"
                    FontWeight="Bold"
@@ -167,6 +234,7 @@
                    Visibility="Collapsed"/>
 
         <ScrollViewer x:Name="OrdersScrollViewer"
+                      Grid.Row="1"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Disabled">
             <ItemsControl x:Name="OrdersItemsControl"

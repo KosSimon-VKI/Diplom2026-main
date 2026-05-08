@@ -22,6 +22,7 @@ namespace TransferModels.Kitchen
         public DateTime? CreatedAt { get; set; }
         public DateTime? PickupAt { get; set; }
         public string OrderType { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public List<KitchenOrderDishDto> Dishes { get; set; } = new List<KitchenOrderDishDto>();
         public List<KitchenOrderDrinkDto> Drinks { get; set; } = new List<KitchenOrderDrinkDto>();
         public List<KitchenOrderStandaloneToppingDto> Toppings { get; set; } = new List<KitchenOrderStandaloneToppingDto>();

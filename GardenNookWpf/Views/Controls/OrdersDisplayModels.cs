@@ -15,10 +15,12 @@ namespace GardenNookWpf.Views.Controls
         public DateTime? CreatedAt { get; set; }
         public string OrderNumberText { get; set; } = string.Empty;
         public string OrderTypeText { get; set; } = string.Empty;
+        public string StatusText { get; set; } = string.Empty;
         public string PickupAtText { get; set; } = string.Empty;
         public Visibility PickupAtVisibility { get; set; } = Visibility.Collapsed;
         public string OrderCommentText { get; set; } = string.Empty;
         public Visibility OrderCommentVisibility { get; set; } = Visibility.Collapsed;
+        public bool IsReadOnly { get; set; }
 
         public string ElapsedText
         {
@@ -68,5 +70,12 @@ namespace GardenNookWpf.Views.Controls
         public string NameLine { get; set; } = string.Empty;
         public string ToppingsLine { get; set; } = string.Empty;
         public Visibility ToppingsVisibility { get; set; } = Visibility.Visible;
+        public Visibility CompleteButtonVisibility { get; set; } = Visibility.Visible;
+    }
+
+    public enum KitchenOrdersStatusFilter
+    {
+        Active,
+        Ready
     }
 }
