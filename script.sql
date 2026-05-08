@@ -2839,3 +2839,210 @@ USE [master]
 GO
 ALTER DATABASE [db_demo2] SET  READ_WRITE 
 GO
+
+USE [db_demo2]
+GO
+
+/* Пополнение остатков для доступности активного меню.
+   Активное меню: блюда, напитки и топпинги/сиропы, категория которых не "Неактивные".
+   Цель: доступность активного меню, запас заготовок примерно на 20 порций
+   и разумные минимумы ингредиентов. */
+SET NOCOUNT ON;
+
+DECLARE @TargetPortions decimal(10, 2) = 20.00;
+DECLARE @Today date = CONVERT(date, GETDATE());
+DECLARE @Now datetime2(7) = SYSDATETIME();
+
+IF OBJECT_ID('tempdb..#ActiveMenuItems') IS NOT NULL DROP TABLE #ActiveMenuItems;
+CREATE TABLE #ActiveMenuItems
+(
+    ItemType nvarchar(16) NOT NULL,
+    ItemId int NOT NULL,
+    TechnicalCardId int NULL
+);
+
+INSERT INTO #ActiveMenuItems (ItemType, ItemId, TechnicalCardId)
+SELECT N'dish', d.Id, d.TechnicalCardId
+FROM [dbo].[Dishes] d
+LEFT JOIN [dbo].[DishCategories] c ON c.Id = d.CategoryId
+WHERE ISNULL(c.Name, N'') <> N'Неактивные';
+
+INSERT INTO #ActiveMenuItems (ItemType, ItemId, TechnicalCardId)
+SELECT N'drink', d.Id, d.TechnicalCardId
+FROM [dbo].[Drinks] d
+LEFT JOIN [dbo].[DrinkCategories] c ON c.Id = d.CategoryId
+WHERE ISNULL(c.Name, N'') <> N'Неактивные';
+
+INSERT INTO #ActiveMenuItems (ItemType, ItemId, TechnicalCardId)
+SELECT N'topping', t.Id, t.TechnicalCardId
+FROM [dbo].[ToppingsAndSyrups] t
+LEFT JOIN [dbo].[ToppingCategories] c ON c.id = t.CategoryID
+WHERE ISNULL(c.name, N'') <> N'Неактивные';
+
+IF OBJECT_ID('tempdb..#SemiTargets') IS NOT NULL DROP TABLE #SemiTargets;
+SELECT
+    r.SemiFinishedId,
+    TargetStockGrams = CAST(ROUND(MAX(r.RequiredBase) * @TargetPortions, 2) AS decimal(10, 2))
+INTO #SemiTargets
+FROM
+(
+    SELECT
+        c.SemiFinishedId,
+        RequiredBase =
+            CASE c.UnitOfMeasureId
+                WHEN 5 THEN COALESCE(NULLIF(c.OutputWeight, 0), NULLIF(c.NetWeight, 0), NULLIF(c.GrossWeight, 0), 0) * 1000
+                WHEN 6 THEN COALESCE(NULLIF(c.OutputWeight, 0), NULLIF(c.NetWeight, 0), NULLIF(c.GrossWeight, 0), 0) * 1000
+                ELSE COALESCE(NULLIF(c.OutputWeight, 0), NULLIF(c.NetWeight, 0), NULLIF(c.GrossWeight, 0), 0)
+            END
+    FROM #ActiveMenuItems m
+    INNER JOIN [dbo].[TechnicalCardSemiFinishedComposition] c ON c.TechnicalCardId = m.TechnicalCardId
+    WHERE m.TechnicalCardId IS NOT NULL
+      AND c.SemiFinishedId IS NOT NULL
+) r
+WHERE r.RequiredBase > 0
+GROUP BY r.SemiFinishedId;
+
+INSERT INTO [dbo].[Preparations] ([Name], [SemiFinishedId], [StockGrams], [ProductionDate])
+SELECT
+    sf.Name,
+    st.SemiFinishedId,
+    CAST(ROUND(st.TargetStockGrams - ISNULL(p.CurrentStockGrams, 0), 2) AS decimal(10, 2)),
+    @Today
+FROM #SemiTargets st
+INNER JOIN [dbo].[SemiFinished] sf ON sf.Id = st.SemiFinishedId
+OUTER APPLY
+(
+    SELECT CurrentStockGrams = SUM(CASE WHEN StockGrams > 0 THEN StockGrams ELSE 0 END)
+    FROM [dbo].[Preparations] p
+    WHERE p.SemiFinishedId = st.SemiFinishedId
+) p
+WHERE st.TargetStockGrams > ISNULL(p.CurrentStockGrams, 0);
+
+IF OBJECT_ID('tempdb..#IngredientTargets') IS NOT NULL DROP TABLE #IngredientTargets;
+CREATE TABLE #IngredientTargets
+(
+    IngredientId int NOT NULL PRIMARY KEY,
+    TargetStock decimal(10, 2) NOT NULL
+);
+
+INSERT INTO #IngredientTargets (IngredientId, TargetStock)
+SELECT DISTINCT
+    i.IngredientId,
+    CAST(
+        CASE ing.UnitOfMeasureId
+            WHEN 5 THEN 5.00
+            WHEN 6 THEN 5.00
+            WHEN 2 THEN 5000.00
+            WHEN 3 THEN 5000.00
+            WHEN 4 THEN 50.00
+            ELSE 50.00
+        END AS decimal(10, 2)) AS TargetStock
+FROM
+(
+    SELECT c.IngredientId
+    FROM #ActiveMenuItems m
+    INNER JOIN [dbo].[TechnicalCardIngredientComposition] c ON c.TechnicalCardId = m.TechnicalCardId
+    WHERE m.TechnicalCardId IS NOT NULL
+      AND c.IngredientId IS NOT NULL
+
+    UNION
+
+    SELECT c.IngredientId
+    FROM #SemiTargets st
+    INNER JOIN [dbo].[SemiFinished] sf ON sf.Id = st.SemiFinishedId
+    INNER JOIN [dbo].[TechnicalCardIngredientComposition] c ON c.TechnicalCardId = sf.TechnicalCardId
+    WHERE sf.TechnicalCardId IS NOT NULL
+      AND c.IngredientId IS NOT NULL
+) i
+INNER JOIN [dbo].[Ingredients] ing ON ing.Id = i.IngredientId;
+
+UPDATE ing
+SET ing.Stock = it.TargetStock
+FROM [dbo].[Ingredients] ing
+INNER JOIN #IngredientTargets it ON it.IngredientId = ing.Id
+WHERE ISNULL(ing.Stock, 0) < it.TargetStock;
+
+UPDATE mpl
+SET
+    mpl.RemainingPortions = @TargetPortions,
+    mpl.UpdatedAt = @Now
+FROM [dbo].[MenuItemPortionLimits] mpl
+INNER JOIN #ActiveMenuItems m
+    ON LOWER(mpl.ItemType) = m.ItemType
+   AND mpl.ItemId = m.ItemId
+WHERE mpl.RemainingPortions < @TargetPortions;
+
+IF OBJECT_ID('tempdb..#CardAvailability') IS NOT NULL DROP TABLE #CardAvailability;
+SELECT
+    cr.TechnicalCardId,
+    IsAvailable = CAST(MIN(CASE WHEN ISNULL(ps.StockGrams, 0) + 0.000001 >= cr.RequiredBase THEN 1 ELSE 0 END) AS bit)
+INTO #CardAvailability
+FROM
+(
+    SELECT
+        c.TechnicalCardId,
+        c.SemiFinishedId,
+        RequiredBase = SUM(
+            CASE c.UnitOfMeasureId
+                WHEN 5 THEN COALESCE(NULLIF(c.OutputWeight, 0), NULLIF(c.NetWeight, 0), NULLIF(c.GrossWeight, 0), 0) * 1000
+                WHEN 6 THEN COALESCE(NULLIF(c.OutputWeight, 0), NULLIF(c.NetWeight, 0), NULLIF(c.GrossWeight, 0), 0) * 1000
+                ELSE COALESCE(NULLIF(c.OutputWeight, 0), NULLIF(c.NetWeight, 0), NULLIF(c.GrossWeight, 0), 0)
+            END)
+    FROM [dbo].[TechnicalCardSemiFinishedComposition] c
+    WHERE c.TechnicalCardId IS NOT NULL
+      AND c.SemiFinishedId IS NOT NULL
+    GROUP BY c.TechnicalCardId, c.SemiFinishedId
+) cr
+OUTER APPLY
+(
+    SELECT StockGrams = SUM(CASE WHEN StockGrams > 0 THEN StockGrams ELSE 0 END)
+    FROM [dbo].[Preparations] p
+    WHERE p.SemiFinishedId = cr.SemiFinishedId
+) ps
+WHERE cr.RequiredBase > 0
+GROUP BY cr.TechnicalCardId;
+
+UPDATE d
+SET d.IsAvailable =
+    CASE
+        WHEN ISNULL(dc.Name, N'') = N'Неактивные' THEN 0
+        WHEN mpl.Id IS NOT NULL AND mpl.RemainingPortions <= 0 THEN 0
+        WHEN d.TechnicalCardId IS NULL THEN 1
+        ELSE ISNULL(ca.IsAvailable, 1)
+    END
+FROM [dbo].[Dishes] d
+LEFT JOIN [dbo].[DishCategories] dc ON dc.Id = d.CategoryId
+LEFT JOIN #CardAvailability ca ON ca.TechnicalCardId = d.TechnicalCardId
+LEFT JOIN [dbo].[MenuItemPortionLimits] mpl ON LOWER(mpl.ItemType) = N'dish' AND mpl.ItemId = d.Id;
+
+UPDATE d
+SET d.IsAvailable =
+    CASE
+        WHEN ISNULL(dc.Name, N'') = N'Неактивные' THEN 0
+        WHEN mpl.Id IS NOT NULL AND mpl.RemainingPortions <= 0 THEN 0
+        WHEN d.TechnicalCardId IS NULL THEN 1
+        ELSE ISNULL(ca.IsAvailable, 1)
+    END
+FROM [dbo].[Drinks] d
+LEFT JOIN [dbo].[DrinkCategories] dc ON dc.Id = d.CategoryId
+LEFT JOIN #CardAvailability ca ON ca.TechnicalCardId = d.TechnicalCardId
+LEFT JOIN [dbo].[MenuItemPortionLimits] mpl ON LOWER(mpl.ItemType) = N'drink' AND mpl.ItemId = d.Id;
+
+UPDATE t
+SET t.IsAvailable =
+    CASE
+        WHEN ISNULL(tc.name, N'') = N'Неактивные' THEN 0
+        WHEN mpl.Id IS NOT NULL AND mpl.RemainingPortions <= 0 THEN 0
+        WHEN t.TechnicalCardId IS NULL THEN 1
+        ELSE ISNULL(ca.IsAvailable, 1)
+    END
+FROM [dbo].[ToppingsAndSyrups] t
+LEFT JOIN [dbo].[ToppingCategories] tc ON tc.id = t.CategoryID
+LEFT JOIN #CardAvailability ca ON ca.TechnicalCardId = t.TechnicalCardId
+LEFT JOIN [dbo].[MenuItemPortionLimits] mpl ON LOWER(mpl.ItemType) = N'topping' AND mpl.ItemId = t.Id;
+
+DROP TABLE IF EXISTS #CardAvailability;
+DROP TABLE IF EXISTS #IngredientTargets;
+DROP TABLE IF EXISTS #SemiTargets;
+DROP TABLE IF EXISTS #ActiveMenuItems;
+GO
