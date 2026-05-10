@@ -292,6 +292,7 @@
                                         <lvc:Axis Labels="{Binding InventoryLabels}"
                                                   FontSize="16"
                                                   LabelsRotation="25"
+                                                  ShowLabels="False"
                                                   Separator="{x:Static lvc:DefaultAxes.CleanSeparator}"/>
                                     </lvc:CartesianChart.AxisX>
                                     <lvc:CartesianChart.AxisY>

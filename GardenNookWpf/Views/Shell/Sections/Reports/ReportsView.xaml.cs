@@ -248,7 +248,7 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
                 FontSize = 16,
                 FontWeight = FontWeights.SemiBold,
                 DataLabels = true,
-                LabelPoint = FormatInventoryChartLabel
+                LabelPoint = point => FormatInventoryChartLabel(point, chartItems)
             });
             InventorySeries.Add(new ColumnSeries
             {
@@ -259,17 +259,28 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
                 FontSize = 16,
                 FontWeight = FontWeights.SemiBold,
                 DataLabels = true,
-                LabelPoint = FormatInventoryChartLabel
+                LabelPoint = point => FormatInventoryChartLabel(point, chartItems)
             });
 
             OnPropertyChanged(nameof(InventoryLabels));
         }
 
-        private static string FormatInventoryChartLabel(ChartPoint point)
+        private static string FormatInventoryChartLabel(ChartPoint point, List<InventoryReportItemViewModel> chartItems)
         {
-            return Math.Abs(point.Y) < 0.000001d
-                ? string.Empty
-                : point.Y.ToString("0.##", CultureInfo.CurrentCulture);
+            if (Math.Abs(point.Y) < 0.000001d)
+            {
+                return string.Empty;
+            }
+
+            var index = (int)Math.Round(point.X);
+            var unitName = index >= 0 && index < chartItems.Count
+                ? chartItems[index].UnitName
+                : string.Empty;
+            var value = point.Y.ToString("0.##", CultureInfo.CurrentCulture);
+
+            return string.IsNullOrWhiteSpace(unitName)
+                ? value
+                : value + " " + unitName;
         }
 
         private async void PeriodButton_Click(object sender, RoutedEventArgs e)
