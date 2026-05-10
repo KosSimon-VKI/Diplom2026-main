@@ -157,12 +157,6 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
             UnpopularLabels = UnpopularItems.Select(x => ShortenLabel(x.Name)).ToArray();
             PopularAxisStep = CalculateSalesAxisStep(PopularItems);
             UnpopularAxisStep = CalculateSalesAxisStep(UnpopularItems);
-            InventoryLabels = InventoryItems
-                .OrderByDescending(x => Math.Abs(x.Source.Difference))
-                .Take(10)
-                .Select(x => ShortenLabel(x.Name))
-                .ToArray();
-
             RebuildMenuSeries(PopularSeries, PopularItems, "#FF606E52");
             RebuildMenuSeries(UnpopularSeries, UnpopularItems, "#FF91A56E");
             RebuildInventorySeries();
@@ -226,21 +220,56 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
 
         private void RebuildInventorySeries()
         {
-            var topDiffs = InventoryItems
-                .OrderByDescending(x => Math.Abs(x.Source.Difference))
-                .Take(10)
+            var topPositiveDiffs = InventoryItems
+                .Where(x => x.Source.Difference > 0m)
+                .OrderByDescending(x => x.Source.Difference)
+                .Take(8)
                 .ToList();
+            var topNegativeDiffs = InventoryItems
+                .Where(x => x.Source.Difference < 0m)
+                .OrderBy(x => x.Source.Difference)
+                .Take(8)
+                .ToList();
+            var chartItems = topPositiveDiffs
+                .Concat(topNegativeDiffs)
+                .ToList();
+
+            InventoryLabels = chartItems
+                .Select(x => ShortenLabel(x.Name))
+                .ToArray();
 
             InventorySeries.Clear();
             InventorySeries.Add(new ColumnSeries
             {
-                Title = "Разница",
-                Values = new ChartValues<decimal>(topDiffs.Select(x => x.Source.Difference)),
+                Title = "Излишек",
+                Values = new ChartValues<decimal>(
+                    chartItems.Select(x => x.Source.Difference > 0m ? x.Source.Difference : 0m)),
                 Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF606E52")),
                 FontSize = 16,
                 FontWeight = FontWeights.SemiBold,
-                DataLabels = true
+                DataLabels = true,
+                LabelPoint = FormatInventoryChartLabel
             });
+            InventorySeries.Add(new ColumnSeries
+            {
+                Title = "Недостача",
+                Values = new ChartValues<decimal>(
+                    chartItems.Select(x => x.Source.Difference < 0m ? x.Source.Difference : 0m)),
+                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB33131")),
+                FontSize = 16,
+                FontWeight = FontWeights.SemiBold,
+                DataLabels = true,
+                LabelPoint = FormatInventoryChartLabel
+            });
+
+            OnPropertyChanged(nameof(InventoryLabels));
+        }
+
+        private static string FormatInventoryChartLabel(ChartPoint point)
+        {
+            return Math.Abs(point.Y) < 0.000001d
+                ? string.Empty
+                : point.Y.ToString("0.##", CultureInfo.CurrentCulture);
         }
 
         private async void PeriodButton_Click(object sender, RoutedEventArgs e)
@@ -308,6 +337,8 @@ namespace GardenNookWpf.Views.Shell.Sections.Reports
             {
                 InventoryItems.Add(item);
             }
+
+            RebuildInventorySeries();
         }
 
         private async Task ExportAsync(string format, string filter)

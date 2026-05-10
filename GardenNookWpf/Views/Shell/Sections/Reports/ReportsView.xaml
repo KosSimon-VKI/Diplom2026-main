@@ -268,7 +268,7 @@
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="300"/>
+                                    <RowDefinition Height="420"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="360"/>
                                 </Grid.RowDefinitions>
@@ -291,10 +291,11 @@
                                     <lvc:CartesianChart.AxisX>
                                         <lvc:Axis Labels="{Binding InventoryLabels}"
                                                   FontSize="16"
+                                                  LabelsRotation="25"
                                                   Separator="{x:Static lvc:DefaultAxes.CleanSeparator}"/>
                                     </lvc:CartesianChart.AxisX>
                                     <lvc:CartesianChart.AxisY>
-                                        <lvc:Axis Title="Отклонение"
+                                        <lvc:Axis Title="Отклонение остатка"
                                                   FontSize="16"
                                                   LabelFormatter="{Binding WholeNumberAxisFormatter}"/>
                                     </lvc:CartesianChart.AxisY>
