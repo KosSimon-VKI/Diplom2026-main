@@ -37,11 +37,13 @@ namespace GardenNookWeb.Controllers
                 return View(model);
             }
 
-            var response = await _http.PostAsJsonAsync("api/auth/client", new ClientRequest
+            using var response = await _http.PostAsJsonAsync("api/auth/client", new ClientRequest
             {
                 PhoneNumber = model.PhoneNumber,
                 Password = model.Password
             });
+
+            CopyAuthCookies(response);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -57,6 +59,14 @@ namespace GardenNookWeb.Controllers
             }
 
             return RedirectToAction("MenuView", "Main");
+        }
+
+        private void CopyAuthCookies(HttpResponseMessage response)
+        {
+            if (response.Headers.TryGetValues("Set-Cookie", out var setCookies))
+            {
+                Response.Headers.Append("Set-Cookie", setCookies.ToArray());
+            }
         }
     }
 }

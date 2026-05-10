@@ -5,6 +5,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient("api", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7235/"); // API port
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    // Cookies must stay in each browser, not in the shared server-side API client.
+    UseCookies = false
 });
 
 var app = builder.Build();
