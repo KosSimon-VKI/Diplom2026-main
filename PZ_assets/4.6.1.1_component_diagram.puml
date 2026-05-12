@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam monochrome true
+
+component "GardenNookWeb\nRazor + JS" as Web
+component "GardenNookWpf\nWPF-клиент" as Wpf
+component "GardenNookApi\nASP.NET Core Web API" as Api
+component "TransferModels\nDTO-контракты" as Dto
+database "MS SQL Server" as Db
+
+Web --> Api : HTTPS / JSON
+Wpf --> Api : HTTPS / JSON
+Api --> Dto : использует DTO
+Web --> Dto : использует DTO
+Wpf --> Dto : использует DTO
+Api --> Db : EF Core / SQL
+@enduml
