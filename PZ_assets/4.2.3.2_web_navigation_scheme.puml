@@ -3,36 +3,58 @@ skinparam monochrome true
 skinparam shadowing false
 skinparam defaultFontName "Times New Roman"
 skinparam ArrowColor Black
+skinparam linetype polyline
+skinparam roundcorner 8
+skinparam nodesep 55
+skinparam ranksep 55
 skinparam rectangle {
   BackgroundColor White
   BorderColor Black
   FontColor Black
+  FontStyle bold
 }
-
-title Навигационная схема веб-интерфейса клиента
 
 left to right direction
 
-rectangle "Авторизация" as Login
-rectangle "Регистрация" as Registration
-rectangle "Меню" as Menu
-rectangle "Карточка позиции\nи добавки" as ItemDetails
-rectangle "Корзина" as Cart
-rectangle "Оформление заказа" as Checkout
-rectangle "Профиль клиента" as Profile
-rectangle "История заказов" as History
+rectangle "Окно \"Авторизация\nи регистрация клиента\"\n1, 2" as Auth
+rectangle "Пользователь" as User
+rectangle "Окно \"Личный кабинет\nклиента\"\n12, 14" as Profile
 
-Login --> Menu : вход клиента
-Login --> Registration : нет учетной записи
-Registration --> Menu : успешная регистрация
-Menu --> ItemDetails : выбор позиции
-ItemDetails --> Menu : возврат к списку
-ItemDetails --> Cart : добавление позиции
-Menu --> Cart : переход в корзину
-Cart --> Checkout : подтверждение состава
-Checkout --> Profile : заказ создан
-Menu --> Profile : личный кабинет
-Profile --> History : просмотр статусов
-History --> Menu : повторный выбор меню
-Profile --> Menu : возврат к меню
+rectangle "Окно \"Меню клиента\"\n3" as Menu
+rectangle "Главное меню" as MainMenu
+rectangle "Окно \"История\nзаказов\"\n13" as History
+
+rectangle "Окно \"Карточка позиции\nи выбор добавок\"\n4, 5, 6" as ItemCard
+rectangle "Окно \"Корзина\"\n7" as Cart
+rectangle "Окно \"Оформление\nзаказа\"\n8, 9, 10, 11" as Checkout
+
+Auth -[hidden]right-> User
+User -[hidden]right-> Profile
+Menu -[hidden]right-> MainMenu
+MainMenu -[hidden]right-> History
+ItemCard -[hidden]right-> Cart
+Cart -[hidden]right-> Checkout
+User -[hidden]down-> MainMenu
+MainMenu -[hidden]down-> Cart
+
+User --> MainMenu : 1, 2
+MainMenu --> Auth : 1, 2
+Auth --> MainMenu : 39
+MainMenu --> Menu : 3
+Menu --> MainMenu : 39
+MainMenu --> Profile : 12
+Profile --> MainMenu : 39
+MainMenu --> History : 13
+History --> MainMenu : 39
+Menu --> ItemCard : 4
+ItemCard --> Menu : 39
+ItemCard --> Cart : 6
+MainMenu --> Cart : 7
+Cart --> MainMenu : 39
+Cart --> Checkout : 8, 9, 10, 11
+Checkout --> Profile : 12
+Profile --> History : 13
+History --> Menu : 3
+Checkout --> MainMenu : 39
+
 @enduml
