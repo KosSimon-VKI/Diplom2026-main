@@ -1,0 +1,61 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam ArrowColor Black
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+  FontColor Black
+}
+
+title Навигационная схема WPF-приложения сотрудников
+
+left to right direction
+
+rectangle "Окно авторизации\nсотрудника" as Auth
+rectangle "Главное окно\nWPF-приложения" as Shell
+
+rectangle "Производственный контур" {
+  rectangle "Заказы" as Orders
+  rectangle "Технологические\nкарты" as TechCards
+  rectangle "Заготовки" as Preparations
+  rectangle "Стоп-лист" as StopList
+  rectangle "Акты списания" as WriteOff
+}
+
+rectangle "Административный контур" {
+  rectangle "Меню" as MenuItems
+  rectangle "Управление меню" as MenuManagement
+  rectangle "Категории товаров" as ProductCategories
+  rectangle "Склад сырья\nи полуфабрикатов" as Inventory
+  rectangle "Категории сырья" as IngredientCategories
+  rectangle "История заказов" as OrderHistory
+  rectangle "Клиенты" as Clients
+  rectangle "Лояльность" as Loyalty
+  rectangle "Отчеты" as Reports
+  rectangle "Персонал" as Staff
+}
+
+Auth --> Shell : успешный вход
+Shell --> Orders
+Shell --> TechCards
+Shell --> Preparations
+Shell --> StopList
+Shell --> WriteOff
+Shell --> MenuItems
+Shell --> MenuManagement
+Shell --> ProductCategories
+Shell --> Inventory
+Shell --> IngredientCategories
+Shell --> OrderHistory
+Shell --> Clients
+Shell --> Loyalty
+Shell --> Reports
+Shell --> Staff
+Clients --> OrderHistory : история клиента
+Orders --> TechCards : рецепт позиции
+Inventory --> StopList : доступность меню
+Preparations --> Inventory : изменение остатков
+WriteOff --> Inventory : списание остатков
+@enduml

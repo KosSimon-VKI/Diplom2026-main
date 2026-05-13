@@ -1,0 +1,45 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam ArrowColor Black
+skinparam activity {
+  BackgroundColor White
+  BorderColor Black
+  FontColor Black
+  DiamondBackgroundColor White
+  DiamondBorderColor Black
+  StartColor Black
+  EndColor Black
+}
+
+title Алгоритм действий по просмотру меню клиентом
+
+start
+partition "Клиент" {
+  :Переходит на страницу меню;
+}
+partition "Веб-интерфейс" {
+  :Запрашивает список блюд, напитков и добавок;
+}
+partition "API Garden Nook" {
+  :Получает доступные позиции меню;
+  :Передает цены, состав, КБЖУ и признаки доступности;
+}
+partition "Веб-интерфейс" {
+  :Отображает карточки позиций;
+  :Показывает категории и фильтры;
+}
+partition "Клиент" {
+  :Выбирает категорию или позицию;
+}
+partition "Веб-интерфейс" {
+  :Показывает описание, состав и доступные добавки;
+  if (Позиция доступна?) then (да)
+    :Разрешает добавление в корзину;
+  else (нет)
+    :Блокирует добавление и показывает недоступность;
+  endif
+}
+stop
+@enduml

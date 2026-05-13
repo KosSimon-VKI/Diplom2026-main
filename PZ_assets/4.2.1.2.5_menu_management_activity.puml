@@ -1,0 +1,54 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam ArrowColor Black
+skinparam activity {
+  BackgroundColor White
+  BorderColor Black
+  FontColor Black
+  DiamondBackgroundColor White
+  DiamondBorderColor Black
+  StartColor Black
+  EndColor Black
+}
+
+title Алгоритм действий по управлению меню
+
+start
+partition "Администратор" {
+  :Открывает раздел управления меню;
+  :Выбирает блюдо, напиток, топпинг или категорию;
+}
+partition "WPF-приложение" {
+  :Загружает список позиций и справочники;
+}
+partition "API Garden Nook" {
+  :Возвращает позиции меню, категории, единицы измерения и техкарты;
+}
+partition "Администратор" {
+  if (Требуется создать запись?) then (да)
+    :Заполняет форму добавления;
+  else (нет)
+    :Выбирает существующую запись для изменения или удаления;
+  endif
+}
+partition "WPF-приложение" {
+  :Проверяет обязательные поля;
+  :Отправляет POST, PUT или DELETE запрос;
+}
+partition "API Garden Nook" {
+  :Проверяет ограничения и связи;
+  if (Операция допустима?) then (да)
+    :Сохраняет изменения в базе данных;
+  else (нет)
+    :Возвращает сообщение об ошибке;
+    stop
+  endif
+}
+partition "WPF-приложение" {
+  :Перезагружает список меню;
+  :Показывает статус операции;
+}
+stop
+@enduml

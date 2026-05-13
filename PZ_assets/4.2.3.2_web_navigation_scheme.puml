@@ -1,0 +1,38 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam ArrowColor Black
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor Black
+  FontColor Black
+}
+
+title Навигационная схема веб-интерфейса клиента
+
+left to right direction
+
+rectangle "Авторизация" as Login
+rectangle "Регистрация" as Registration
+rectangle "Меню" as Menu
+rectangle "Карточка позиции\nи добавки" as ItemDetails
+rectangle "Корзина" as Cart
+rectangle "Оформление заказа" as Checkout
+rectangle "Профиль клиента" as Profile
+rectangle "История заказов" as History
+
+Login --> Menu : вход клиента
+Login --> Registration : нет учетной записи
+Registration --> Menu : успешная регистрация
+Menu --> ItemDetails : выбор позиции
+ItemDetails --> Menu : возврат к списку
+ItemDetails --> Cart : добавление позиции
+Menu --> Cart : переход в корзину
+Cart --> Checkout : подтверждение состава
+Checkout --> Profile : заказ создан
+Menu --> Profile : личный кабинет
+Profile --> History : просмотр статусов
+History --> Menu : повторный выбор меню
+Profile --> Menu : возврат к меню
+@enduml
