@@ -1,0 +1,382 @@
+@startuml
+!theme plain
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #4B5D52
+  HeaderBackgroundColor #DCE9DE
+  ArrowColor #516459
+}
+title ER-диаграмма базы данных Garden Nook
+
+entity "ClientCategories" as ClientCategories {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "Clients" as Clients {
+* Id : int IDENTITY(1,1)
+  FullName : nvarchar(255)
+  PhoneNumber : nvarchar(20)
+  Password : nvarchar(100)
+  ClientCategoryId : int
+  OrderCount : int
+}
+
+entity "Discounts" as Discounts {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+  DiscountPercent : decimal(5, 2)
+}
+
+entity "DishCategories" as DishCategories {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "Dishes" as Dishes {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(255)
+  CategoryId : int
+  UnitOfMeasureId : int
+  CostRub : decimal(10, 2)
+  MarkupPercent : decimal(10, 2)
+  PriceRub : decimal(10, 2)
+  CostPercent : decimal(5, 2)
+  TechnicalCardId : int
+  FatsG : decimal(8, 2)
+  ProteinsG : decimal(8, 2)
+  CarbsG : decimal(8, 2)
+  CaloriesKcal : decimal(8, 2)
+  Kilojoules : decimal(8, 2)
+  ImageUrl : nvarchar(500)
+  IsAvailable : bit
+}
+
+entity "DishToppings" as DishToppings {
+* Id : int IDENTITY(1,1)
+  ToppingId : int
+  OrderDishItemId : int
+  Quantity : decimal(8, 2)
+  FinalPrice : decimal(10, 2)
+}
+
+entity "DrinkCategories" as DrinkCategories {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "Drinks" as Drinks {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(255)
+  Quantity : decimal(8, 2)
+  UnitOfMeasureId : int
+  CategoryId : int
+  CostRub : decimal(10, 2)
+  MarkupPercent : decimal(10, 2)
+  PriceRub : decimal(10, 2)
+  CostPercent : decimal(5, 2)
+  TechnicalCardId : int
+  FatsG : decimal(8, 2)
+  ProteinsG : decimal(8, 2)
+  CarbsG : decimal(8, 2)
+  CaloriesKcal : decimal(8, 2)
+  Kilojoules : decimal(8, 2)
+  ImageUrl : nvarchar(500)
+  IsAvailable : bit
+}
+
+entity "DrinkToppings" as DrinkToppings {
+* Id : int IDENTITY(1,1)
+  ToppingId : int
+  OrderDrinkItemId : int
+  Quantity : decimal(8, 2)
+  FinalPrice : decimal(10, 2)
+}
+
+entity "IngredientCategories" as IngredientCategories {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "Ingredients" as Ingredients {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(255)
+  Stock : decimal(10, 2)
+  UnitOfMeasureId : int
+  CostRub : decimal(10, 2)
+  CategoryId : int
+}
+
+entity "IngredientSupplyActs" as IngredientSupplyActs {
+* Id : int IDENTITY(1,1)
+  Date : datetime2(7)
+}
+
+entity "IngredientSupplyActItems" as IngredientSupplyActItems {
+* Id : int IDENTITY(1,1)
+  SupplyActId : int
+  IngredientId : int
+  Quantity : decimal(10, 2)
+  UnitOfMeasureId : int
+}
+
+entity "WriteOffActs" as WriteOffActs {
+* Id : int IDENTITY(1,1)
+  Date : datetime2(7)
+  Comment : nvarchar(500)
+  StaffId : int
+}
+
+entity "IngredientWriteOffActItems" as IngredientWriteOffActItems {
+* Id : int IDENTITY(1,1)
+  WriteOffActId : int
+  IngredientId : int
+  Quantity : decimal(10, 2)
+  UnitOfMeasureId : int
+  WriteOffTypeId : int
+}
+
+entity "SemiFinishedWriteOffActItems" as SemiFinishedWriteOffActItems {
+* Id : int IDENTITY(1,1)
+  WriteOffActId : int
+  SemiFinishedId : int
+  Quantity : decimal(10, 2)
+  UnitOfMeasureId : int
+  WriteOffTypeId : int
+}
+
+entity "MenuItemPortionLimits" as MenuItemPortionLimits {
+* Id : int IDENTITY(1,1)
+  ItemType : nvarchar(16)
+  ItemId : int
+  RemainingPortions : decimal(10, 2)
+  CreatedAt : datetime2(7)
+  UpdatedAt : datetime2(7)
+}
+
+entity "OrderTypes" as OrderTypes {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "OrderStatuses" as OrderStatuses {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "Orders" as Orders {
+* Id : int IDENTITY(1,1)
+  CreatedAt : datetime2(7)
+  ClientId : int
+  OrderTypeId : int
+  Comment : nvarchar(max)
+  TotalCalories : decimal(10, 2)
+  DiscountId : int
+  TotalPrice : decimal(10, 2)
+  StatusID : int
+  PickupAt : datetime2(7)
+}
+
+entity "OrderDishItems" as OrderDishItems {
+* Id : int IDENTITY(1,1)
+  OrderId : int
+  DishId : int
+  Quantity : decimal(8, 2)
+  FinalPrice : decimal(10, 2)
+  IsCompleted : bit
+}
+
+entity "OrderDrinkItems" as OrderDrinkItems {
+* Id : int IDENTITY(1,1)
+  OrderId : int
+  DrinkId : int
+  Quantity : decimal(8, 2)
+  FinalPrice : decimal(10, 2)
+  IsCompleted : bit
+}
+
+entity "OrderDrinkItemModifiers" as OrderDrinkItemModifiers {
+* Id : int IDENTITY(1,1)
+  OrderDrinkItemId : int
+  MilkIngredientId : int
+  CoffeeIngredientId : int
+}
+
+entity "OrderToppingItems" as OrderToppingItems {
+* Id : int IDENTITY(1,1)
+  OrderId : int
+  ToppingId : int
+  Quantity : int
+  TotalPrice : decimal(18, 2)
+  IsCompleted : bit
+}
+
+entity "Preparations" as Preparations {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(255)
+  SemiFinishedId : int
+  StockGrams : decimal(10, 2)
+  ProductionDate : date
+}
+
+entity "PreparationTasks" as PreparationTasks {
+* Id : int IDENTITY(1,1)
+  SemiFinishedId : int
+  Comment : nvarchar(500)
+  CreatedAt : datetime2(7)
+  TaskText : nvarchar(255)
+}
+
+entity "SemiFinishedCategories" as SemiFinishedCategories {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "SemiFinished" as SemiFinished {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(255)
+  CostRub : decimal(10, 2)
+  CategoryId : int
+  UnitOfMeasureId : int
+  TechnicalCardId : int
+  FatsG : decimal(8, 2)
+  ProteinsG : decimal(8, 2)
+  CarbsG : decimal(8, 2)
+  CaloriesKcal : decimal(8, 2)
+  Kilojoules : decimal(8, 2)
+}
+
+entity "StaffRoles" as StaffRoles {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "Staff" as Staff {
+* Id : int IDENTITY(1,1)
+  RoleId : int
+  FullName : nvarchar(255)
+  Login : nvarchar(100)
+  Password : nvarchar(100)
+}
+
+entity "TechnicalCards" as TechnicalCards {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(255)
+  Description : nvarchar(max)
+}
+
+entity "TechnicalCardIngredientComposition" as TechnicalCardIngredientComposition {
+* Id : int IDENTITY(1,1)
+  TechnicalCardId : int
+  IngredientId : int
+  UnitOfMeasureId : int
+  GrossWeight : decimal(10, 6)
+  ColdLossPercent : decimal(10, 2)
+  NetWeight : decimal(10, 6)
+  HotLossPercent : decimal(10, 2)
+  OutputWeight : decimal(10, 6)
+}
+
+entity "TechnicalCardSemiFinishedComposition" as TechnicalCardSemiFinishedComposition {
+* Id : int IDENTITY(1,1)
+  TechnicalCardId : int
+  SemiFinishedId : int
+  UnitOfMeasureId : int
+  GrossWeight : decimal(10, 6)
+  ColdLossPercent : decimal(10, 2)
+  NetWeight : decimal(10, 6)
+  HotLossPercent : decimal(10, 2)
+  OutputWeight : decimal(10, 6)
+}
+
+entity "ToppingCategories" as ToppingCategories {
+* id : int IDENTITY(1,1)
+  name : nvarchar(max)
+}
+
+entity "ToppingsAndSyrups" as ToppingsAndSyrups {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(255)
+  Quantity : decimal(8, 2)
+  UnitOfMeasureId : int
+  CostRub : decimal(10, 2)
+  MarkupPercent : decimal(10, 2)
+  PriceRub : decimal(10, 2)
+  CostPercent : decimal(5, 2)
+  TechnicalCardId : int
+  FatsG : decimal(8, 2)
+  ProteinsG : decimal(8, 2)
+  CarbsG : decimal(8, 2)
+  CaloriesKcal : decimal(8, 2)
+  Kilojoules : decimal(8, 2)
+  CategoryID : int
+  IsAvailable : bit
+}
+
+entity "UnitsOfMeasure" as UnitsOfMeasure {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(50)
+}
+
+entity "WriteOffTypes" as WriteOffTypes {
+* Id : int IDENTITY(1,1)
+  Name : nvarchar(200)
+}
+
+ClientCategories ||--o{ Clients : ClientCategoryId
+DishCategories ||--o{ Dishes : CategoryId
+TechnicalCards ||--o{ Dishes : TechnicalCardId
+UnitsOfMeasure ||--o{ Dishes : UnitOfMeasureId
+OrderDishItems ||--o{ DishToppings : OrderDishItemId
+ToppingsAndSyrups ||--o{ DishToppings : ToppingId
+DrinkCategories ||--o{ Drinks : CategoryId
+TechnicalCards ||--o{ Drinks : TechnicalCardId
+UnitsOfMeasure ||--o{ Drinks : UnitOfMeasureId
+OrderDrinkItems ||--o{ DrinkToppings : OrderDrinkItemId
+ToppingsAndSyrups ||--o{ DrinkToppings : ToppingId
+IngredientCategories ||--o{ Ingredients : CategoryId
+UnitsOfMeasure ||--o{ Ingredients : UnitOfMeasureId
+Ingredients ||--o{ IngredientSupplyActItems : IngredientId
+IngredientSupplyActs ||--o{ IngredientSupplyActItems : SupplyActId
+UnitsOfMeasure ||--o{ IngredientSupplyActItems : UnitOfMeasureId
+Ingredients ||--o{ IngredientWriteOffActItems : IngredientId
+UnitsOfMeasure ||--o{ IngredientWriteOffActItems : UnitOfMeasureId
+WriteOffActs ||--o{ IngredientWriteOffActItems : WriteOffActId
+WriteOffTypes ||--o{ IngredientWriteOffActItems : WriteOffTypeId
+Dishes ||--o{ OrderDishItems : DishId
+Orders ||--o{ OrderDishItems : OrderId
+Ingredients ||--o{ OrderDrinkItemModifiers : CoffeeIngredientId
+Ingredients ||--o{ OrderDrinkItemModifiers : MilkIngredientId
+OrderDrinkItems ||--o{ OrderDrinkItemModifiers : OrderDrinkItemId
+Drinks ||--o{ OrderDrinkItems : DrinkId
+Orders ||--o{ OrderDrinkItems : OrderId
+Clients ||--o{ Orders : ClientId
+Discounts ||--o{ Orders : DiscountId
+OrderStatuses ||--o{ Orders : StatusID
+OrderTypes ||--o{ Orders : OrderTypeId
+Orders ||--o{ OrderToppingItems : OrderId
+ToppingsAndSyrups ||--o{ OrderToppingItems : ToppingId
+SemiFinished ||--o{ Preparations : SemiFinishedId
+SemiFinished ||--o{ PreparationTasks : SemiFinishedId
+SemiFinishedCategories ||--o{ SemiFinished : CategoryId
+TechnicalCards ||--o{ SemiFinished : TechnicalCardId
+UnitsOfMeasure ||--o{ SemiFinished : UnitOfMeasureId
+SemiFinished ||--o{ SemiFinishedWriteOffActItems : SemiFinishedId
+UnitsOfMeasure ||--o{ SemiFinishedWriteOffActItems : UnitOfMeasureId
+WriteOffActs ||--o{ SemiFinishedWriteOffActItems : WriteOffActId
+WriteOffTypes ||--o{ SemiFinishedWriteOffActItems : WriteOffTypeId
+StaffRoles ||--o{ Staff : RoleId
+Ingredients ||--o{ TechnicalCardIngredientComposition : IngredientId
+TechnicalCards ||--o{ TechnicalCardIngredientComposition : TechnicalCardId
+UnitsOfMeasure ||--o{ TechnicalCardIngredientComposition : UnitOfMeasureId
+SemiFinished ||--o{ TechnicalCardSemiFinishedComposition : SemiFinishedId
+TechnicalCards ||--o{ TechnicalCardSemiFinishedComposition : TechnicalCardId
+UnitsOfMeasure ||--o{ TechnicalCardSemiFinishedComposition : UnitOfMeasureId
+ToppingCategories ||--o{ ToppingsAndSyrups : CategoryID
+TechnicalCards ||--o{ ToppingsAndSyrups : TechnicalCardId
+UnitsOfMeasure ||--o{ ToppingsAndSyrups : UnitOfMeasureId
+Staff ||--o{ WriteOffActs : StaffId
+@enduml

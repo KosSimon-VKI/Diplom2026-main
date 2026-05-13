@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2720" height="1960" viewBox="0 0 2720 1960">
+<defs>
+<marker id="crow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 9 5 L 0 10" fill="none" stroke="#53665a" stroke-width="1.8"/></marker>
+<style><![CDATA[
+text { font-family: "Segoe UI", Arial, sans-serif; fill: #253128; }
+.title { font-size: 30px; font-weight: 700; }
+.subtitle { font-size: 16px; fill: #617064; }
+.table-title { font-size: 15px; font-weight: 700; }
+.column { font-size: 12px; }
+.pk { font-weight: 700; fill: #1f4c39; }
+.fk { fill: #6e4a1f; }
+.relation { fill: none; stroke: #53665a; stroke-width: 1.5; opacity: .62; marker-end: url(#crow); }
+.relation-label { font-size: 10px; fill: #59675d; }
+]]></style>
+</defs>
+<rect width="100%" height="100%" fill="#FAFBF8"/>
+<text x="80" y="48" class="title">ER-диаграмма базы данных Garden Nook</text>
+<text x="80" y="76" class="subtitle">Сгенерировано по script.sql: предметные таблицы без __EFMigrationsHistory</text>
+<path class="relation" d="M 80 324 L 260 324 L 260 121 L 440 121"/>
+<text class="relation-label" x="350" y="116">ClientCategoryId</text>
+<path class="relation" d="M 900 419 L 1080 419 L 1080 121 L 1260 121"/>
+<text class="relation-label" x="1170" y="116">CategoryId</text>
+<path class="relation" d="M 1260 419 L 1295 419 L 1295 946 L 1330 946"/>
+<text class="relation-label" x="1312" y="941">TechnicalCardId</text>
+<path class="relation" d="M 1260 419 L 1535 419 L 1535 1096 L 1810 1096"/>
+<text class="relation-label" x="1672" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 900 720 L 865 720 L 865 869 L 830 869"/>
+<text class="relation-label" x="848" y="864">OrderDishItemId</text>
+<path class="relation" d="M 1260 720 L 1295 720 L 1295 419 L 1330 419"/>
+<text class="relation-label" x="1312" y="414">ToppingId</text>
+<path class="relation" d="M 900 1224 L 1080 1224 L 1080 916 L 1260 916"/>
+<text class="relation-label" x="1170" y="911">CategoryId</text>
+<path class="relation" d="M 1260 1224 L 1295 1224 L 1295 946 L 1330 946"/>
+<text class="relation-label" x="1312" y="941">TechnicalCardId</text>
+<path class="relation" d="M 1260 1224 L 1535 1224 L 1535 1096 L 1810 1096"/>
+<text class="relation-label" x="1672" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 900 1514 L 865 1514 L 865 1109 L 830 1109"/>
+<text class="relation-label" x="848" y="1104">OrderDrinkItemId</text>
+<path class="relation" d="M 1260 1514 L 1295 1514 L 1295 419 L 1330 419"/>
+<text class="relation-label" x="1312" y="414">ToppingId</text>
+<path class="relation" d="M 1810 324 L 1990 324 L 1990 121 L 2170 121"/>
+<text class="relation-label" x="2080" y="116">CategoryId</text>
+<path class="relation" d="M 1810 324 L 1990 324 L 1990 1096 L 2170 1096"/>
+<text class="relation-label" x="2080" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 1810 810 L 1990 810 L 1990 324 L 2170 324"/>
+<text class="relation-label" x="2080" y="319">IngredientId</text>
+<path class="relation" d="M 1810 810 L 1990 810 L 1990 596 L 2170 596"/>
+<text class="relation-label" x="2080" y="591">SupplyActId</text>
+<path class="relation" d="M 1810 810 L 1990 810 L 1990 1096 L 2170 1096"/>
+<text class="relation-label" x="2080" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 1810 1729 L 1990 1729 L 1990 324 L 2170 324"/>
+<text class="relation-label" x="2080" y="319">IngredientId</text>
+<path class="relation" d="M 1810 1729 L 1990 1729 L 1990 1096 L 2170 1096"/>
+<text class="relation-label" x="2080" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 1810 1729 L 1990 1729 L 1990 1470 L 2170 1470"/>
+<text class="relation-label" x="2080" y="1465">WriteOffActId</text>
+<path class="relation" d="M 1810 1729 L 1990 1729 L 1990 1261 L 2170 1261"/>
+<text class="relation-label" x="2080" y="1256">WriteOffTypeId</text>
+<path class="relation" d="M 830 869 L 865 869 L 865 419 L 900 419"/>
+<text class="relation-label" x="882" y="414">DishId</text>
+<path class="relation" d="M 470 869 L 650 869 L 650 547 L 830 547"/>
+<text class="relation-label" x="740" y="542">OrderId</text>
+<path class="relation" d="M 830 1570 L 1320 1570 L 1320 324 L 1810 324"/>
+<text class="relation-label" x="1565" y="319">CoffeeIngredientId</text>
+<path class="relation" d="M 830 1570 L 1320 1570 L 1320 324 L 1810 324"/>
+<text class="relation-label" x="1565" y="319">MilkIngredientId</text>
+<path class="relation" d="M 470 1570 L 650 1570 L 650 1109 L 830 1109"/>
+<text class="relation-label" x="740" y="1104">OrderDrinkItemId</text>
+<path class="relation" d="M 830 1109 L 865 1109 L 865 1224 L 900 1224"/>
+<text class="relation-label" x="882" y="1219">DrinkId</text>
+<path class="relation" d="M 470 1109 L 650 1109 L 650 547 L 830 547"/>
+<text class="relation-label" x="740" y="542">OrderId</text>
+<path class="relation" d="M 470 547 L 455 547 L 455 324 L 440 324"/>
+<text class="relation-label" x="448" y="319">ClientId</text>
+<path class="relation" d="M 470 547 L 455 547 L 455 530 L 440 530"/>
+<text class="relation-label" x="448" y="525">DiscountId</text>
+<path class="relation" d="M 470 547 L 650 547 L 650 286 L 830 286"/>
+<text class="relation-label" x="740" y="281">StatusID</text>
+<path class="relation" d="M 470 547 L 650 547 L 650 121 L 830 121"/>
+<text class="relation-label" x="740" y="116">OrderTypeId</text>
+<path class="relation" d="M 470 1349 L 650 1349 L 650 547 L 830 547"/>
+<text class="relation-label" x="740" y="542">OrderId</text>
+<path class="relation" d="M 830 1349 L 1080 1349 L 1080 419 L 1330 419"/>
+<text class="relation-label" x="1205" y="414">ToppingId</text>
+<path class="relation" d="M 2290 624 L 2470 624 L 2470 372 L 2650 372"/>
+<text class="relation-label" x="2560" y="367">SemiFinishedId</text>
+<path class="relation" d="M 2290 880 L 2470 880 L 2470 372 L 2650 372"/>
+<text class="relation-label" x="2560" y="367">SemiFinishedId</text>
+<path class="relation" d="M 2290 372 L 2470 372 L 2470 121 L 2650 121"/>
+<text class="relation-label" x="2560" y="116">CategoryId</text>
+<path class="relation" d="M 2290 372 L 1990 372 L 1990 946 L 1690 946"/>
+<text class="relation-label" x="1840" y="941">TechnicalCardId</text>
+<path class="relation" d="M 2290 372 L 2230 372 L 2230 1096 L 2170 1096"/>
+<text class="relation-label" x="2200" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 2290 1149 L 2470 1149 L 2470 372 L 2650 372"/>
+<text class="relation-label" x="2560" y="367">SemiFinishedId</text>
+<path class="relation" d="M 2290 1149 L 2230 1149 L 2230 1096 L 2170 1096"/>
+<text class="relation-label" x="2200" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 2290 1149 L 2230 1149 L 2230 1470 L 2170 1470"/>
+<text class="relation-label" x="2200" y="1465">WriteOffActId</text>
+<path class="relation" d="M 2290 1149 L 2230 1149 L 2230 1261 L 2170 1261"/>
+<text class="relation-label" x="2200" y="1256">WriteOffTypeId</text>
+<path class="relation" d="M 80 904 L 260 904 L 260 711 L 440 711"/>
+<text class="relation-label" x="350" y="706">RoleId</text>
+<path class="relation" d="M 1690 1218 L 1750 1218 L 1750 324 L 1810 324"/>
+<text class="relation-label" x="1780" y="319">IngredientId</text>
+<path class="relation" d="M 1330 1218 L 1510 1218 L 1510 946 L 1690 946"/>
+<text class="relation-label" x="1600" y="941">TechnicalCardId</text>
+<path class="relation" d="M 1690 1218 L 1750 1218 L 1750 1096 L 1810 1096"/>
+<text class="relation-label" x="1780" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 1690 1608 L 1990 1608 L 1990 372 L 2290 372"/>
+<text class="relation-label" x="2140" y="367">SemiFinishedId</text>
+<path class="relation" d="M 1330 1608 L 1510 1608 L 1510 946 L 1690 946"/>
+<text class="relation-label" x="1600" y="941">TechnicalCardId</text>
+<path class="relation" d="M 1690 1608 L 1750 1608 L 1750 1096 L 1810 1096"/>
+<text class="relation-label" x="1780" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 1330 419 L 1510 419 L 1510 121 L 1690 121"/>
+<text class="relation-label" x="1600" y="116">CategoryID</text>
+<path class="relation" d="M 1330 419 L 1510 419 L 1510 946 L 1690 946"/>
+<text class="relation-label" x="1600" y="941">TechnicalCardId</text>
+<path class="relation" d="M 1690 419 L 1750 419 L 1750 1096 L 1810 1096"/>
+<text class="relation-label" x="1780" y="1091">UnitOfMeasureId</text>
+<path class="relation" d="M 1810 1470 L 1125 1470 L 1125 904 L 440 904"/>
+<text class="relation-label" x="782" y="899">StaffId</text>
+<g id="ClientCategories">
+<rect x="80" y="80" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="80" y="80" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="80" y1="114" x2="440" y2="114" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="90" y="102" class="table-title">ClientCategories</text>
+<text x="90" y="130" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="90" y="149" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="Clients">
+<rect x="80" y="245" width="360" height="158" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="80" y="245" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="80" y1="279" x2="440" y2="279" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="90" y="267" class="table-title">Clients</text>
+<text x="90" y="295" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="90" y="314" class="column">   FullName: nvarchar(255)</text>
+<text x="90" y="333" class="column">   PhoneNumber: nvarchar(20)</text>
+<text x="90" y="352" class="column">   Password: nvarchar(100)</text>
+<text x="90" y="371" class="column fk">FK ClientCategoryId: int</text>
+<text x="90" y="390" class="column">   OrderCount: int</text>
+</g>
+<g id="Discounts">
+<rect x="80" y="480" width="360" height="101" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="80" y="480" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="80" y1="514" x2="440" y2="514" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="90" y="502" class="table-title">Discounts</text>
+<text x="90" y="530" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="90" y="549" class="column">   Name: nvarchar(50)</text>
+<text x="90" y="568" class="column">   DiscountPercent: decimal(5, 2)</text>
+</g>
+<g id="DishCategories">
+<rect x="900" y="80" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="900" y="80" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="900" y1="114" x2="1260" y2="114" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="910" y="102" class="table-title">DishCategories</text>
+<text x="910" y="130" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="910" y="149" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="Dishes">
+<rect x="900" y="245" width="360" height="348" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="900" y="245" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="900" y1="279" x2="1260" y2="279" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="910" y="267" class="table-title">Dishes</text>
+<text x="910" y="295" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="910" y="314" class="column">   Name: nvarchar(255)</text>
+<text x="910" y="333" class="column fk">FK CategoryId: int</text>
+<text x="910" y="352" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="910" y="371" class="column">   CostRub: decimal(10, 2)</text>
+<text x="910" y="390" class="column">   MarkupPercent: decimal(10, 2)</text>
+<text x="910" y="409" class="column">   PriceRub: decimal(10, 2)</text>
+<text x="910" y="428" class="column">   CostPercent: decimal(5, 2)</text>
+<text x="910" y="447" class="column fk">FK TechnicalCardId: int</text>
+<text x="910" y="466" class="column">   FatsG: decimal(8, 2)</text>
+<text x="910" y="485" class="column">   ProteinsG: decimal(8, 2)</text>
+<text x="910" y="504" class="column">   CarbsG: decimal(8, 2)</text>
+<text x="910" y="523" class="column">   CaloriesKcal: decimal(8, 2)</text>
+<text x="910" y="542" class="column">   Kilojoules: decimal(8, 2)</text>
+<text x="910" y="561" class="column">   ImageUrl: nvarchar(500)</text>
+<text x="910" y="580" class="column">   IsAvailable: bit</text>
+</g>
+<g id="DishToppings">
+<rect x="900" y="650" width="360" height="139" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="900" y="650" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="900" y1="684" x2="1260" y2="684" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="910" y="672" class="table-title">DishToppings</text>
+<text x="910" y="700" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="910" y="719" class="column fk">FK ToppingId: int</text>
+<text x="910" y="738" class="column fk">FK OrderDishItemId: int</text>
+<text x="910" y="757" class="column">   Quantity: decimal(8, 2)</text>
+<text x="910" y="776" class="column">   FinalPrice: decimal(10, 2)</text>
+</g>
+<g id="DrinkCategories">
+<rect x="900" y="875" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="900" y="875" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="900" y1="909" x2="1260" y2="909" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="910" y="897" class="table-title">DrinkCategories</text>
+<text x="910" y="925" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="910" y="944" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="Drinks">
+<rect x="900" y="1040" width="360" height="367" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="900" y="1040" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="900" y1="1074" x2="1260" y2="1074" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="910" y="1062" class="table-title">Drinks</text>
+<text x="910" y="1090" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="910" y="1109" class="column">   Name: nvarchar(255)</text>
+<text x="910" y="1128" class="column">   Quantity: decimal(8, 2)</text>
+<text x="910" y="1147" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="910" y="1166" class="column fk">FK CategoryId: int</text>
+<text x="910" y="1185" class="column">   CostRub: decimal(10, 2)</text>
+<text x="910" y="1204" class="column">   MarkupPercent: decimal(10, 2)</text>
+<text x="910" y="1223" class="column">   PriceRub: decimal(10, 2)</text>
+<text x="910" y="1242" class="column">   CostPercent: decimal(5, 2)</text>
+<text x="910" y="1261" class="column fk">FK TechnicalCardId: int</text>
+<text x="910" y="1280" class="column">   FatsG: decimal(8, 2)</text>
+<text x="910" y="1299" class="column">   ProteinsG: decimal(8, 2)</text>
+<text x="910" y="1318" class="column">   CarbsG: decimal(8, 2)</text>
+<text x="910" y="1337" class="column">   CaloriesKcal: decimal(8, 2)</text>
+<text x="910" y="1356" class="column">   Kilojoules: decimal(8, 2)</text>
+<text x="910" y="1375" class="column">   ImageUrl: nvarchar(500)</text>
+<text x="910" y="1394" class="column">   IsAvailable: bit</text>
+</g>
+<g id="DrinkToppings">
+<rect x="900" y="1445" width="360" height="139" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="900" y="1445" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="900" y1="1479" x2="1260" y2="1479" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="910" y="1467" class="table-title">DrinkToppings</text>
+<text x="910" y="1495" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="910" y="1514" class="column fk">FK ToppingId: int</text>
+<text x="910" y="1533" class="column fk">FK OrderDrinkItemId: int</text>
+<text x="910" y="1552" class="column">   Quantity: decimal(8, 2)</text>
+<text x="910" y="1571" class="column">   FinalPrice: decimal(10, 2)</text>
+</g>
+<g id="IngredientCategories">
+<rect x="1810" y="80" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1810" y="80" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1810" y1="114" x2="2170" y2="114" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1820" y="102" class="table-title">IngredientCategories</text>
+<text x="1820" y="130" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1820" y="149" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="Ingredients">
+<rect x="1810" y="245" width="360" height="158" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1810" y="245" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1810" y1="279" x2="2170" y2="279" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1820" y="267" class="table-title">Ingredients</text>
+<text x="1820" y="295" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1820" y="314" class="column">   Name: nvarchar(255)</text>
+<text x="1820" y="333" class="column">   Stock: decimal(10, 2)</text>
+<text x="1820" y="352" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="1820" y="371" class="column">   CostRub: decimal(10, 2)</text>
+<text x="1820" y="390" class="column fk">FK CategoryId: int</text>
+</g>
+<g id="IngredientSupplyActs">
+<rect x="1810" y="555" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1810" y="555" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1810" y1="589" x2="2170" y2="589" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1820" y="577" class="table-title">IngredientSupplyActs</text>
+<text x="1820" y="605" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1820" y="624" class="column">   Date: datetime2(7)</text>
+</g>
+<g id="IngredientSupplyActItems">
+<rect x="1810" y="740" width="360" height="139" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1810" y="740" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1810" y1="774" x2="2170" y2="774" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1820" y="762" class="table-title">IngredientSupplyActItems</text>
+<text x="1820" y="790" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1820" y="809" class="column fk">FK SupplyActId: int</text>
+<text x="1820" y="828" class="column fk">FK IngredientId: int</text>
+<text x="1820" y="847" class="column">   Quantity: decimal(10, 2)</text>
+<text x="1820" y="866" class="column fk">FK UnitOfMeasureId: int</text>
+</g>
+<g id="WriteOffActs">
+<rect x="1810" y="1410" width="360" height="120" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1810" y="1410" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1810" y1="1444" x2="2170" y2="1444" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1820" y="1432" class="table-title">WriteOffActs</text>
+<text x="1820" y="1460" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1820" y="1479" class="column">   Date: datetime2(7)</text>
+<text x="1820" y="1498" class="column">   Comment: nvarchar(500)</text>
+<text x="1820" y="1517" class="column fk">FK StaffId: int</text>
+</g>
+<g id="IngredientWriteOffActItems">
+<rect x="1810" y="1650" width="360" height="158" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1810" y="1650" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1810" y1="1684" x2="2170" y2="1684" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1820" y="1672" class="table-title">IngredientWriteOffActItems</text>
+<text x="1820" y="1700" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1820" y="1719" class="column fk">FK WriteOffActId: int</text>
+<text x="1820" y="1738" class="column fk">FK IngredientId: int</text>
+<text x="1820" y="1757" class="column">   Quantity: decimal(10, 2)</text>
+<text x="1820" y="1776" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="1820" y="1795" class="column fk">FK WriteOffTypeId: int</text>
+</g>
+<g id="SemiFinishedWriteOffActItems">
+<rect x="2290" y="1070" width="360" height="158" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="2290" y="1070" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="2290" y1="1104" x2="2650" y2="1104" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="2300" y="1092" class="table-title">SemiFinishedWriteOffActItems</text>
+<text x="2300" y="1120" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="2300" y="1139" class="column fk">FK WriteOffActId: int</text>
+<text x="2300" y="1158" class="column fk">FK SemiFinishedId: int</text>
+<text x="2300" y="1177" class="column">   Quantity: decimal(10, 2)</text>
+<text x="2300" y="1196" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="2300" y="1215" class="column fk">FK WriteOffTypeId: int</text>
+</g>
+<g id="MenuItemPortionLimits">
+<rect x="1330" y="650" width="360" height="158" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1330" y="650" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1330" y1="684" x2="1690" y2="684" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1340" y="672" class="table-title">MenuItemPortionLimits</text>
+<text x="1340" y="700" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1340" y="719" class="column">   ItemType: nvarchar(16)</text>
+<text x="1340" y="738" class="column">   ItemId: int</text>
+<text x="1340" y="757" class="column">   RemainingPortions: decimal(10, 2)</text>
+<text x="1340" y="776" class="column">   CreatedAt: datetime2(7)</text>
+<text x="1340" y="795" class="column">   UpdatedAt: datetime2(7)</text>
+</g>
+<g id="OrderTypes">
+<rect x="470" y="80" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="470" y="80" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="470" y1="114" x2="830" y2="114" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="480" y="102" class="table-title">OrderTypes</text>
+<text x="480" y="130" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="480" y="149" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="OrderStatuses">
+<rect x="470" y="245" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="470" y="245" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="470" y1="279" x2="830" y2="279" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="480" y="267" class="table-title">OrderStatuses</text>
+<text x="480" y="295" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="480" y="314" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="Orders">
+<rect x="470" y="430" width="360" height="234" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="470" y="430" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="470" y1="464" x2="830" y2="464" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="480" y="452" class="table-title">Orders</text>
+<text x="480" y="480" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="480" y="499" class="column">   CreatedAt: datetime2(7)</text>
+<text x="480" y="518" class="column fk">FK ClientId: int</text>
+<text x="480" y="537" class="column fk">FK OrderTypeId: int</text>
+<text x="480" y="556" class="column">   Comment: nvarchar(max)</text>
+<text x="480" y="575" class="column">   TotalCalories: decimal(10, 2)</text>
+<text x="480" y="594" class="column fk">FK DiscountId: int</text>
+<text x="480" y="613" class="column">   TotalPrice: decimal(10, 2)</text>
+<text x="480" y="632" class="column fk">FK StatusID: int</text>
+<text x="480" y="651" class="column">   PickupAt: datetime2(7)</text>
+</g>
+<g id="OrderDishItems">
+<rect x="470" y="790" width="360" height="158" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="470" y="790" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="470" y1="824" x2="830" y2="824" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="480" y="812" class="table-title">OrderDishItems</text>
+<text x="480" y="840" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="480" y="859" class="column fk">FK OrderId: int</text>
+<text x="480" y="878" class="column fk">FK DishId: int</text>
+<text x="480" y="897" class="column">   Quantity: decimal(8, 2)</text>
+<text x="480" y="916" class="column">   FinalPrice: decimal(10, 2)</text>
+<text x="480" y="935" class="column">   IsCompleted: bit</text>
+</g>
+<g id="OrderDrinkItems">
+<rect x="470" y="1030" width="360" height="158" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="470" y="1030" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="470" y1="1064" x2="830" y2="1064" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="480" y="1052" class="table-title">OrderDrinkItems</text>
+<text x="480" y="1080" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="480" y="1099" class="column fk">FK OrderId: int</text>
+<text x="480" y="1118" class="column fk">FK DrinkId: int</text>
+<text x="480" y="1137" class="column">   Quantity: decimal(8, 2)</text>
+<text x="480" y="1156" class="column">   FinalPrice: decimal(10, 2)</text>
+<text x="480" y="1175" class="column">   IsCompleted: bit</text>
+</g>
+<g id="OrderDrinkItemModifiers">
+<rect x="470" y="1510" width="360" height="120" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="470" y="1510" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="470" y1="1544" x2="830" y2="1544" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="480" y="1532" class="table-title">OrderDrinkItemModifiers</text>
+<text x="480" y="1560" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="480" y="1579" class="column fk">FK OrderDrinkItemId: int</text>
+<text x="480" y="1598" class="column fk">FK MilkIngredientId: int</text>
+<text x="480" y="1617" class="column fk">FK CoffeeIngredientId: int</text>
+</g>
+<g id="OrderToppingItems">
+<rect x="470" y="1270" width="360" height="158" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="470" y="1270" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="470" y1="1304" x2="830" y2="1304" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="480" y="1292" class="table-title">OrderToppingItems</text>
+<text x="480" y="1320" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="480" y="1339" class="column fk">FK OrderId: int</text>
+<text x="480" y="1358" class="column fk">FK ToppingId: int</text>
+<text x="480" y="1377" class="column">   Quantity: int</text>
+<text x="480" y="1396" class="column">   TotalPrice: decimal(18, 2)</text>
+<text x="480" y="1415" class="column">   IsCompleted: bit</text>
+</g>
+<g id="Preparations">
+<rect x="2290" y="555" width="360" height="139" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="2290" y="555" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="2290" y1="589" x2="2650" y2="589" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="2300" y="577" class="table-title">Preparations</text>
+<text x="2300" y="605" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="2300" y="624" class="column">   Name: nvarchar(255)</text>
+<text x="2300" y="643" class="column fk">FK SemiFinishedId: int</text>
+<text x="2300" y="662" class="column">   StockGrams: decimal(10, 2)</text>
+<text x="2300" y="681" class="column">   ProductionDate: date</text>
+</g>
+<g id="PreparationTasks">
+<rect x="2290" y="810" width="360" height="139" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="2290" y="810" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="2290" y1="844" x2="2650" y2="844" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="2300" y="832" class="table-title">PreparationTasks</text>
+<text x="2300" y="860" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="2300" y="879" class="column fk">FK SemiFinishedId: int</text>
+<text x="2300" y="898" class="column">   Comment: nvarchar(500)</text>
+<text x="2300" y="917" class="column">   CreatedAt: datetime2(7)</text>
+<text x="2300" y="936" class="column">   TaskText: nvarchar(255)</text>
+</g>
+<g id="SemiFinishedCategories">
+<rect x="2290" y="80" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="2290" y="80" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="2290" y1="114" x2="2650" y2="114" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="2300" y="102" class="table-title">SemiFinishedCategories</text>
+<text x="2300" y="130" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="2300" y="149" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="SemiFinished">
+<rect x="2290" y="245" width="360" height="253" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="2290" y="245" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="2290" y1="279" x2="2650" y2="279" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="2300" y="267" class="table-title">SemiFinished</text>
+<text x="2300" y="295" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="2300" y="314" class="column">   Name: nvarchar(255)</text>
+<text x="2300" y="333" class="column">   CostRub: decimal(10, 2)</text>
+<text x="2300" y="352" class="column fk">FK CategoryId: int</text>
+<text x="2300" y="371" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="2300" y="390" class="column fk">FK TechnicalCardId: int</text>
+<text x="2300" y="409" class="column">   FatsG: decimal(8, 2)</text>
+<text x="2300" y="428" class="column">   ProteinsG: decimal(8, 2)</text>
+<text x="2300" y="447" class="column">   CarbsG: decimal(8, 2)</text>
+<text x="2300" y="466" class="column">   CaloriesKcal: decimal(8, 2)</text>
+<text x="2300" y="485" class="column">   Kilojoules: decimal(8, 2)</text>
+</g>
+<g id="StaffRoles">
+<rect x="80" y="670" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="80" y="670" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="80" y1="704" x2="440" y2="704" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="90" y="692" class="table-title">StaffRoles</text>
+<text x="90" y="720" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="90" y="739" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="Staff">
+<rect x="80" y="835" width="360" height="139" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="80" y="835" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="80" y1="869" x2="440" y2="869" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="90" y="857" class="table-title">Staff</text>
+<text x="90" y="885" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="90" y="904" class="column fk">FK RoleId: int</text>
+<text x="90" y="923" class="column">   FullName: nvarchar(255)</text>
+<text x="90" y="942" class="column">   Login: nvarchar(100)</text>
+<text x="90" y="961" class="column">   Password: nvarchar(100)</text>
+</g>
+<g id="TechnicalCards">
+<rect x="1330" y="895" width="360" height="101" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1330" y="895" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1330" y1="929" x2="1690" y2="929" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1340" y="917" class="table-title">TechnicalCards</text>
+<text x="1340" y="945" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1340" y="964" class="column">   Name: nvarchar(255)</text>
+<text x="1340" y="983" class="column">   Description: nvarchar(max)</text>
+</g>
+<g id="TechnicalCardIngredientComposition">
+<rect x="1330" y="1110" width="360" height="215" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1330" y="1110" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1330" y1="1144" x2="1690" y2="1144" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1340" y="1132" class="table-title">TechnicalCardIngredientComposition</text>
+<text x="1340" y="1160" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1340" y="1179" class="column fk">FK TechnicalCardId: int</text>
+<text x="1340" y="1198" class="column fk">FK IngredientId: int</text>
+<text x="1340" y="1217" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="1340" y="1236" class="column">   GrossWeight: decimal(10, 6)</text>
+<text x="1340" y="1255" class="column">   ColdLossPercent: decimal(10, 2)</text>
+<text x="1340" y="1274" class="column">   NetWeight: decimal(10, 6)</text>
+<text x="1340" y="1293" class="column">   HotLossPercent: decimal(10, 2)</text>
+<text x="1340" y="1312" class="column">   OutputWeight: decimal(10, 6)</text>
+</g>
+<g id="TechnicalCardSemiFinishedComposition">
+<rect x="1330" y="1500" width="360" height="215" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1330" y="1500" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1330" y1="1534" x2="1690" y2="1534" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1340" y="1522" class="table-title">TechnicalCardSemiFinishedComposition</text>
+<text x="1340" y="1550" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1340" y="1569" class="column fk">FK TechnicalCardId: int</text>
+<text x="1340" y="1588" class="column fk">FK SemiFinishedId: int</text>
+<text x="1340" y="1607" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="1340" y="1626" class="column">   GrossWeight: decimal(10, 6)</text>
+<text x="1340" y="1645" class="column">   ColdLossPercent: decimal(10, 2)</text>
+<text x="1340" y="1664" class="column">   NetWeight: decimal(10, 6)</text>
+<text x="1340" y="1683" class="column">   HotLossPercent: decimal(10, 2)</text>
+<text x="1340" y="1702" class="column">   OutputWeight: decimal(10, 6)</text>
+</g>
+<g id="ToppingCategories">
+<rect x="1330" y="80" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1330" y="80" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1330" y1="114" x2="1690" y2="114" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1340" y="102" class="table-title">ToppingCategories</text>
+<text x="1340" y="130" class="column pk">PK id: int IDENTITY(1,1)</text>
+<text x="1340" y="149" class="column">   name: nvarchar(max)</text>
+</g>
+<g id="ToppingsAndSyrups">
+<rect x="1330" y="245" width="360" height="348" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1330" y="245" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1330" y1="279" x2="1690" y2="279" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1340" y="267" class="table-title">ToppingsAndSyrups</text>
+<text x="1340" y="295" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1340" y="314" class="column">   Name: nvarchar(255)</text>
+<text x="1340" y="333" class="column">   Quantity: decimal(8, 2)</text>
+<text x="1340" y="352" class="column fk">FK UnitOfMeasureId: int</text>
+<text x="1340" y="371" class="column">   CostRub: decimal(10, 2)</text>
+<text x="1340" y="390" class="column">   MarkupPercent: decimal(10, 2)</text>
+<text x="1340" y="409" class="column">   PriceRub: decimal(10, 2)</text>
+<text x="1340" y="428" class="column">   CostPercent: decimal(5, 2)</text>
+<text x="1340" y="447" class="column fk">FK TechnicalCardId: int</text>
+<text x="1340" y="466" class="column">   FatsG: decimal(8, 2)</text>
+<text x="1340" y="485" class="column">   ProteinsG: decimal(8, 2)</text>
+<text x="1340" y="504" class="column">   CarbsG: decimal(8, 2)</text>
+<text x="1340" y="523" class="column">   CaloriesKcal: decimal(8, 2)</text>
+<text x="1340" y="542" class="column">   Kilojoules: decimal(8, 2)</text>
+<text x="1340" y="561" class="column fk">FK CategoryID: int</text>
+<text x="1340" y="580" class="column">   IsAvailable: bit</text>
+</g>
+<g id="UnitsOfMeasure">
+<rect x="1810" y="1055" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1810" y="1055" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1810" y1="1089" x2="2170" y2="1089" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1820" y="1077" class="table-title">UnitsOfMeasure</text>
+<text x="1820" y="1105" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1820" y="1124" class="column">   Name: nvarchar(50)</text>
+</g>
+<g id="WriteOffTypes">
+<rect x="1810" y="1220" width="360" height="82" rx="6" fill="#FFFFFF" stroke="#4B5D52" stroke-width="1.4"/>
+<rect x="1810" y="1220" width="360" height="34" rx="6" fill="#DCE9DE" stroke="#4B5D52" stroke-width="1.4"/>
+<line x1="1810" y1="1254" x2="2170" y2="1254" stroke="#4B5D52" stroke-width="1.2"/>
+<text x="1820" y="1242" class="table-title">WriteOffTypes</text>
+<text x="1820" y="1270" class="column pk">PK Id: int IDENTITY(1,1)</text>
+<text x="1820" y="1289" class="column">   Name: nvarchar(200)</text>
+</g>
+</svg>
