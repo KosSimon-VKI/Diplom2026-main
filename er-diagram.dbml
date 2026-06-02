@@ -1,0 +1,442 @@
+// DBML for ER diagram generation on https://dbdiagram.io
+// Source: script.sql. Service table __EFMigrationsHistory is excluded.
+
+Table ClientCategories {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table Clients {
+  Id int [pk, increment, not null]
+  FullName nvarchar(255)
+  PhoneNumber nvarchar(20)
+  Password nvarchar(100)
+  ClientCategoryId int
+  OrderCount int
+
+  indexes {
+    PhoneNumber [unique, name: 'UQ_Clients_PhoneNumber']
+  }
+}
+
+Table Discounts {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+  DiscountPercent decimal(5,2)
+}
+
+Table DishCategories {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table Dishes {
+  Id int [pk, increment, not null]
+  Name nvarchar(255)
+  CategoryId int
+  UnitOfMeasureId int
+  CostRub decimal(10,2)
+  MarkupPercent decimal(10,2)
+  PriceRub decimal(10,2)
+  CostPercent decimal(5,2)
+  TechnicalCardId int
+  FatsG decimal(8,2)
+  ProteinsG decimal(8,2)
+  CarbsG decimal(8,2)
+  CaloriesKcal decimal(8,2)
+  Kilojoules decimal(8,2)
+  ImageUrl nvarchar(500)
+  IsAvailable bit [not null]
+}
+
+Table DishToppings {
+  Id int [pk, increment, not null]
+  ToppingId int
+  OrderDishItemId int
+  Quantity decimal(8,2)
+  FinalPrice decimal(10,2)
+}
+
+Table DrinkCategories {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table Drinks {
+  Id int [pk, increment, not null]
+  Name nvarchar(255)
+  Quantity decimal(8,2)
+  UnitOfMeasureId int
+  CategoryId int
+  CostRub decimal(10,2)
+  MarkupPercent decimal(10,2)
+  PriceRub decimal(10,2)
+  CostPercent decimal(5,2)
+  TechnicalCardId int
+  FatsG decimal(8,2)
+  ProteinsG decimal(8,2)
+  CarbsG decimal(8,2)
+  CaloriesKcal decimal(8,2)
+  Kilojoules decimal(8,2)
+  ImageUrl nvarchar(500)
+  IsAvailable bit [not null]
+}
+
+Table DrinkToppings {
+  Id int [pk, increment, not null]
+  ToppingId int
+  OrderDrinkItemId int
+  Quantity decimal(8,2)
+  FinalPrice decimal(10,2)
+}
+
+Table IngredientCategories {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table Ingredients {
+  Id int [pk, increment, not null]
+  Name nvarchar(255)
+  Stock decimal(10,2)
+  UnitOfMeasureId int
+  CostRub decimal(10,2)
+  CategoryId int
+}
+
+Table IngredientSupplyActItems {
+  Id int [pk, increment, not null]
+  SupplyActId int [not null]
+  IngredientId int [not null]
+  Quantity decimal(10,2) [not null]
+  UnitOfMeasureId int
+}
+
+Table IngredientSupplyActs {
+  Id int [pk, increment, not null]
+  Date datetime2(7) [not null]
+}
+
+Table IngredientWriteOffActItems {
+  Id int [pk, increment, not null]
+  WriteOffActId int [not null]
+  IngredientId int [not null]
+  Quantity decimal(10,2) [not null]
+  UnitOfMeasureId int
+  WriteOffTypeId int [not null]
+}
+
+Table MenuItemPortionLimits {
+  Id int [pk, increment, not null]
+  ItemType nvarchar(16) [not null]
+  ItemId int [not null]
+  RemainingPortions decimal(10,2) [not null]
+  CreatedAt datetime2(7) [not null]
+  UpdatedAt datetime2(7) [not null]
+
+  indexes {
+    (ItemType, ItemId) [unique, name: 'UX_MenuItemPortionLimits_ItemType_ItemId']
+  }
+}
+
+Table OrderDishItems {
+  Id int [pk, increment, not null]
+  OrderId int
+  DishId int
+  Quantity decimal(8,2)
+  FinalPrice decimal(10,2)
+  IsCompleted bit [not null]
+}
+
+Table OrderDrinkItemModifiers {
+  Id int [pk, increment, not null]
+  OrderDrinkItemId int [not null]
+  MilkIngredientId int
+  CoffeeIngredientId int
+
+  indexes {
+    OrderDrinkItemId [unique, name: 'UX_OrderDrinkItemModifiers_OrderDrinkItemId']
+  }
+}
+
+Table OrderDrinkItems {
+  Id int [pk, increment, not null]
+  OrderId int
+  DrinkId int
+  Quantity decimal(8,2)
+  FinalPrice decimal(10,2)
+  IsCompleted bit [not null]
+}
+
+Table Orders {
+  Id int [pk, increment, not null]
+  CreatedAt datetime2(7)
+  ClientId int
+  OrderTypeId int
+  Comment nvarchar(max)
+  TotalCalories decimal(10,2)
+  DiscountId int
+  TotalPrice decimal(10,2)
+  StatusID int
+  PickupAt datetime2(7)
+}
+
+Table OrderStatuses {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table OrderToppingItems {
+  Id int [pk, increment, not null]
+  OrderId int [not null]
+  ToppingId int [not null]
+  Quantity int [not null]
+  TotalPrice decimal(18,2) [not null]
+  IsCompleted bit [not null]
+}
+
+Table OrderTypes {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table Preparations {
+  Id int [pk, increment, not null]
+  Name nvarchar(255)
+  SemiFinishedId int
+  StockGrams decimal(10,2)
+  ProductionDate date
+}
+
+Table PreparationTasks {
+  Id int [pk, increment, not null]
+  SemiFinishedId int
+  Comment nvarchar(500)
+  CreatedAt datetime2(7) [not null]
+  TaskText nvarchar(255) [not null]
+}
+
+Table SemiFinished {
+  Id int [pk, increment, not null]
+  Name nvarchar(255)
+  CostRub decimal(10,2)
+  CategoryId int
+  UnitOfMeasureId int
+  TechnicalCardId int
+  FatsG decimal(8,2)
+  ProteinsG decimal(8,2)
+  CarbsG decimal(8,2)
+  CaloriesKcal decimal(8,2)
+  Kilojoules decimal(8,2)
+}
+
+Table SemiFinishedCategories {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table SemiFinishedWriteOffActItems {
+  Id int [pk, increment, not null]
+  WriteOffActId int [not null]
+  SemiFinishedId int [not null]
+  Quantity decimal(10,2) [not null]
+  UnitOfMeasureId int
+  WriteOffTypeId int [not null]
+}
+
+Table Staff {
+  Id int [pk, increment, not null]
+  RoleId int
+  FullName nvarchar(255)
+  Login nvarchar(100)
+  Password nvarchar(100)
+
+  indexes {
+    Login [unique, name: 'UQ_Staff_Login']
+  }
+}
+
+Table StaffRoles {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table TechnicalCardIngredientComposition {
+  Id int [pk, increment, not null]
+  TechnicalCardId int
+  IngredientId int
+  UnitOfMeasureId int
+  GrossWeight decimal(10,6)
+  ColdLossPercent decimal(10,2)
+  NetWeight decimal(10,6)
+  HotLossPercent decimal(10,2)
+  OutputWeight decimal(10,6)
+}
+
+Table TechnicalCards {
+  Id int [pk, increment, not null]
+  Name nvarchar(255)
+  Description nvarchar(max)
+}
+
+Table TechnicalCardSemiFinishedComposition {
+  Id int [pk, increment, not null]
+  TechnicalCardId int
+  SemiFinishedId int
+  UnitOfMeasureId int
+  GrossWeight decimal(10,6)
+  ColdLossPercent decimal(10,2)
+  NetWeight decimal(10,6)
+  HotLossPercent decimal(10,2)
+  OutputWeight decimal(10,6)
+}
+
+Table ToppingCategories {
+  id int [pk, increment, not null]
+  name nvarchar(max)
+}
+
+Table ToppingsAndSyrups {
+  Id int [pk, increment, not null]
+  Name nvarchar(255)
+  Quantity decimal(8,2)
+  UnitOfMeasureId int
+  CostRub decimal(10,2)
+  MarkupPercent decimal(10,2)
+  PriceRub decimal(10,2)
+  CostPercent decimal(5,2)
+  TechnicalCardId int
+  FatsG decimal(8,2)
+  ProteinsG decimal(8,2)
+  CarbsG decimal(8,2)
+  CaloriesKcal decimal(8,2)
+  Kilojoules decimal(8,2)
+  CategoryID int
+  IsAvailable bit [not null]
+}
+
+Table UnitsOfMeasure {
+  Id int [pk, increment, not null]
+  Name nvarchar(50)
+}
+
+Table WriteOffActs {
+  Id int [pk, increment, not null]
+  Date datetime2(7) [not null]
+  Comment nvarchar(500)
+  StaffId int
+}
+
+Table WriteOffTypes {
+  Id int [pk, increment, not null]
+  Name nvarchar(200) [not null]
+}
+
+Ref: Clients.ClientCategoryId > ClientCategories.Id
+Ref: Dishes.CategoryId > DishCategories.Id
+Ref: Dishes.TechnicalCardId > TechnicalCards.Id
+Ref: Dishes.UnitOfMeasureId > UnitsOfMeasure.Id
+Ref: DishToppings.OrderDishItemId > OrderDishItems.Id
+Ref: DishToppings.ToppingId > ToppingsAndSyrups.Id
+Ref: Drinks.CategoryId > DrinkCategories.Id
+Ref: Drinks.TechnicalCardId > TechnicalCards.Id
+Ref: Drinks.UnitOfMeasureId > UnitsOfMeasure.Id
+Ref: DrinkToppings.OrderDrinkItemId > OrderDrinkItems.Id
+Ref: DrinkToppings.ToppingId > ToppingsAndSyrups.Id
+Ref: Ingredients.CategoryId > IngredientCategories.Id
+Ref: Ingredients.UnitOfMeasureId > UnitsOfMeasure.Id
+Ref: IngredientSupplyActItems.IngredientId > Ingredients.Id
+Ref: IngredientSupplyActItems.SupplyActId > IngredientSupplyActs.Id [delete: cascade]
+Ref: IngredientSupplyActItems.UnitOfMeasureId > UnitsOfMeasure.Id [delete: set null]
+Ref: IngredientWriteOffActItems.IngredientId > Ingredients.Id
+Ref: IngredientWriteOffActItems.UnitOfMeasureId > UnitsOfMeasure.Id [delete: set null]
+Ref: IngredientWriteOffActItems.WriteOffActId > WriteOffActs.Id [delete: cascade]
+Ref: IngredientWriteOffActItems.WriteOffTypeId > WriteOffTypes.Id
+Ref: OrderDishItems.DishId > Dishes.Id
+Ref: OrderDishItems.OrderId > Orders.Id
+Ref: OrderDrinkItemModifiers.CoffeeIngredientId > Ingredients.Id
+Ref: OrderDrinkItemModifiers.MilkIngredientId > Ingredients.Id
+Ref: OrderDrinkItemModifiers.OrderDrinkItemId > OrderDrinkItems.Id [delete: cascade]
+Ref: OrderDrinkItems.DrinkId > Drinks.Id
+Ref: OrderDrinkItems.OrderId > Orders.Id
+Ref: Orders.ClientId > Clients.Id
+Ref: Orders.DiscountId > Discounts.Id
+Ref: Orders.StatusID > OrderStatuses.Id
+Ref: Orders.OrderTypeId > OrderTypes.Id
+Ref: OrderToppingItems.OrderId > Orders.Id
+Ref: OrderToppingItems.ToppingId > ToppingsAndSyrups.Id
+Ref: Preparations.SemiFinishedId > SemiFinished.Id
+Ref: PreparationTasks.SemiFinishedId > SemiFinished.Id
+Ref: SemiFinished.CategoryId > SemiFinishedCategories.Id
+Ref: SemiFinished.TechnicalCardId > TechnicalCards.Id
+Ref: SemiFinished.UnitOfMeasureId > UnitsOfMeasure.Id
+Ref: SemiFinishedWriteOffActItems.SemiFinishedId > SemiFinished.Id
+Ref: SemiFinishedWriteOffActItems.UnitOfMeasureId > UnitsOfMeasure.Id [delete: set null]
+Ref: SemiFinishedWriteOffActItems.WriteOffActId > WriteOffActs.Id [delete: cascade]
+Ref: SemiFinishedWriteOffActItems.WriteOffTypeId > WriteOffTypes.Id
+Ref: Staff.RoleId > StaffRoles.Id
+Ref: TechnicalCardIngredientComposition.IngredientId > Ingredients.Id
+Ref: TechnicalCardIngredientComposition.TechnicalCardId > TechnicalCards.Id
+Ref: TechnicalCardIngredientComposition.UnitOfMeasureId > UnitsOfMeasure.Id
+Ref: TechnicalCardSemiFinishedComposition.SemiFinishedId > SemiFinished.Id
+Ref: TechnicalCardSemiFinishedComposition.TechnicalCardId > TechnicalCards.Id
+Ref: TechnicalCardSemiFinishedComposition.UnitOfMeasureId > UnitsOfMeasure.Id
+Ref: ToppingsAndSyrups.CategoryID > ToppingCategories.id
+Ref: ToppingsAndSyrups.TechnicalCardId > TechnicalCards.Id
+Ref: ToppingsAndSyrups.UnitOfMeasureId > UnitsOfMeasure.Id
+Ref: WriteOffActs.StaffId > Staff.Id [delete: set null]
+
+TableGroup "Orders and clients" {
+  Orders
+  OrderDishItems
+  OrderDrinkItems
+  OrderToppingItems
+  OrderDrinkItemModifiers
+  DishToppings
+  DrinkToppings
+  Clients
+  Discounts
+}
+
+TableGroup "Menu items" {
+  Dishes
+  Drinks
+  ToppingsAndSyrups
+  MenuItemPortionLimits
+}
+
+TableGroup "Recipes and production" {
+  TechnicalCards
+  TechnicalCardIngredientComposition
+  TechnicalCardSemiFinishedComposition
+  SemiFinished
+  Preparations
+  PreparationTasks
+}
+
+TableGroup "Warehouse and acts" {
+  Ingredients
+  IngredientSupplyActs
+  IngredientSupplyActItems
+  WriteOffActs
+  IngredientWriteOffActItems
+  SemiFinishedWriteOffActItems
+}
+
+TableGroup "Staff" {
+  Staff
+  StaffRoles
+}
+
+TableGroup "Directories" {
+  ClientCategories
+  DishCategories
+  DrinkCategories
+  IngredientCategories
+  SemiFinishedCategories
+  ToppingCategories
+  UnitsOfMeasure
+  OrderStatuses
+  OrderTypes
+  WriteOffTypes
+}
